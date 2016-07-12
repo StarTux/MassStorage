@@ -1,0 +1,23 @@
+name: MassStorage
+description: Mass Storage for spam items
+author: StarTux
+version: 0.1
+main: com.winthier.massstorage.MassStoragePlugin
+softdepend: [ Vault ]
+database: true
+commands:
+  massstorage:
+    aliases: [ ms ]
+    description: User interface
+    permission: massstorage.ms
+  massstorageadmin:
+    aliases: [ msadmin, msadm ]
+    description: Admin interface
+    permission: massstorage.admin
+permissions:
+  massstorage.ms:
+    description: Use the /ms command
+    default: op
+  massstorage.admin:
+    description: Use the admin command
+    default: op

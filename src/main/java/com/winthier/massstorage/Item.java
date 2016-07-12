@@ -1,0 +1,39 @@
+package com.winthier.massstorage;
+
+import lombok.Value;
+import org.bukkit.Material;
+import org.bukkit.inventory.ItemStack;
+
+@Value
+public class Item {
+    final int type, data;
+
+    public static Item of(ItemStack itemStack) {
+        return new Item(itemStack.getType().getId(), (int)itemStack.getDurability());
+    }
+
+    public Material getMaterial() {
+        return Material.getMaterial(type);
+    }
+
+    public ItemStack toItemStack(int amount) {
+        return new ItemStack(getMaterial(), amount, (short)data);
+    }
+
+    public ItemStack toItemStack() {
+        return toItemStack(1);
+    }
+
+    public static boolean canStore(ItemStack itemStack) {
+        if (!canStore(itemStack.getType())) return false;
+        if (!of(itemStack).toItemStack().isSimilar(itemStack)) return false;
+        return true;
+    }
+
+    public static boolean canStore(Material mat) {
+        if (MassStoragePlugin.getInstance().getMaterialBlacklist().contains(mat)) return false;
+        if (mat.getMaxDurability() > 0) return false;
+        if (mat.getMaxStackSize() == 1) return false;
+        return true;
+    }
+}

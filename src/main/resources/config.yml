@@ -1,0 +1,10 @@
+MaterialBlacklist:
+- MAP
+- POTION
+- SPLASH_POTION
+- MONSTER_EGG
+DefaultCapacity: 3456
+BuyCapacity:
+  Amount: 1728
+  DisplayName: Chest
+  Price: 500

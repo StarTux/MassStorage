@@ -45,7 +45,7 @@ class Session {
     StorageResult onInventoryClose() {
         Inventory inv = this.inventory;
         this.inventory = null;
-        if (inv == null) return null; // SHould never happen
+        if (inv == null) return null; // Should only happen on shutdown
         StorageResult result = storeItems(inv.getContents());
         Player player = getPlayer();
         if (player != null) {

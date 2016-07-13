@@ -14,6 +14,10 @@ commands:
     aliases: [ msadmin, msadm ]
     description: Admin interface
     permission: massstorage.admin
+    usage: |-
+      /msadm reload - Reload configuration
+      /msadm info <player> - Player info
+      /msadm grant <player> <amount> - Grant player storage units
 permissions:
   massstorage.ms:
     description: Use the /ms command

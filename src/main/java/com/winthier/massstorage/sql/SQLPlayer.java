@@ -30,6 +30,7 @@ public class SQLPlayer {
     @Id Integer id;
     @Version Date version;
     @NotNull UUID uuid;
+    String name;
     @NotNull Integer capacity;
 
     public static SQLPlayer get(UUID uuid) {
@@ -41,5 +42,9 @@ public class SQLPlayer {
             MassStoragePlugin.getInstance().getDatabase().save(result);
         }
         return result;
+    }
+
+    public static SQLPlayer find(String name) {
+        return MassStoragePlugin.getInstance().getDatabase().find(SQLPlayer.class).where().eq("name", name).findUnique();
     }
 }

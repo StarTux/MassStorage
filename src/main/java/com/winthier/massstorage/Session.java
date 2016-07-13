@@ -197,6 +197,14 @@ class Session {
     SQLPlayer getSQLPlayer() {
         if (sqlPlayer == null) {
             sqlPlayer = SQLPlayer.get(uuid);
+            Player player = getPlayer();
+            if (player != null) {
+                if (sqlPlayer.getName() == null ||
+                    !sqlPlayer.getName().equals(player.getName())) {
+                    sqlPlayer.setName(player.getName());
+                    MassStoragePlugin.getInstance().getDatabase().save(sqlPlayer);
+                }
+            }
         }
         return sqlPlayer;
     }

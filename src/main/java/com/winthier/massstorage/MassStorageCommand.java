@@ -98,13 +98,27 @@ public class MassStorageCommand implements CommandExecutor {
             UUID code = UUID.randomUUID();
             plugin.getSession(player).buyConfirmationCode = code;
             Msg.raw(player,
+                    "",
+                    Msg.pluginTag(),
+                    " ",
                     Msg.button(ChatColor.WHITE,
                                "Buy &9"+amount+"&8x&9"+displayName+"&r for &9"+priceFormat+"&r? ",
                                "&aThat is "+itemAmount+" items worth of Mass Storage.", null),
                     Msg.button(ChatColor.GREEN,
                                "&r[&aConfirm&r]",
                                "&aConfirm",
-                               "/ms confirm " + amount + " " + code));
+                               "/ms confirm " + amount + " " + code),
+                    " ",
+                    Msg.button(ChatColor.RED,
+                               "&r[&cCancel&r]",
+                               "&aCancel",
+                               "/ms cancel"));
+        } else if (cmd.equals("cancel")) {
+            UUID uuid = plugin.getSession(player).buyConfirmationCode;
+            if (uuid != null) {
+                plugin.getSession(player).buyConfirmationCode = null;
+                Msg.info(player, "Purchase cancelled.");
+            }
         } else if (cmd.equals("confirm")) {
             if (args.length != 3) return true;
             int amount;
@@ -129,9 +143,6 @@ public class MassStorageCommand implements CommandExecutor {
             }
             plugin.getSession(player).addCapacity(itemAmount);
             Msg.info(player, "Purchased &9%d&8x&9%s&r for &9%s&r.", amount, displayName, priceFormat);
-        } else if (cmd.equals("reload") && player.hasPermission("massstorage.admin")) {
-            plugin.reloadAll();
-            Msg.info(player, "Configuration reloaded.");
         } else {
             StringBuilder sb = new StringBuilder(args[0]);
             for (int i = 1; i < args.length; ++i) sb.append(" ").append(args[i]);
@@ -162,11 +173,13 @@ public class MassStorageCommand implements CommandExecutor {
         Msg.raw(player, " ", Msg.button("/ms info", "&a/ms info\n&oShow some info", "/ms info"), Msg.format(" &8-&r Show some info."));
         Msg.raw(player, " ", Msg.button("/ms list", "&a/ms list\n&oList Mass Storage contents", "/ms list"), Msg.format(" &8-&r List Mass Storage contents."));
         Msg.raw(player, " ", Msg.button("/ms search &7[item]", "&a/ms search [item]\n&oFind stored items", "/ms search "), Msg.format(" &8-&r Find stored items."));
-        Msg.raw(player, " ", Msg.button("/ms buy &7[amount]", "&a/ms buy [amount]\n&oBuy additional storage", "/ms buy "), Msg.format(" &8-&r Buy additional storage."));
+        String purchaseCost = plugin.getVaultHandler().formatMoney(plugin.getConfig().getDouble("BuyCapacity.Price", 500.0));
+        Msg.raw(player, " ", Msg.button("/ms buy &7[amount]", "&a/ms buy [amount]\n&oBuy additional storage\nPrice: " + purchaseCost, "/ms buy "), Msg.format(" &8-&r Buy additional storage."));
         player.sendMessage("");
     }
 
     void quickUsage(Player player) {
+        String purchaseCost = plugin.getVaultHandler().formatMoney(plugin.getConfig().getDouble("BuyCapacity.Price", 500.0));
         Msg.raw(
             player,
             Msg.format(" &oClick here: &r "),
@@ -178,6 +191,6 @@ public class MassStorageCommand implements CommandExecutor {
             " ",
             Msg.button(ChatColor.GREEN, "&r[&alist&r]", "&a/ms list [item]\n&oList Mass Storage contents", "/ms list "),
             " ",
-            Msg.button(ChatColor.GREEN, "&r[&abuy&r]", "&a/ms buy [amount]\n&oBuy additional storage", "/ms buy "));
+            Msg.button(ChatColor.GREEN, "&r[&abuy&r]", "&a/ms buy [amount]\n&oBuy additional storage\nPrice: " + purchaseCost, "/ms buy "));
     }
 }

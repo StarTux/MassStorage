@@ -27,6 +27,7 @@ public class MassStoragePlugin extends JavaPlugin {
         reloadConfig();
         instance = this;
         getCommand("massstorage").setExecutor(new MassStorageCommand(this));
+        getCommand("massstorageadmin").setExecutor(new AdminCommand(this));
         getServer().getPluginManager().registerEvents(new InventoryListener(this), this);
         // SQL
         try {

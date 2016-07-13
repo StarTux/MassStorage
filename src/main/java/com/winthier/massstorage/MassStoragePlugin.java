@@ -88,6 +88,7 @@ public class MassStoragePlugin extends JavaPlugin {
     }
 
     void reloadAll() {
+        saveDefaultConfig();
         reloadConfig();
         materialBlacklist = null;
         if (sessions != null) {

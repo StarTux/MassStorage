@@ -3,6 +3,7 @@ package com.winthier.massstorage;
 import com.winthier.massstorage.sql.SQLItem;
 import com.winthier.massstorage.util.Msg;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -24,8 +25,17 @@ public class MassStorageCommand implements CommandExecutor {
         if (cmd == null) {
             plugin.getSession(player).openInventory();
             Msg.info(player, "Free storage: &9%d&r items.", plugin.getSession(player).getFreeStorage());
+            quickUsage(player);
         } else if (cmd.equals("help") || cmd.equals("?")) {
             usage(player);
+        } else if (cmd.equals("info")) {
+            player.sendMessage("");
+            Msg.info(player, "&9&lMass Storage&r Info");
+            Msg.raw(player, " ", Msg.button(ChatColor.GRAY, plugin.getConfig().getString("CommandHelp", ""), null, null));
+            Msg.send(player, " &oUsed storage:&r &7%d&8/&7%d", plugin.getSession(player).getStorage(), plugin.getSession(player).getCapacity());
+            Msg.send(player, " &oFree storage:&r &9%d&r items", plugin.getSession(player).getFreeStorage());
+            quickUsage(player);
+            player.sendMessage("");
         } else if (cmd.equals("find") || cmd.equals("search") || cmd.equals("list")) {
             String searchTerm;
             if (args.length > 1) {
@@ -125,12 +135,21 @@ public class MassStorageCommand implements CommandExecutor {
         } else {
             StringBuilder sb = new StringBuilder(args[0]);
             for (int i = 1; i < args.length; ++i) sb.append(" ").append(args[i]);
-            String searchTerm = sb.toString();
-            List<Item> items = plugin.getVaultHandler().findItems(searchTerm);
+            String searchTerm = sb.toString().toLowerCase();
+            LinkedList<Item> items = new LinkedList<>();
+            for (SQLItem sqlItem: plugin.getSession(player).getSQLItems().values()) {
+                Item item = sqlItem.getItem();
+                String itemName = plugin.getVaultHandler().getItemName(item).toLowerCase();
+                if (itemName.equals(searchTerm)) {
+                    items.addFirst(item);
+                } else if (itemName.contains(searchTerm)) {
+                    items.addLast(item);
+                }
+            }
             plugin.getSession(player).openInventory();
             int freeStorage = plugin.getSession(player).getFreeStorage();
             int displayed = plugin.getSession(player).fillInventory(items.toArray(new Item[0]));
-            Msg.info(player, "Found &a%d&r items. Free storage: &9%d items.", displayed, freeStorage);
+            Msg.info(player, "Found &a%d&r items. Free storage: &9%d&r items.", displayed, freeStorage);
         }
         return true;
     }
@@ -139,8 +158,26 @@ public class MassStorageCommand implements CommandExecutor {
         player.sendMessage("");
         Msg.info(player, "&9&lMass Storage&r Help");
         Msg.raw(player, " ", Msg.button("/ms", "&a/ms\n&oOpen Mass Storage Inventory", "/ms"), Msg.format(" &8-&r Open Mass Storage Inventory."));
-        Msg.raw(player, " ", Msg.button("/ms list &7[item]", "&a/ms\n&oList Mass Storage Contents", "/ms list "), Msg.format(" &8-&r List Mass Storage Contents."));
-        Msg.raw(player, " ", Msg.button("/ms buy &7[amount]", "&a/ms\n&oBuy additional storage", "/ms buy "), Msg.format(" &8-&r Buy additional storage."));
+        Msg.raw(player, " ", Msg.button("/ms &7[item]", "&a/ms [item]\n&oRetrieve items", "/ms "), Msg.format(" &8-&r Retrieve items."));
+        Msg.raw(player, " ", Msg.button("/ms info", "&a/ms info\n&oShow some info", "/ms info"), Msg.format(" &8-&r Show some info."));
+        Msg.raw(player, " ", Msg.button("/ms list", "&a/ms list\n&oList Mass Storage contents", "/ms list"), Msg.format(" &8-&r List Mass Storage contents."));
+        Msg.raw(player, " ", Msg.button("/ms search &7[item]", "&a/ms search [item]\n&oFind stored items", "/ms search "), Msg.format(" &8-&r Find stored items."));
+        Msg.raw(player, " ", Msg.button("/ms buy &7[amount]", "&a/ms buy [amount]\n&oBuy additional storage", "/ms buy "), Msg.format(" &8-&r Buy additional storage."));
         player.sendMessage("");
+    }
+
+    void quickUsage(Player player) {
+        Msg.raw(
+            player,
+            Msg.format(" &oClick here: &r "),
+            Msg.button(ChatColor.GREEN, "&r[&ams&r]", "&a/ms [item]\n&oOpen Mass Storage Inventory", "/ms "),
+            " ",
+            Msg.button(ChatColor.GREEN, "&r[&a?&r]", "&a/ms ?\n&oHelp Screen", "/ms ?"),
+            " ",
+            Msg.button(ChatColor.GREEN, "&r[&ainfo&r]", "&a/ms info\n&oShow some info", "/ms info"),
+            " ",
+            Msg.button(ChatColor.GREEN, "&r[&alist&r]", "&a/ms list [item]\n&oList Mass Storage contents", "/ms list "),
+            " ",
+            Msg.button(ChatColor.GREEN, "&r[&abuy&r]", "&a/ms buy [amount]\n&oBuy additional storage", "/ms buy "));
     }
 }

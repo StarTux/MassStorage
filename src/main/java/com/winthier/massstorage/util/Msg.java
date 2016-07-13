@@ -28,10 +28,7 @@ public class Msg {
     public static void info(Player player, String msg, Object... args) {
         raw(player,
             "",
-            Msg.button(ChatColor.BLUE,
-                       "&r[&3MS&r]",
-                       "&a/ms ?\n&oMass Storage Help",
-                       "/ms ?"),
+            pluginTag(),
             " ",
             format(msg, args));
     }
@@ -54,6 +51,13 @@ public class Msg {
         } else {
             consoleCommand("minecraft:tellraw %s %s", player.getName(), JSONValue.toJSONString(Arrays.asList(obj)));
         }
+    }
+
+    public static Object pluginTag() {
+        return button(ChatColor.BLUE,
+                      "&r[&9MS&r]",
+                      "&a/ms ?\n&oMass Storage Help",
+                      "/ms ?");
     }
 
     public static Object button(ChatColor color, String chat, String tooltip, String command) {

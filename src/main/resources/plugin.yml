@@ -1,5 +1,5 @@
 name: MassStorage
-description: Mass Storage for spam items
+description: Mass Storage for Spam Items
 author: StarTux
 version: 0.1
 main: com.winthier.massstorage.MassStoragePlugin

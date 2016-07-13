@@ -1,8 +1,8 @@
 package com.winthier.massstorage;
 
-import com.winthier.massstorage.util.Msg;
 import com.winthier.massstorage.sql.SQLItem;
 import com.winthier.massstorage.sql.SQLPlayer;
+import com.winthier.massstorage.util.Msg;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -12,6 +12,7 @@ import java.util.Set;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
@@ -26,8 +27,6 @@ class Session {
     Map<Item, SQLItem> sqlItems = null;
     SQLPlayer sqlPlayer = null;
     UUID buyConfirmationCode = null;
-    // Cached side effect
-    int lastStorageCount = 0;
 
     Player getPlayer() {
         return Bukkit.getServer().getPlayer(uuid);
@@ -43,50 +42,94 @@ class Session {
         return inventory;
     }
 
-    void onInventoryClose() {
+    StorageResult onInventoryClose() {
         Inventory inv = this.inventory;
         this.inventory = null;
-        if (inv == null) return;
-        ItemStack[] rest = storeItems(inv.getContents()).toArray(new ItemStack[0]);
+        if (inv == null) return null; // SHould never happen
+        StorageResult result = storeItems(inv.getContents());
         Player player = getPlayer();
         if (player != null) {
-            int restCount = 0;
-            for (ItemStack i: rest) restCount += i.getAmount();
-            for (ItemStack drop: player.getInventory().addItem(rest).values()) {
+            for (ItemStack drop: player.getInventory().addItem(result.returnedItems.toArray(new ItemStack[0])).values()) {
                 player.getWorld().dropItem(player.getEyeLocation(), drop).setPickupDelay(0);
             }
-            if (lastStorageCount > 0 || restCount > 0) {
-                StringBuilder sb = new StringBuilder();
-                if (lastStorageCount > 0) {
-                    sb.append("Stored &a").append(lastStorageCount).append("&r items.");
+            int storedItemCount = result.getStoredItemCount();
+            int returnedItemCount = result.getReturnedItemCount();
+            if (storedItemCount > 0 || returnedItemCount > 0) {
+                List<Object> messages = new ArrayList<>();
+                if (storedItemCount > 0) {
+                    StringBuilder tooltip = new StringBuilder("&aStored items: &2").append(storedItemCount);
+                    for (Map.Entry<String, Integer> entry: result.storedItemNames.entrySet()) {
+                        tooltip.append("\n&a").append(entry.getKey()).append("&2: ").append(entry.getValue());
+                    }
+                    messages.add(Msg.button(ChatColor.WHITE,
+                                            Msg.format("Stored &a%d&r items.", storedItemCount),
+                                            Msg.format(tooltip.toString()),
+                                            null));
                 }
-                if (restCount > 0) {
-                    if (sb.length() > 0) sb.append(" ");
-                    sb.append("Returned &c").append(restCount).append("&r items.");
+                if (returnedItemCount > 0) {
+                    StringBuilder tooltip = new StringBuilder("&4Returned items: &c").append(returnedItemCount);
+                    if (result.outOfStorage) {
+                        tooltip.append("\n&4Out of storage: &c").append(getCapacity());
+                    }
+                    if (!result.rejectedItemNames.isEmpty()) {
+                        tooltip.append("\n&4Unable to store items:");
+                        for (String itemName: result.rejectedItemNames) tooltip.append("\n&8- &c").append(itemName);
+                    }
+                    messages.add(Msg.button(ChatColor.WHITE,
+                                            Msg.format("Returned &c%d&r items.", returnedItemCount),
+                                            Msg.format(tooltip.toString()),
+                                            null));
                 }
-                if (sb.length() > 0) sb.append(" ");
-                sb.append("Free storage: &9").append(getFreeStorage()).append("&r items.");
-                Msg.info(player, sb.toString());
+                messages.add(Msg.format("Free storage: &9%d&r items.", getFreeStorage()));
+                List<Object> json = new ArrayList<>();
+                json.add("");
+                json.add(Msg.pluginTag());
+                for (Object o: messages) {
+                    json.add(" ");
+                    json.add(o);
+                }
+                Msg.raw(player, json);
             }
         }
+        return result;
+    }
+
+    static class StorageResult {
+        final List<ItemStack> returnedItems = new ArrayList<>();
+        final List<ItemStack> storedItems = new ArrayList<>();
+        int getReturnedItemCount() {
+            int result = 0;
+            for (ItemStack item: returnedItems) result += item.getAmount();
+            return result;
+        }
+        int getStoredItemCount() {
+            int result = 0;
+            for (ItemStack item: storedItems) result += item.getAmount();
+            return result;
+        }
+        boolean outOfStorage = false;
+        Set<String> rejectedItemNames = new HashSet<>();
+        Map<String, Integer> storedItemNames = new HashMap<>();
     }
 
     // Returns items that could not be stored
-    List<ItemStack> storeItems(ItemStack... items) {
+    StorageResult storeItems(ItemStack... items) {
         List<ItemStack> drops = new ArrayList<>();
         int capacity = getCapacity();
         int storage = getStorage();
         Set<SQLItem> dirtyItems = new HashSet<>();
-        lastStorageCount = 0;
+        StorageResult result = new StorageResult();
         for (ItemStack item: items) {
             if (item == null || item.getType() == Material.AIR) {
                 // Ignore
             } else if (item.getAmount() <= 0) {
                 // Ignore. Warn maybe?
             } else if (storage >= capacity) {
-                drops.add(item);
+                result.returnedItems.add(item);
+                result.outOfStorage = true;
             } else if (!Item.canStore(item)) {
-                drops.add(item);
+                result.returnedItems.add(item);
+                result.rejectedItemNames.add(MassStoragePlugin.getInstance().getVaultHandler().getItemName(item));
             } else {
                 // Fetch SQL item
                 Item itemKey = Item.of(item);
@@ -98,16 +141,21 @@ class Session {
                 dirtyItems.add(sqlItem);
                 int storedAmount = Math.min(item.getAmount(), capacity - storage);
                 sqlItem.setAmount(sqlItem.getAmount() + storedAmount);
-                lastStorageCount += storedAmount;
                 storage += storedAmount;
                 if (item.getAmount() > storedAmount) {
                     item.setAmount(item.getAmount() - storedAmount);
                     drops.add(item);
                 }
+                result.storedItems.add(item);
+                String itemName = MassStoragePlugin.getInstance().getVaultHandler().getItemName(item);
+                Integer amount = result.storedItemNames.get(itemName);
+                if (amount == null) amount = 0;
+                amount += storedAmount;
+                result.storedItemNames.put(itemName, amount);
             }
         }
         MassStoragePlugin.getInstance().getDatabase().save(dirtyItems);
-        return drops;
+        return result;
     }
 
     int fillInventory(Item... itemKeys) {

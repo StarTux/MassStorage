@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import javax.persistence.PersistenceException;
 import lombok.RequiredArgsConstructor;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -161,7 +162,13 @@ class Session {
                 result.storedItemNames.put(itemName, amount);
             }
         }
-        MassStoragePlugin.getInstance().getDatabase().save(dirtyItems);
+        try {
+            MassStoragePlugin.getInstance().getDatabase().save(dirtyItems);
+        } catch (PersistenceException pe) {
+            pe.printStackTrace();
+            System.err.println(result.storedItemNames);
+            flush();
+        }
         return result;
     }
 
@@ -186,7 +193,12 @@ class Session {
                 result += filledAmount;
             } while (true);
         }
-        MassStoragePlugin.getInstance().getDatabase().save(dirtyItems);
+        try {
+            MassStoragePlugin.getInstance().getDatabase().save(dirtyItems);
+        } catch (PersistenceException pe) {
+            pe.printStackTrace();
+            flush();
+        }
         return result;
     }
 

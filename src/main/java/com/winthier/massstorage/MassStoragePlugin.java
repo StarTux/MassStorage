@@ -42,7 +42,7 @@ public class MassStoragePlugin extends JavaPlugin {
 
     @Override
     public void onDisable() {
-        for (Session session: sessions.values()) session.onInventoryClose();
+        for (Session session: sessions.values()) session.close();
         sessions.clear();
     }
 

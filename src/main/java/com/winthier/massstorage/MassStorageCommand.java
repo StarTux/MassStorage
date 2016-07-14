@@ -182,7 +182,7 @@ public class MassStorageCommand implements CommandExecutor {
         String purchaseCost = plugin.getVaultHandler().formatMoney(plugin.getConfig().getDouble("BuyCapacity.Price", 500.0));
         Msg.raw(
             player,
-            Msg.format(" &oClick here: &r "),
+            Msg.format(" &oClick here:&r "),
             Msg.button(ChatColor.GREEN, "&r[&ams&r]", "&a/ms [item]\n&oOpen Mass Storage Inventory", "/ms "),
             " ",
             Msg.button(ChatColor.GREEN, "&r[&a?&r]", "&a/ms ?\n&oHelp Screen", "/ms ?"),

@@ -33,7 +33,7 @@ public class Item {
     public static boolean canStore(Material mat) {
         if (MassStoragePlugin.getInstance().getMaterialBlacklist().contains(mat)) return false;
         if (mat.getMaxDurability() > 0) return false;
-        if (mat.getMaxStackSize() == 1) return false;
+        if (mat.getMaxStackSize() == 1 && !MassStoragePlugin.getInstance().permitNonStackingItems()) return false;
         return true;
     }
 }

@@ -100,4 +100,8 @@ public class MassStoragePlugin extends JavaPlugin {
             }
         }
     }
+
+    boolean permitNonStackingItems() {
+        return getConfig().getBoolean("PermitNonStackingItems", true);
+    }
 }

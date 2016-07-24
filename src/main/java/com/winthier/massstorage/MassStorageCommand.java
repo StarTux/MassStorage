@@ -32,8 +32,13 @@ public class MassStorageCommand implements CommandExecutor {
             player.sendMessage("");
             Msg.info(player, "&9&lMass Storage&r Info");
             Msg.raw(player, " ", Msg.button(ChatColor.GRAY, plugin.getConfig().getString("CommandHelp", ""), null, null));
-            Msg.send(player, " &oUsed storage:&r &7%d&8/&7%d", plugin.getSession(player).getStorage(), plugin.getSession(player).getCapacity());
-            Msg.send(player, " &oFree storage:&r &9%d&r items", plugin.getSession(player).getFreeStorage());
+            int storage = plugin.getSession(player).getStorage();
+            int capacity = plugin.getSession(player).getCapacity();
+            int buyAmount = plugin.getConfig().getInt("BuyCapacity.Amount", 3*9*64);
+            String buyName = plugin.getConfig().getString("BuyCapacity.DisplayName", "Chest");
+            int free = plugin.getSession(player).getFreeStorage();
+            Msg.send(player, " &oUsed storage:&r &7%d&8/&7%d &8(&7%d&8x&7%s&8)", storage, capacity, capacity / buyAmount, buyName);
+            Msg.send(player, " &oFree storage:&r &9%d&r items &r(&9%d&8x&9%s&r)", free, free / buyAmount, buyName);
             quickUsage(player);
             player.sendMessage("");
         } else if (cmd.equals("find") || cmd.equals("search") || cmd.equals("list")) {
@@ -87,9 +92,9 @@ public class MassStorageCommand implements CommandExecutor {
                 usage(player);
                 return true;
             }
-            int itemAmount = plugin.getConfig().getInt("BuyCapacity.Amount", 6*9*64) * amount;
+            int itemAmount = plugin.getConfig().getInt("BuyCapacity.Amount", 3*9*64) * amount;
             double price = plugin.getConfig().getDouble("BuyCapacity.Price", 500.0) * (double)amount;
-            String displayName = plugin.getConfig().getString("BuyCapacity.DisplayName", "Double Chest");
+            String displayName = plugin.getConfig().getString("BuyCapacity.DisplayName", "Chest");
             String priceFormat = plugin.getVaultHandler().formatMoney(price);
             if (!plugin.getVaultHandler().hasMoney(player, price)) {
                 Msg.warn(player, "You cannot afford %s.", priceFormat);

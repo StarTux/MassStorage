@@ -3,8 +3,10 @@ package com.winthier.massstorage;
 import com.winthier.massstorage.sql.SQLItem;
 import com.winthier.massstorage.util.Msg;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.bukkit.ChatColor;
@@ -16,7 +18,61 @@ import org.bukkit.entity.Player;
 @RequiredArgsConstructor
 public class MassStorageCommand implements CommandExecutor {
     final MassStoragePlugin plugin;
+
+    static class Page {
+        final List<List<Object>> lines = new ArrayList<>();
+        static List<Page> pagesOf(List<List<Object>> lines) {
+            List<Page> result = new ArrayList<>();
+            int i = 0;
+            Page page = new Page();
+            for (List<Object> line: lines) {
+                page.lines.add(line);
+                i += 1;
+                if (i == 8) {
+                    result.add(page);
+                    page = new Page();
+                    i = 0;
+                }
+            }
+            if (!page.lines.isEmpty()) result.add(page);
+            return result;
+        }
+    }
+
+    @RequiredArgsConstructor
+    class PlayerContext {
+        final UUID player;
+        final List<Page> pages = new ArrayList<>();;
+        void clear() {
+            pages.clear();
+        }
+    }
     
+    void showPage(Player player, int index) {
+        int pageCount = getPlayerContext(player).pages.size();
+        if (index < 0 || index >= pageCount) return;
+        Page page = getPlayerContext(player).pages.get(index);
+        Msg.info(player, "Page %d/%d", index+1, pageCount);
+        for (List<Object> json: page.lines) {
+            Msg.raw(player, json);
+        }
+        if (index+1 < pageCount) {
+            Msg.raw(player,
+                Msg.button(ChatColor.BLUE, "&r[&9More&r]", "Next page", "/ms page " + (index+2))
+                );
+        }
+    }
+
+    PlayerContext getPlayerContext(Player player) {
+        PlayerContext result = contexts.get(player.getUniqueId());
+        if (result == null) {
+            result = new PlayerContext(player.getUniqueId());
+            contexts.put(player.getUniqueId(), result);
+        }
+        return result;
+    }
+
+    final Map<UUID, PlayerContext> contexts = new HashMap<>();
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         Player player = sender instanceof Player ? (Player)sender : null;
@@ -50,32 +106,41 @@ public class MassStorageCommand implements CommandExecutor {
             } else {
                 searchTerm = null;
             }
-            List<Object> json = new ArrayList<>();
-            int count = 0;
+            List<List<Object>> jsons = new ArrayList<>();
             for (SQLItem sqlItem: plugin.getSession(player).getSQLItems().values()) {
+                List<Object> json = new ArrayList<>();
                 if (sqlItem.getAmount() <= 0) continue;
                 Item item = sqlItem.getItem();
                 String itemName = plugin.getVaultHandler().getItemName(item);
                 if (searchTerm != null && !itemName.toLowerCase().contains(searchTerm)) continue;
-                count += 1;
-                json.add(" ");
-                json.add(Msg.button(ChatColor.BLUE,
-                                    "&r[&9" + sqlItem.getAmount() + "&8x&9" + itemName + "&r]",
+                json.add(Msg.button(ChatColor.WHITE,
+                                    " " + sqlItem.getAmount() + "&8x&r" + itemName,
                                     "&a" + itemName,
                                     "/ms " + itemName));
+                jsons.add(json);
             }
-            if (count == 0) {
+            getPlayerContext(player).clear();
+            if (jsons.isEmpty()) {
                 Msg.warn(player, "Nothing found.");
             } else {
-                player.sendMessage("");
+                getPlayerContext(player).pages.addAll(Page.pagesOf(jsons));
                 if (searchTerm != null) {
-                    Msg.info(player, "%d results for &9%s&r", count, searchTerm);
+                    Msg.info(player, "%d results for &9%s&r", jsons.size(), searchTerm);
                 } else {
-                    Msg.info(player, "%d item types in storage.", count, searchTerm);
+                    Msg.info(player, "%d item types in storage.", jsons.size(), searchTerm);
                 }
-                Msg.raw(player, json);
-                player.sendMessage("");
+                showPage(player, 0);
             }
+        } else if (cmd.equals("page")) {
+            if (args.length != 2) return true;
+            int page;
+            try {
+                page = Integer.parseInt(args[1]);
+            } catch (NumberFormatException nfe) {
+                return true;
+            }
+            if (page <= 0) return false;
+            showPage(player, page - 1);
         } else if (cmd.equals("buy")) {
             int amount;
             if (args.length == 1) {

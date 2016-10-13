@@ -97,6 +97,8 @@ public class MassStorageCommand implements CommandExecutor {
             Msg.send(player, " &oFree storage:&r &9%d&r items &r(&9%d&8x&9%s&r)", free, free / buyAmount, buyName);
             quickUsage(player);
             player.sendMessage("");
+        } else if (cmd.equals("auto")) {
+            plugin.getSession(player).storePlayerInventory(player);
         } else if (cmd.equals("find") || cmd.equals("search") || cmd.equals("list")) {
             String searchTerm;
             if (args.length > 1) {
@@ -243,6 +245,7 @@ public class MassStorageCommand implements CommandExecutor {
         Msg.raw(player, " ", Msg.button("/ms info", "&a/ms info\n&oShow some info", "/ms info"), Msg.format(" &8-&r Show some info."));
         Msg.raw(player, " ", Msg.button("/ms list", "&a/ms list\n&oList Mass Storage contents", "/ms list"), Msg.format(" &8-&r List Mass Storage contents."));
         Msg.raw(player, " ", Msg.button("/ms search &7[item]", "&a/ms search [item]\n&oFind stored items", "/ms search "), Msg.format(" &8-&r Find stored items."));
+        Msg.raw(player, " ", Msg.button("/ms auto", "&a/ms auto\n&oAutomatically store inventory", "/ms auto "), Msg.format(" &8-&r Auto store inventory."));
         String purchaseCost = plugin.getVaultHandler().formatMoney(plugin.getConfig().getDouble("BuyCapacity.Price", 500.0));
         Msg.raw(player, " ", Msg.button("/ms buy &7[amount]", "&a/ms buy [amount]\n&oBuy additional storage\nPrice: " + purchaseCost, "/ms buy "), Msg.format(" &8-&r Buy additional storage."));
         player.sendMessage("");

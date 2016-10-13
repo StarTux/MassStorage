@@ -99,6 +99,18 @@ public class MassStorageCommand implements CommandExecutor {
             player.sendMessage("");
         } else if (cmd.equals("auto")) {
             plugin.getSession(player).storePlayerInventory(player);
+        } else if (cmd.equals("id")) {
+            if (args.length != 3) return true;
+            Item item;
+            try {
+                item = new Item(Integer.parseInt(args[1]), Integer.parseInt(args[2]));
+            } catch (NumberFormatException nfe) {
+                return true;
+            }
+            plugin.getSession(player).openInventory();
+            int freeStorage = plugin.getSession(player).getFreeStorage();
+            int displayed = plugin.getSession(player).fillInventory(item);
+            Msg.info(player, "Found &a%d&r items. Free storage: &9%d&r items.", displayed, freeStorage);
         } else if (cmd.equals("find") || cmd.equals("search") || cmd.equals("list")) {
             String searchTerm;
             if (args.length > 1) {
@@ -118,7 +130,7 @@ public class MassStorageCommand implements CommandExecutor {
                 json.add(Msg.button(ChatColor.WHITE,
                                     " " + sqlItem.getAmount() + "&8x&r" + itemName,
                                     "&a" + itemName,
-                                    "/ms " + itemName));
+                                    "/ms id " + item.getType() + " " + item.getData()));
                 jsons.add(json);
             }
             getPlayerContext(player).clear();

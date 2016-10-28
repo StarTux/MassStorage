@@ -132,7 +132,7 @@ class Session {
         int storage = getStorage();
         Set<SQLItem> dirtyItems = new HashSet<>();
         StorageResult result = new StorageResult();
-        for (int i = 9; i < inv.getSize(); ++i) {
+        for (int i = 9; i < 36; ++i) {
             ItemStack item = inv.getItem(i);
             if (item == null || item.getType() == Material.AIR) {
                 // Ignore

@@ -129,7 +129,10 @@ public class MassStorageCommand implements CommandExecutor {
                 if (searchTerm != null && !itemName.toLowerCase().contains(searchTerm)) continue;
                 json.add(Msg.button(ChatColor.WHITE,
                                     " " + sqlItem.getAmount() + "&8x&r" + itemName,
-                                    "&a" + itemName,
+                                    Msg.format("&r%s (#%04d/%d)\n&8craftbukkit:%s\n&8Amount stored: %d",
+                                               itemName, item.getType(), item.getData(),
+                                               item.getMaterial().name().toLowerCase(),
+                                               sqlItem.getAmount()),
                                     "/ms id " + item.getType() + " " + item.getData()));
                 jsons.add(json);
             }

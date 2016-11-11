@@ -25,15 +25,11 @@ public class Item {
     }
 
     public static boolean canStore(ItemStack itemStack) {
-        if (!canStore(itemStack.getType())) return false;
-        if (!of(itemStack).toItemStack().isSimilar(itemStack)) return false;
-        return true;
-    }
-
-    public static boolean canStore(Material mat) {
+        Material mat = itemStack.getType();
         if (MassStoragePlugin.getInstance().getMaterialBlacklist().contains(mat)) return false;
-        if (mat.getMaxDurability() > 0) return false;
         if (mat.getMaxStackSize() == 1 && !MassStoragePlugin.getInstance().permitNonStackingItems()) return false;
+        if (mat.getMaxDurability() > 0 && itemStack.getDurability() > 0) return false;
+        if (!of(itemStack).toItemStack().isSimilar(itemStack)) return false;
         return true;
     }
 }

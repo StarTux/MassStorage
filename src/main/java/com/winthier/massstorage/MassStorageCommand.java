@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.bukkit.ChatColor;
+import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -127,12 +128,16 @@ public class MassStorageCommand implements CommandExecutor {
                 Item item = sqlItem.getItem();
                 String itemName = plugin.getVaultHandler().getItemName(item);
                 if (searchTerm != null && !itemName.toLowerCase().contains(searchTerm)) continue;
+                Material mat = item.getMaterial();
+                int amount = sqlItem.getAmount();
+                int stacks = (amount - 1) / mat.getMaxStackSize() + 1;
+                int doubleChests = (stacks - 1) / (6 * 9) + 1;
                 json.add(Msg.button(ChatColor.WHITE,
                                     " " + sqlItem.getAmount() + "&8x&r" + itemName,
-                                    Msg.format("&r%s (#%04d/%d)\n&8craftbukkit:%s\n&8Amount stored: %d",
+                                    Msg.format("&r%s (#%04d/%d)\n&8craftbukkit:%s\n&8--------------------\n&7In Storage:\n&8Items: &7%d\n&8Stacks: &7%d\n&8Double Chests: &7%d",
                                                itemName, item.getType(), item.getData(),
-                                               item.getMaterial().name().toLowerCase(),
-                                               sqlItem.getAmount()),
+                                               mat.name().toLowerCase(),
+                                               amount, stacks, doubleChests),
                                     "/ms id " + item.getType() + " " + item.getData()));
                 jsons.add(json);
             }

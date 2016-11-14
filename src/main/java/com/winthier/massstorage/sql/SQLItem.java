@@ -5,6 +5,7 @@ import com.avaje.ebean.validation.NotEmpty;
 import com.avaje.ebean.validation.NotNull;
 import com.winthier.massstorage.Item;
 import com.winthier.massstorage.MassStoragePlugin;
+import com.winthier.massstorage.NamedItem;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -51,5 +52,9 @@ public class SQLItem {
 
     public Item getItem() {
         return new Item(getItemType(), getItemData());
+    }
+
+    public NamedItem getNamedItem() {
+        return new NamedItem(getItemType(), getItemData(), getAmount());
     }
 }

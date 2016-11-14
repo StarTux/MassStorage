@@ -3,6 +3,7 @@ package com.winthier.massstorage;
 import com.winthier.massstorage.sql.SQLItem;
 import com.winthier.massstorage.util.Msg;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -29,7 +30,7 @@ public class MassStorageCommand implements CommandExecutor {
             for (List<Object> line: lines) {
                 page.lines.add(line);
                 i += 1;
-                if (i == 8) {
+                if (i == 9) {
                     result.add(page);
                     page = new Page();
                     i = 0;
@@ -114,28 +115,60 @@ public class MassStorageCommand implements CommandExecutor {
             Msg.info(player, "Found &a%d&r items. Free storage: &9%d&r items.", displayed, freeStorage);
         } else if (cmd.equals("find") || cmd.equals("search") || cmd.equals("list")) {
             String searchTerm;
-            if (args.length > 1) {
-                StringBuilder sb = new StringBuilder(args[1]);
-                for (int i = 2; i < args.length; ++i) sb.append(" ").append(args[i]);
-                searchTerm = sb.toString().toLowerCase();
-            } else {
-                searchTerm = null;
+            StringBuilder sb = new StringBuilder("");
+            String space = "";
+            char sorting = 'n'; // Name
+            // Parse Args
+            for (int i = 1; i < args.length; ++i) {
+                String arg = args[i];
+                // Arg starting with dash is a flag
+                if (arg.startsWith("-")) {
+                    for (int j = 1; j < arg.length(); ++j) {
+                        char c = arg.charAt(j);
+                        switch (c) {
+                        case 'a': sorting = 'a'; // Amount
+                            break;
+                        case 'n': sorting = 'n'; // Name
+                            break;
+                        default:
+                            Msg.warn(player, "Invalid flag: '-%s'", c);
+                            return true;
+                        }
+                    }
+                } else {
+                    sb.append(space);
+                    sb.append(arg);
+                    space = " ";
+                }
             }
-            List<List<Object>> jsons = new ArrayList<>();
+            String tmp = sb.toString();
+            searchTerm = tmp.isEmpty() ? null : tmp;
+            // Fetch matching items
+            List<NamedItem> items = new ArrayList<>();
             for (SQLItem sqlItem: plugin.getSession(player).getSQLItems().values()) {
-                List<Object> json = new ArrayList<>();
                 if (sqlItem.getAmount() <= 0) continue;
-                Item item = sqlItem.getItem();
-                String itemName = plugin.getVaultHandler().getItemName(item);
-                if (searchTerm != null && !itemName.toLowerCase().contains(searchTerm)) continue;
-                Material mat = item.getMaterial();
-                int amount = sqlItem.getAmount();
+                NamedItem item = sqlItem.getNamedItem();
+                if (searchTerm != null && !item.getName().toLowerCase().contains(searchTerm)) continue;
+                items.add(item);
+            }
+            // Sort list
+            if (sorting == 'a') {
+                Collections.sort(items, NamedItem.AMOUNT_COMPARATOR);
+            } else if (sorting == 'n') {
+                Collections.sort(items, NamedItem.NAME_COMPARATOR);
+            }
+            // Build JSON
+            List<List<Object>> jsons = new ArrayList<>();
+            for (NamedItem item: items) {
+                List<Object> json = new ArrayList<>();
+                Material mat = item.getItem().getMaterial();
+                int amount = item.getAmount();
                 int stacks = (amount - 1) / mat.getMaxStackSize() + 1;
                 int doubleChests = (stacks - 1) / (6 * 9) + 1;
                 json.add(Msg.button(ChatColor.WHITE,
-                                    " " + sqlItem.getAmount() + "&8x&r" + itemName,
+                                    " " + item.getAmount() + "&8x&r" + item.getName(),
                                     Msg.format("&r%s (#%04d/%d)\n&8craftbukkit:%s\n&8--------------------\n&7In Storage:\n&8Items: &7%d\n&8Stacks: &7%d\n&8Double Chests: &7%d",
-                                               itemName, item.getType(), item.getData(),
+                                               item.getName(), item.getType(), item.getData(),
                                                mat.name().toLowerCase(),
                                                amount, stacks, doubleChests),
                                     "/ms id " + item.getType() + " " + item.getData()));
@@ -263,8 +296,9 @@ public class MassStorageCommand implements CommandExecutor {
         Msg.raw(player, " ", Msg.button("/ms", "&a/ms\n&oOpen Mass Storage Inventory", "/ms"), Msg.format(" &8-&r Open Mass Storage Inventory."));
         Msg.raw(player, " ", Msg.button("/ms &7[item]", "&a/ms [item]\n&oRetrieve items", "/ms "), Msg.format(" &8-&r Retrieve items."));
         Msg.raw(player, " ", Msg.button("/ms info", "&a/ms info\n&oShow some info", "/ms info"), Msg.format(" &8-&r Show some info."));
-        Msg.raw(player, " ", Msg.button("/ms list", "&a/ms list\n&oList Mass Storage contents", "/ms list"), Msg.format(" &8-&r List Mass Storage contents."));
-        Msg.raw(player, " ", Msg.button("/ms search &7[item]", "&a/ms search [item]\n&oFind stored items", "/ms search "), Msg.format(" &8-&r Find stored items."));
+        Msg.raw(player, " ", Msg.button("/ms list &7[-n|-a]", "&a/ms list\n&oList Mass Storage contents", "/ms list"), Msg.format(" &8-&r List Mass Storage contents."));
+        Msg.raw(player, " ", Msg.button("/ms search &7[item] [-n|-a]", "&a/ms search [item]\n&oFind stored items", "/ms search "), Msg.format(" &8-&r Find stored items."));
+        Msg.raw(player, "  ", Msg.button(ChatColor.GRAY, "&7-n&8 = &7Sort by name&8; &7-a&8 = &7by amount", null, null));
         Msg.raw(player, " ", Msg.button("/ms auto", "&a/ms auto\n&oAutomatically store inventory", "/ms auto "), Msg.format(" &8-&r Auto store inventory."));
         String purchaseCost = plugin.getVaultHandler().formatMoney(plugin.getConfig().getDouble("BuyCapacity.Price", 500.0));
         Msg.raw(player, " ", Msg.button("/ms buy &7[amount]", "&a/ms buy [amount]\n&oBuy additional storage\nPrice: " + purchaseCost, "/ms buy "), Msg.format(" &8-&r Buy additional storage."));

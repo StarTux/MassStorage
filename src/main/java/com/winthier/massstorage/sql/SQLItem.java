@@ -1,8 +1,5 @@
 package com.winthier.massstorage.sql;
 
-import com.avaje.ebean.validation.Length;
-import com.avaje.ebean.validation.NotEmpty;
-import com.avaje.ebean.validation.NotNull;
 import com.winthier.massstorage.Item;
 import com.winthier.massstorage.MassStoragePlugin;
 import com.winthier.massstorage.NamedItem;
@@ -11,6 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
@@ -32,10 +30,10 @@ import org.bukkit.inventory.ItemStack;
 public class SQLItem {
     @Id Integer id;
     @Version Date version;
-    @NotNull UUID owner;
-    @NotNull Integer itemType;
-    @NotNull Integer itemData;
-    @NotNull Integer amount;
+    @Column(nullable = false) UUID owner;
+    @Column(nullable = false) Integer itemType;
+    @Column(nullable = false) Integer itemData;
+    @Column(nullable = false) Integer amount;
 
     public static SQLItem of(UUID owner, Item item) {
         SQLItem result = new SQLItem();
@@ -47,7 +45,7 @@ public class SQLItem {
     }
 
     public static List<SQLItem> find (UUID uuid) {
-        return MassStoragePlugin.getInstance().getDatabase().find(SQLItem.class).where().eq("owner", uuid).findList();
+        return MassStoragePlugin.getInstance().getDb().find(SQLItem.class).where().eq("owner", uuid).findList();
     }
 
     public Item getItem() {

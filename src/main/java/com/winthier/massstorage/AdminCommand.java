@@ -14,7 +14,7 @@ import org.bukkit.entity.Player;
 @RequiredArgsConstructor
 public class AdminCommand implements CommandExecutor {
     final MassStoragePlugin plugin;
-    
+
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         String cmd = args.length > 0 ? args[0].toLowerCase() : null;
@@ -53,7 +53,7 @@ public class AdminCommand implements CommandExecutor {
             int amount = Integer.parseInt(args[2]);
             int itemAmount = plugin.getConfig().getInt("BuyCapacity.Amount", 6*9*64) * amount;
             sqlPlayer.setCapacity(Math.max(0, sqlPlayer.getCapacity() + itemAmount));
-            plugin.getDatabase().save(sqlPlayer);
+            plugin.getDb().save(sqlPlayer);
             sender.sendMessage("Adjusted capacity of " + sqlPlayer.getName() + " by " + itemAmount + ". Total: " + sqlPlayer.getCapacity());
         } else {
             return false;

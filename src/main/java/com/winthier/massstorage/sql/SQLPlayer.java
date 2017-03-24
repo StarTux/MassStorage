@@ -1,13 +1,11 @@
 package com.winthier.massstorage.sql;
 
-import com.avaje.ebean.validation.Length;
-import com.avaje.ebean.validation.NotEmpty;
-import com.avaje.ebean.validation.NotNull;
 import com.winthier.massstorage.MassStoragePlugin;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
@@ -29,22 +27,22 @@ import org.bukkit.inventory.ItemStack;
 public class SQLPlayer {
     @Id Integer id;
     @Version Date version;
-    @NotNull UUID uuid;
+    @Column(nullable = false) UUID uuid;
     String name;
-    @NotNull Integer capacity;
+    @Column(nullable = false) Integer capacity;
 
     public static SQLPlayer get(UUID uuid) {
-        SQLPlayer result = MassStoragePlugin.getInstance().getDatabase().find(SQLPlayer.class).where().eq("uuid", uuid).findUnique();
+        SQLPlayer result = MassStoragePlugin.getInstance().getDb().find(SQLPlayer.class).where().eq("uuid", uuid).findUnique();
         if (result == null) {
             result = new SQLPlayer();
             result.setUuid(uuid);
             result.setCapacity(MassStoragePlugin.getInstance().getConfig().getInt("DefaultCapacity", 0));
-            MassStoragePlugin.getInstance().getDatabase().save(result);
+            MassStoragePlugin.getInstance().getDb().save(result);
         }
         return result;
     }
 
     public static SQLPlayer find(String name) {
-        return MassStoragePlugin.getInstance().getDatabase().find(SQLPlayer.class).where().eq("name", name).findUnique();
+        return MassStoragePlugin.getInstance().getDb().find(SQLPlayer.class).where().eq("name", name).findUnique();
     }
 }

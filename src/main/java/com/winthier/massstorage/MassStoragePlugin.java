@@ -1,7 +1,9 @@
 package com.winthier.massstorage;
 
-import com.winthier.massstorage.sql.*;
+import com.winthier.massstorage.sql.SQLItem;
+import com.winthier.massstorage.sql.SQLPlayer;
 import com.winthier.massstorage.vault.VaultHandler;
+import com.winthier.sql.SQLDatabase;
 import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -20,6 +22,7 @@ public class MassStoragePlugin extends JavaPlugin {
     final Map<UUID, Session> sessions = new HashMap<>();
     Set<Material> materialBlacklist = null;
     @Getter VaultHandler vaultHandler = null;
+    @Getter private SQLDatabase db;
 
     @Override
     public void onEnable() {
@@ -29,29 +32,15 @@ public class MassStoragePlugin extends JavaPlugin {
         getCommand("massstorage").setExecutor(new MassStorageCommand(this));
         getCommand("massstorageadmin").setExecutor(new AdminCommand(this));
         getServer().getPluginManager().registerEvents(new InventoryListener(this), this);
-        // SQL
-        try {
-            for (Class<?> clazz: getDatabaseClasses()) {
-                getDatabase().find(clazz).findRowCount();
-            }
-        } catch (PersistenceException pe) {
-            getLogger().info("Installing database DDL");
-            installDDL();
-        }
+        db = new SQLDatabase(this);
+        db.registerTables(SQLItem.class, SQLPlayer.class);
+        db.createAllTables();
     }
 
     @Override
     public void onDisable() {
         for (Session session: sessions.values()) session.close();
         sessions.clear();
-    }
-
-    @Override
-    public List<Class<?>> getDatabaseClasses() {
-        return Arrays.asList(
-            SQLItem.class,
-            SQLPlayer.class
-            );
     }
 
     Session getSession(Player player) {

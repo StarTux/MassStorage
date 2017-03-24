@@ -3,8 +3,8 @@ description: Mass Storage for Spam Items
 author: StarTux
 version: 0.1
 main: com.winthier.massstorage.MassStoragePlugin
+depend: [ SQL ]
 softdepend: [ Vault ]
-database: true
 commands:
   massstorage:
     aliases: [ ms ]

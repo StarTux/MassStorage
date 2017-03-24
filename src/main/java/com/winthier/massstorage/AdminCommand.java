@@ -2,9 +2,7 @@ package com.winthier.massstorage;
 
 import com.winthier.massstorage.sql.SQLItem;
 import com.winthier.massstorage.sql.SQLPlayer;
-import com.winthier.massstorage.util.Msg;
 import java.util.List;
-import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -12,7 +10,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 @RequiredArgsConstructor
-public class AdminCommand implements CommandExecutor {
+public final class AdminCommand implements CommandExecutor {
     final MassStoragePlugin plugin;
 
     @Override
@@ -51,7 +49,7 @@ public class AdminCommand implements CommandExecutor {
                 sqlPlayer = plugin.getSession(player).getSQLPlayer();
             }
             int amount = Integer.parseInt(args[2]);
-            int itemAmount = plugin.getConfig().getInt("BuyCapacity.Amount", 6*9*64) * amount;
+            int itemAmount = plugin.getConfig().getInt("BuyCapacity.Amount", 6 * 9 * 64) * amount;
             sqlPlayer.setCapacity(Math.max(0, sqlPlayer.getCapacity() + itemAmount));
             plugin.getDb().save(sqlPlayer);
             sender.sendMessage("Adjusted capacity of " + sqlPlayer.getName() + " by " + itemAmount + ". Total: " + sqlPlayer.getCapacity());

@@ -4,25 +4,23 @@ import com.winthier.massstorage.sql.SQLItem;
 import com.winthier.massstorage.sql.SQLPlayer;
 import com.winthier.massstorage.vault.VaultHandler;
 import com.winthier.sql.SQLDatabase;
-import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import javax.persistence.PersistenceException;
 import lombok.Getter;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
-public class MassStoragePlugin extends JavaPlugin {
-    @Getter static MassStoragePlugin instance;
-    final Map<UUID, Session> sessions = new HashMap<>();
-    Set<Material> materialBlacklist = null;
-    @Getter VaultHandler vaultHandler = null;
-    @Getter private SQLDatabase db;
+@Getter
+public final class MassStoragePlugin extends JavaPlugin {
+    @Getter private static MassStoragePlugin instance;
+    private final Map<UUID, Session> sessions = new HashMap<>();
+    private Set<Material> materialBlacklist = null;
+    private VaultHandler vaultHandler = null;
+    private SQLDatabase db;
 
     @Override
     public void onEnable() {

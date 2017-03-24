@@ -19,6 +19,6 @@ public class InventoryListener implements Listener {
 
     @EventHandler
     public void onPlayerQuit(PlayerQuitEvent event) {
-        plugin.sessions.remove(event.getPlayer().getUniqueId());
+        plugin.getSessions().remove(event.getPlayer().getUniqueId());
     }
 }

@@ -4,9 +4,7 @@ import com.winthier.massstorage.Item;
 import com.winthier.massstorage.MassStoragePlugin;
 import com.winthier.massstorage.NamedItem;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -16,10 +14,7 @@ import javax.persistence.UniqueConstraint;
 import javax.persistence.Version;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.NonNull;
 import lombok.Setter;
-import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
 
 @Entity
 @Table(name = "items",
@@ -27,13 +22,13 @@ import org.bukkit.inventory.ItemStack;
 @Getter
 @Setter
 @NoArgsConstructor
-public class SQLItem {
-    @Id Integer id;
-    @Version Date version;
-    @Column(nullable = false) UUID owner;
-    @Column(nullable = false) Integer itemType;
-    @Column(nullable = false) Integer itemData;
-    @Column(nullable = false) Integer amount;
+public final class SQLItem {
+    @Id private Integer id;
+    @Version private Date version;
+    @Column(nullable = false) private UUID owner;
+    @Column(nullable = false) private Integer itemType;
+    @Column(nullable = false) private Integer itemData;
+    @Column(nullable = false) private Integer amount;
 
     public static SQLItem of(UUID owner, Item item) {
         SQLItem result = new SQLItem();
@@ -44,7 +39,7 @@ public class SQLItem {
         return result;
     }
 
-    public static List<SQLItem> find (UUID uuid) {
+    public static List<SQLItem> find(UUID uuid) {
         return MassStoragePlugin.getInstance().getDb().find(SQLItem.class).where().eq("owner", uuid).findList();
     }
 

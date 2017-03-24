@@ -2,8 +2,6 @@ package com.winthier.massstorage.sql;
 
 import com.winthier.massstorage.MassStoragePlugin;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.UUID;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -13,10 +11,7 @@ import javax.persistence.UniqueConstraint;
 import javax.persistence.Version;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.NonNull;
 import lombok.Setter;
-import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
 
 @Entity
 @Table(name = "players",
@@ -24,12 +19,12 @@ import org.bukkit.inventory.ItemStack;
 @Getter
 @Setter
 @NoArgsConstructor
-public class SQLPlayer {
-    @Id Integer id;
-    @Version Date version;
-    @Column(nullable = false) UUID uuid;
-    String name;
-    @Column(nullable = false) Integer capacity;
+public final class SQLPlayer {
+    @Id private Integer id;
+    @Version private Date version;
+    @Column(nullable = false) private UUID uuid;
+    private String name;
+    @Column(nullable = false) private Integer capacity;
 
     public static SQLPlayer get(UUID uuid) {
         SQLPlayer result = MassStoragePlugin.getInstance().getDb().find(SQLPlayer.class).where().eq("uuid", uuid).findUnique();

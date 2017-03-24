@@ -18,7 +18,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 @RequiredArgsConstructor
-public class MassStorageCommand implements CommandExecutor {
+public final class MassStorageCommand implements CommandExecutor {
     final MassStoragePlugin plugin;
 
     static class Page {
@@ -49,18 +49,18 @@ public class MassStorageCommand implements CommandExecutor {
             pages.clear();
         }
     }
-    
+
     void showPage(Player player, int index) {
         int pageCount = getPlayerContext(player).pages.size();
         if (index < 0 || index >= pageCount) return;
         Page page = getPlayerContext(player).pages.get(index);
-        Msg.info(player, "Page %d/%d", index+1, pageCount);
+        Msg.info(player, "Page %d/%d", index + 1, pageCount);
         for (List<Object> json: page.lines) {
             Msg.raw(player, json);
         }
-        if (index+1 < pageCount) {
+        if (index + 1 < pageCount) {
             Msg.raw(player,
-                Msg.button(ChatColor.BLUE, "&r[&9More&r]", "Next page", "/ms page " + (index+2))
+                Msg.button(ChatColor.BLUE, "&r[&9More&r]", "Next page", "/ms page " + (index + 2))
                 );
         }
     }
@@ -92,7 +92,7 @@ public class MassStorageCommand implements CommandExecutor {
             Msg.raw(player, " ", Msg.button(ChatColor.GRAY, plugin.getConfig().getString("CommandHelp", ""), null, null));
             int storage = plugin.getSession(player).getStorage();
             int capacity = plugin.getSession(player).getCapacity();
-            int buyAmount = plugin.getConfig().getInt("BuyCapacity.Amount", 3*9*64);
+            int buyAmount = plugin.getConfig().getInt("BuyCapacity.Amount", 3 * 9 * 64);
             String buyName = plugin.getConfig().getString("BuyCapacity.DisplayName", "Chest");
             int free = plugin.getSession(player).getFreeStorage();
             Msg.send(player, " &oUsed storage:&r &7%d&8/&7%d &8(&7%d&8x&7%s&8)", storage, capacity, capacity / buyAmount, buyName);
@@ -212,7 +212,7 @@ public class MassStorageCommand implements CommandExecutor {
                 usage(player);
                 return true;
             }
-            int itemAmount = plugin.getConfig().getInt("BuyCapacity.Amount", 3*9*64) * amount;
+            int itemAmount = plugin.getConfig().getInt("BuyCapacity.Amount", 3 * 9 * 64) * amount;
             double price = plugin.getConfig().getDouble("BuyCapacity.Price", 500.0) * (double)amount;
             String displayName = plugin.getConfig().getString("BuyCapacity.DisplayName", "Chest");
             String priceFormat = plugin.getVaultHandler().formatMoney(price);
@@ -221,14 +221,14 @@ public class MassStorageCommand implements CommandExecutor {
                 return true;
             }
             UUID code = UUID.randomUUID();
-            plugin.getSession(player).buyConfirmationCode = code;
+            plugin.getSession(player).setBuyConfirmationCode(code);
             Msg.raw(player,
                     "",
                     Msg.pluginTag(),
                     " ",
                     Msg.button(ChatColor.WHITE,
-                               "Buy &9"+amount+"&8x&9"+displayName+"&r for &9"+priceFormat+"&r? ",
-                               "&aThat is "+itemAmount+" items worth of Mass Storage.", null),
+                               "Buy &9" + amount + "&8x&9" + displayName + "&r for &9" + priceFormat + "&r? ",
+                               "&aThat is " + itemAmount + " items worth of Mass Storage.", null),
                     Msg.button(ChatColor.GREEN,
                                "&r[&aConfirm&r]",
                                "&aConfirm",
@@ -239,9 +239,9 @@ public class MassStorageCommand implements CommandExecutor {
                                "&aCancel",
                                "/ms cancel"));
         } else if (cmd.equals("cancel")) {
-            UUID uuid = plugin.getSession(player).buyConfirmationCode;
+            UUID uuid = plugin.getSession(player).getBuyConfirmationCode();
             if (uuid != null) {
-                plugin.getSession(player).buyConfirmationCode = null;
+                plugin.getSession(player).setBuyConfirmationCode(null);
                 Msg.info(player, "Purchase cancelled.");
             }
         } else if (cmd.equals("confirm")) {
@@ -250,19 +250,23 @@ public class MassStorageCommand implements CommandExecutor {
             try {
                 amount = Integer.parseInt(args[1]);
                 if (amount < 1) throw new NumberFormatException();
-            } catch (NumberFormatException nfe) { return true; }
+            } catch (NumberFormatException nfe) {
+                return true;
+            }
             UUID code;
             try {
                 code = UUID.fromString(args[2]);
-            } catch (IllegalArgumentException iae) { return true; }
-            if (!code.equals(plugin.getSession(player).buyConfirmationCode)) return true;
-            plugin.getSession(player).buyConfirmationCode = null;
-            int itemAmount = plugin.getConfig().getInt("BuyCapacity.Amount", 6*9*64) * amount;
+            } catch (IllegalArgumentException iae) {
+                return true;
+            }
+            if (!code.equals(plugin.getSession(player).getBuyConfirmationCode())) return true;
+            plugin.getSession(player).setBuyConfirmationCode(null);
+            int itemAmount = plugin.getConfig().getInt("BuyCapacity.Amount", 6 * 9 * 64) * amount;
             double price = plugin.getConfig().getDouble("BuyCapacity.Price", 500.0) * (double)amount;
             String displayName = plugin.getConfig().getString("BuyCapacity.DisplayName", "Double Chest");
             String priceFormat = plugin.getVaultHandler().formatMoney(price);
-            if (!plugin.getVaultHandler().hasMoney(player, price) ||
-                !plugin.getVaultHandler().takeMoney(player, price)) {
+            if (!plugin.getVaultHandler().hasMoney(player, price)
+                || !plugin.getVaultHandler().takeMoney(player, price)) {
                 Msg.warn(player, "You cannot afford %s.", priceFormat);
                 return true;
             }

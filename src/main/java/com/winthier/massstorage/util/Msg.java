@@ -1,6 +1,5 @@
 package com.winthier.massstorage.util;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -11,7 +10,9 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.json.simple.JSONValue;
 
-public class Msg {
+public final class Msg {
+    private Msg() { }
+
     public static String format(String msg, Object... args) {
         if (msg == null) return "";
         msg = ChatColor.translateAlternateColorCodes('&', msg);
@@ -37,14 +38,12 @@ public class Msg {
         player.sendMessage(format("&r[&cMS&r] &c") + format(msg, args));
     }
 
-    static void consoleCommand(String cmd, Object... args)
-    {
+    static void consoleCommand(String cmd, Object... args) {
         if (args.length > 0) cmd = String.format(cmd, args);
         Bukkit.getServer().dispatchCommand(Bukkit.getServer().getConsoleSender(), cmd);
     }
 
-    public static void raw(Player player, Object... obj)
-    {
+    public static void raw(Player player, Object... obj) {
         if (obj.length == 0) return;
         if (obj.length == 1) {
             consoleCommand("minecraft:tellraw %s %s", player.getName(), JSONValue.toJSONString(obj[0]));

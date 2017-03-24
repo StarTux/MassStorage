@@ -4,21 +4,21 @@ import java.util.Comparator;
 import lombok.Value;
 
 @Value
-public class NamedItem {
-    static final public Comparator<NamedItem> NAME_COMPARATOR = new Comparator<NamedItem>() {
+public final class NamedItem {
+    public static final Comparator<NamedItem> NAME_COMPARATOR = new Comparator<NamedItem>() {
         @Override public int compare(NamedItem a, NamedItem b) {
             return a.name.compareToIgnoreCase(b.name);
         }
     };
-    static final public Comparator<NamedItem> AMOUNT_COMPARATOR = new Comparator<NamedItem>() {
+    public static final Comparator<NamedItem> AMOUNT_COMPARATOR = new Comparator<NamedItem>() {
         @Override public int compare(NamedItem a, NamedItem b) {
             return Integer.compare(b.amount, a.amount);
         }
     };
-    
-    Item item;
-    int type, data, amount;
-    String name;
+
+    private final Item item;
+    private final int type, data, amount;
+    private final String name;
 
     public NamedItem(int type, int data, int amount) {
         this.item = new Item(type, data);

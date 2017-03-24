@@ -5,8 +5,8 @@ import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 
 @Value
-public class Item {
-    final int type, data;
+public final class Item {
+    private final int type, data;
 
     public static Item of(ItemStack itemStack) {
         return new Item(itemStack.getType().getId(), (int)itemStack.getDurability());

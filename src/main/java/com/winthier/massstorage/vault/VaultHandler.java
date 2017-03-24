@@ -4,7 +4,6 @@ import com.winthier.massstorage.Item;
 import com.winthier.massstorage.MassStoragePlugin;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 import net.milkbowl.vault.economy.Economy;
 import net.milkbowl.vault.economy.EconomyResponse;
 import net.milkbowl.vault.item.ItemInfo;
@@ -14,8 +13,10 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.RegisteredServiceProvider;
 
-public class VaultHandler {
-    Economy economy = null;
+public final class VaultHandler {
+    private Economy economy = null;
+
+    // Economy
 
     public Economy getEconomy() {
         if (economy == null) {
@@ -24,8 +25,6 @@ public class VaultHandler {
         }
         return economy;
     }
-
-    // Economy
 
     public boolean hasMoney(Player player, double money) {
         if (money < 0.0) return false;

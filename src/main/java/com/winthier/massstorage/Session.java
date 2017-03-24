@@ -11,7 +11,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import javax.persistence.PersistenceException;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -20,15 +22,14 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 
-@RequiredArgsConstructor
-class Session {
-    final UUID uuid;
-    final static int CHEST_SIZE = 6*9;
-
-    Inventory inventory = null;
-    Map<Item, SQLItem> sqlItems = null;
-    SQLPlayer sqlPlayer = null;
-    UUID buyConfirmationCode = null;
+@RequiredArgsConstructor @Getter
+final class Session {
+    private final UUID uuid;
+    private static final int CHEST_SIZE = 6 * 9;
+    private Inventory inventory = null;
+    private Map<Item, SQLItem> sqlItems = null;
+    private SQLPlayer sqlPlayer = null;
+    @Setter private UUID buyConfirmationCode = null;
 
     Player getPlayer() {
         return Bukkit.getServer().getPlayer(uuid);
@@ -107,7 +108,7 @@ class Session {
         }
     }
 
-    static class StorageResult {
+    private class StorageResult {
         final List<ItemStack> returnedItems = new ArrayList<>();
         final List<ItemStack> storedItems = new ArrayList<>();
         int getReturnedItemCount() {
@@ -120,10 +121,10 @@ class Session {
             for (ItemStack item: storedItems) result += item.getAmount();
             return result;
         }
-        boolean outOfStorage = false;
-        boolean shouldReportEmpty = false;
-        Set<String> rejectedItemNames = new HashSet<>();
-        Map<String, Integer> storedItemNames = new HashMap<>();
+        private boolean outOfStorage = false;
+        private boolean shouldReportEmpty = false;
+        private Set<String> rejectedItemNames = new HashSet<>();
+        private Map<String, Integer> storedItemNames = new HashMap<>();
     }
 
     StorageResult storePlayerInventory(Player player) {
@@ -135,13 +136,13 @@ class Session {
         for (int i = 9; i < 36; ++i) {
             ItemStack item = inv.getItem(i);
             if (item == null || item.getType() == Material.AIR) {
-                // Ignore
+                continue; // Ignore
             } else if (item.getAmount() <= 0) {
-                // Ignore. Warn maybe?
+                continue; // Ignore. Warn maybe?
             } else if (storage >= capacity) {
                 result.outOfStorage = true;
             } else if (!Item.canStore(item)) {
-                // Ignore
+                continue; // Ignore
             } else {
                 // Fetch SQL item
                 Item itemKey = Item.of(item);
@@ -191,9 +192,9 @@ class Session {
         StorageResult result = new StorageResult();
         for (ItemStack item: items) {
             if (item == null || item.getType() == Material.AIR) {
-                // Ignore
+                continue; // Ignore
             } else if (item.getAmount() <= 0) {
-                // Ignore. Warn maybe?
+                continue; // Ignore. Warn maybe?
             } else if (storage >= capacity) {
                 result.returnedItems.add(item);
                 result.outOfStorage = true;
@@ -284,8 +285,8 @@ class Session {
             sqlPlayer = SQLPlayer.get(uuid);
             Player player = getPlayer();
             if (player != null) {
-                if (sqlPlayer.getName() == null ||
-                    !sqlPlayer.getName().equals(player.getName())) {
+                if (sqlPlayer.getName() == null
+                    || !sqlPlayer.getName().equals(player.getName())) {
                     sqlPlayer.setName(player.getName());
                     MassStoragePlugin.getInstance().getDb().save(sqlPlayer);
                 }
@@ -311,10 +312,10 @@ class Session {
     }
 
     int addCapacity(int amount) {
-        SQLPlayer sqlPlayer = getSQLPlayer();
-        sqlPlayer.setCapacity(sqlPlayer.getCapacity() + amount);
-        MassStoragePlugin.getInstance().getDb().save(sqlPlayer);
-        return sqlPlayer.getCapacity();
+        SQLPlayer player = getSQLPlayer();
+        player.setCapacity(player.getCapacity() + amount);
+        MassStoragePlugin.getInstance().getDb().save(player);
+        return player.getCapacity();
     }
 
     void flush() {

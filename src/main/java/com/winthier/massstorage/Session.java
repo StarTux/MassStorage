@@ -87,7 +87,9 @@ final class Session {
                 }
                 if (!result.rejectedItemNames.isEmpty()) {
                     tooltip.append("\n&4Unable to store items:");
-                    for (String itemName: result.rejectedItemNames) tooltip.append("\n&8- &c").append(itemName);
+                    for (Map.Entry<String, Integer> entry: result.rejectedItemNames.entrySet()) {
+                        tooltip.append("\n&8- &c").append(entry.getKey()).append("&4: ").append(entry.getValue());
+                    }
                 }
                 messages.add(Msg.button(ChatColor.WHITE,
                                         Msg.format("Returned &c%d&r items.", returnedItemCount),
@@ -123,8 +125,20 @@ final class Session {
         }
         private boolean outOfStorage = false;
         private boolean shouldReportEmpty = false;
-        private Set<String> rejectedItemNames = new HashSet<>();
+        private Map<String, Integer> rejectedItemNames = new HashMap<>();
         private Map<String, Integer> storedItemNames = new HashMap<>();
+        void addItemName(Map<String, Integer> map, ItemStack item) {
+            String itemName = MassStoragePlugin.getInstance().getVaultHandler().getItemName(item);
+            Integer amount = map.get(itemName);
+            if (amount == null) amount = 0;
+            map.put(itemName, amount + item.getAmount());
+        }
+        void addRejectedItemName(ItemStack item) {
+            addItemName(rejectedItemNames, item);
+        }
+        void addStoredItemName(ItemStack item) {
+            addItemName(storedItemNames, item);
+        }
     }
 
     StorageResult storePlayerInventory(Player player) {
@@ -162,11 +176,7 @@ final class Session {
                     inv.setItem(i, null);
                 }
                 result.storedItems.add(item);
-                String itemName = MassStoragePlugin.getInstance().getVaultHandler().getItemName(item);
-                Integer amount = result.storedItemNames.get(itemName);
-                if (amount == null) amount = 0;
-                amount += storedAmount;
-                result.storedItemNames.put(itemName, amount);
+                result.addStoredItemName(item);
             }
         }
         if (!dirtyItems.isEmpty()) {
@@ -185,7 +195,6 @@ final class Session {
 
     // Returns items that could not be stored
     StorageResult storeItems(ItemStack... items) {
-        List<ItemStack> drops = new ArrayList<>();
         int capacity = getCapacity();
         int storage = getStorage();
         Set<SQLItem> dirtyItems = new HashSet<>();
@@ -200,7 +209,7 @@ final class Session {
                 result.outOfStorage = true;
             } else if (!Item.canStore(item)) {
                 result.returnedItems.add(item);
-                result.rejectedItemNames.add(MassStoragePlugin.getInstance().getVaultHandler().getItemName(item));
+                result.addRejectedItemName(item);
             } else {
                 // Fetch SQL item
                 Item itemKey = Item.of(item);
@@ -214,15 +223,15 @@ final class Session {
                 sqlItem.setAmount(sqlItem.getAmount() + storedAmount);
                 storage += storedAmount;
                 if (item.getAmount() > storedAmount) {
-                    item.setAmount(item.getAmount() - storedAmount);
-                    drops.add(item);
+                    ItemStack returnedItem = item.clone();
+                    returnedItem.setAmount(item.getAmount() - storedAmount);
+                    result.returnedItems.add(returnedItem);
+                    result.addRejectedItemName(returnedItem);
+                    result.outOfStorage = true;
+                    item.setAmount(storedAmount);
                 }
                 result.storedItems.add(item);
-                String itemName = MassStoragePlugin.getInstance().getVaultHandler().getItemName(item);
-                Integer amount = result.storedItemNames.get(itemName);
-                if (amount == null) amount = 0;
-                amount += storedAmount;
-                result.storedItemNames.put(itemName, amount);
+                result.addStoredItemName(item);
             }
         }
         if (!dirtyItems.isEmpty()) {

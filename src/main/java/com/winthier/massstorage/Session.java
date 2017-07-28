@@ -17,6 +17,8 @@ import lombok.Setter;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
+import org.bukkit.Sound;
+import org.bukkit.SoundCategory;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -30,6 +32,9 @@ final class Session {
     private Map<Item, SQLItem> sqlItems = null;
     private SQLPlayer sqlPlayer = null;
     @Setter private UUID buyConfirmationCode = null;
+    @Setter private boolean autoStorageEnabled = false;
+    @Setter private boolean debugModeEnabled = false;
+    @Setter private long lastAutoStorage = 0;
 
     Player getPlayer() {
         return Bukkit.getServer().getPlayer(uuid);
@@ -42,6 +47,7 @@ final class Session {
         Inventory inv = Bukkit.getServer().createInventory(player, CHEST_SIZE, "Mass Storage");
         player.openInventory(inv);
         this.inventory = inv;
+        player.playSound(player.getEyeLocation(), Sound.BLOCK_CHEST_OPEN, SoundCategory.MASTER, 0.2f, 1.5f);
         return inventory;
     }
 
@@ -59,6 +65,7 @@ final class Session {
         StorageResult result = storeItems(inv.getContents());
         Player player = getPlayer();
         if (player != null) reportStorageResult(player, result);
+        player.playSound(player.getEyeLocation(), Sound.BLOCK_CHEST_CLOSE, SoundCategory.MASTER, 0.2f, 1.4f);
         return result;
     }
 
@@ -110,7 +117,7 @@ final class Session {
         }
     }
 
-    private class StorageResult {
+    class StorageResult {
         final List<ItemStack> returnedItems = new ArrayList<>();
         final List<ItemStack> storedItems = new ArrayList<>();
         int getReturnedItemCount() {
@@ -124,7 +131,7 @@ final class Session {
             return result;
         }
         private boolean outOfStorage = false;
-        private boolean shouldReportEmpty = false;
+        boolean shouldReportEmpty = false;
         private Map<String, Integer> rejectedItemNames = new HashMap<>();
         private Map<String, Integer> storedItemNames = new HashMap<>();
         void addItemName(Map<String, Integer> map, ItemStack item) {
@@ -188,8 +195,6 @@ final class Session {
                 flush();
             }
         }
-        result.shouldReportEmpty = true;
-        reportStorageResult(player, result);
         return result;
     }
 

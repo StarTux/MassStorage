@@ -22,6 +22,7 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -45,6 +46,7 @@ public final class MassStoragePlugin extends JavaPlugin {
         db = new SQLDatabase(this);
         db.registerTables(SQLItem.class, SQLPlayer.class);
         db.createAllTables();
+        getServer().getScheduler().runTaskTimer(this, () -> on20Ticks(), 20, 20);
     }
 
     @Override
@@ -150,6 +152,29 @@ public final class MassStoragePlugin extends JavaPlugin {
 
     boolean permitNonStackingItems() {
         return getConfig().getBoolean("PermitNonStackingItems", true);
+    }
+
+    void on20Ticks() {
+        long now = System.currentTimeMillis();
+        for (Session session: sessions.values()) {
+            if (!session.isAutoStorageEnabled()) continue;
+            Player player = session.getPlayer();
+            if (player == null) continue;
+            if (session.getLastAutoStorage() + 1000L >= now) continue;
+            int emptySlots = 0;
+            PlayerInventory inv = player.getInventory();
+            for (int i = 9; i < 36; i += 1) {
+                ItemStack item = inv.getItem(i);
+                if (item == null || item.getAmount() == 0) {
+                    emptySlots += 1;
+                    if (emptySlots > 4) break;
+                }
+            }
+            if (emptySlots > 4) continue;
+            session.setLastAutoStorage(now);
+            Session.StorageResult result = session.storePlayerInventory(player);
+            session.reportStorageResult(player, result);
+        }
     }
 }
 

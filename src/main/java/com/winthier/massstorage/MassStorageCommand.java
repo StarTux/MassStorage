@@ -107,9 +107,12 @@ public final class MassStorageCommand implements TabExecutor {
             quickUsage(player);
             player.sendMessage("");
         } else if (cmd.equals("dump") && args.length == 1) {
+            long now = System.currentTimeMillis();
             Session session = plugin.getSession(player);
+            if (session.getLastAutoStorage() + 1000L > now) return true;
+            session.setLastAutoStorage(now);
             Session.StorageResult result = session.storePlayerInventory(player);
-            result.shouldReportEmpty = true;
+            result.setShouldReportEmpty(true);
             session.reportStorageResult(player, result);
             player.playSound(player.getEyeLocation(), Sound.BLOCK_ENDERCHEST_OPEN, SoundCategory.MASTER, 0.2f, 1.25f);
         } else if (cmd.equals("auto") && args.length == 1) {
@@ -118,8 +121,12 @@ public final class MassStorageCommand implements TabExecutor {
             session.setAutoStorageEnabled(newVal);
             if (newVal) {
                 Msg.info(player, "Auto Storage Enabled");
-                Session.StorageResult result = session.storePlayerInventory(player);
-                session.reportStorageResult(player, result);
+                long now = System.currentTimeMillis();
+                if (session.getLastAutoStorage() + 1000L < now) {
+                    session.setLastAutoStorage(now);
+                    Session.StorageResult result = session.storePlayerInventory(player);
+                    session.reportStorageResult(player, result);
+                }
                 player.playSound(player.getEyeLocation(), Sound.BLOCK_LEVER_CLICK, SoundCategory.MASTER, 0.2f, 1.5f);
             } else {
                 Msg.info(player, "Auto Storage Disabled");
@@ -312,13 +319,17 @@ public final class MassStorageCommand implements TabExecutor {
     void usage(Player player) {
         player.sendMessage("");
         Msg.info(player, "&9&lMass Storage&r Help");
-        Msg.raw(player, " ", Msg.button("/ms", "&a/ms\n&oOpen Mass Storage Inventory", "/ms"), Msg.format(" &8-&r Open Mass Storage Inventory."));
+        Msg.raw(player, " ", Msg.button("/ms", "&a/ms\n&oOpen Mass Storage Menu", "/ms"), Msg.format(" &8-&r Open Mass Storage Menu."));
+        Msg.raw(player, "  ", Msg.button(ChatColor.GRAY, "Right-click&8=&7Info", null, null));
+        Msg.raw(player, "  ", Msg.button(ChatColor.GRAY, "Shift-click&8=&7Drop stack", null, null));
+        Msg.raw(player, "  ", Msg.button(ChatColor.GRAY, "Shift-right-click&8=&7Drop chest", null, null));
         Msg.raw(player, " ", Msg.button("/ms &7[item]", "&a/ms [item]\n&oRetrieve items", "/ms "), Msg.format(" &8-&r Retrieve items."));
         Msg.raw(player, " ", Msg.button("/ms info", "&a/ms info\n&oShow some info", "/ms info"), Msg.format(" &8-&r Show some info."));
         Msg.raw(player, " ", Msg.button("/ms list &7[-n|-a]", "&a/ms list\n&oList Mass Storage contents", "/ms list"), Msg.format(" &8-&r List Mass Storage contents."));
         Msg.raw(player, " ", Msg.button("/ms search &7[item] [-n|-a]", "&a/ms search [item]\n&oFind stored items", "/ms search "), Msg.format(" &8-&r Find stored items."));
         Msg.raw(player, "  ", Msg.button(ChatColor.GRAY, "&7-n&8 = &7Sort by name&8; &7-a&8 = &7by amount", null, null));
-        Msg.raw(player, " ", Msg.button("/ms auto", "&a/ms auto\n&oAutomatically store inventory", "/ms auto "), Msg.format(" &8-&r Auto store inventory."));
+        Msg.raw(player, " ", Msg.button("/ms dump", "&a/ms dump\n&oDump inventory into Mass Storage", "/ms dump "), Msg.format(" &8-&r Dump inventory."));
+        Msg.raw(player, " ", Msg.button("/ms auto", "&a/ms auto\n&oToggle automatic storage", "/ms auto "), Msg.format(" &8-&r Toggle auto storage."));
         String purchaseCost = plugin.getVaultHandler().formatMoney(plugin.getConfig().getDouble("BuyCapacity.Price", 500.0));
         Msg.raw(player, " ", Msg.button("/ms buy &7[amount]", "&a/ms buy [amount]\n&oBuy additional storage\nPrice: " + purchaseCost, "/ms buy "), Msg.format(" &8-&r Buy additional storage."));
         player.sendMessage("");
@@ -341,7 +352,7 @@ public final class MassStorageCommand implements TabExecutor {
             " ",
             Msg.button(ChatColor.DARK_AQUA, "[Dump]", "&3/ms dump\n&r&oDump your inventory\ninto Mass Storage", "/ms dump"),
             " ",
-            Msg.button(ChatColor.AQUA, "[Auto]", "&a/ms auto\n&r&oToggle picked up\nitem auto storage", "/ms auto"));
+            Msg.button(ChatColor.AQUA, "[Auto]", "&a/ms auto\n&r&oToggle auto storage.\n&oYour inventory will\n&obe dumped whenever\n&oit gets close to full.", "/ms auto"));
     }
 
     void sendItemList(Player player, List<NamedItem> items) {

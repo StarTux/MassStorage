@@ -1,7 +1,6 @@
 package com.winthier.massstorage;
 
 import com.winthier.custom.inventory.CustomInventory;
-import com.winthier.custom.util.Items;
 import com.winthier.massstorage.sql.SQLItem;
 import com.winthier.massstorage.util.Msg;
 import java.util.ArrayList;
@@ -136,7 +135,7 @@ public final class MenuInventory implements CustomInventory {
                     return;
                 case 5:
                     Session.StorageResult result = session.storePlayerInventory(player);
-                    result.shouldReportEmpty = true;
+                    result.setShouldReportEmpty(true);
                     session.reportStorageResult(player, result);
                     player.playSound(player.getEyeLocation(), Sound.BLOCK_ENDERCHEST_OPEN, SoundCategory.MASTER, 0.2f, 1.25f);
                     return;
@@ -190,35 +189,39 @@ public final class MenuInventory implements CustomInventory {
             player.playSound(player.getEyeLocation(), Sound.BLOCK_CHEST_OPEN, SoundCategory.MASTER, 0.2f, 1.5f);
         } else {
             long now = System.currentTimeMillis();
-            if (lastClick + 300L > now) return;
+            if (lastClick + 500L > now) return;
             lastClick = now;
             ItemStack item = inventory.getItem(slot);
             if (item == null) return;
-            if (event.isRightClick()) {
+            if (event.isShiftClick()) {
+                Item key = Item.of(item);
+                SQLItem sqlItem = session.getSQLItems().get(key);
+                int times = event.isRightClick() ? 3 * 9 : 1;
+                if (sqlItem.getAmount() <= 0) {
+                    inventory.setItem(slot, null);
+                    return;
+                }
+                for (int i = 0; i < times; i += 1) {
+                    int amount = Math.min(sqlItem.getAmount(), key.getMaterial().getMaxStackSize());
+                    sqlItem.setAmount(sqlItem.getAmount() - amount);
+                    ItemStack stack = key.toItemStack(amount);
+                    for (ItemStack drop: player.getInventory().addItem(stack).values()) {
+                        player.getWorld().dropItem(player.getEyeLocation(), drop).setPickupDelay(0);
+                    }
+                    if (sqlItem.getAmount() <= 0) {
+                        inventory.setItem(slot, null);
+                        break;
+                    }
+                }
+                plugin.getDb().save(sqlItem);
+                player.playSound(player.getEyeLocation(), Sound.BLOCK_DISPENSER_DISPENSE, SoundCategory.MASTER, 0.2f, 2.0f);
+            } else if (event.isRightClick()) {
                 Item key = Item.of(item);
                 SQLItem sqlItem = session.getSQLItems().get(key);
                 NamedItem named = sqlItem.getNamedItem();
                 int stacks = (named.getAmount() - 1) / key.getMaterial().getMaxStackSize() + 1;
                 Msg.info(player, "&r%d&8x&r%s &7(%d stacks)", named.getAmount(), named.getName(), stacks);
                 player.playSound(player.getEyeLocation(), Sound.BLOCK_LEVER_CLICK, SoundCategory.MASTER, 0.2f, 2.0f);
-            } else if (event.isShiftClick()) {
-                Item key = Item.of(item);
-                SQLItem sqlItem = session.getSQLItems().get(key);
-                int amount = Math.min(sqlItem.getAmount(), key.getMaterial().getMaxStackSize());
-                if (amount <= 0) {
-                    inventory.setItem(slot, null);
-                    return;
-                }
-                sqlItem.setAmount(sqlItem.getAmount() - amount);
-                plugin.getDb().save(sqlItem);
-                if (sqlItem.getAmount() <= 0) {
-                    inventory.setItem(slot, null);
-                }
-                ItemStack stack = key.toItemStack(amount);
-                for (ItemStack drop: player.getInventory().addItem(stack).values()) {
-                    Items.give(drop, player);
-                }
-                player.playSound(player.getEyeLocation(), Sound.BLOCK_DISPENSER_DISPENSE, SoundCategory.MASTER, 0.2f, 2.0f);
             } else {
                 plugin.getServer().getScheduler().runTask(plugin, () -> player.performCommand("ms id " + item.getType().getId() + " " + (int)item.getDurability()));
                 silentClose = true;

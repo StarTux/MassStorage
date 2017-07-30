@@ -112,11 +112,12 @@ final class Session {
                 json.add(o);
             }
             Msg.raw(player, json);
-        } else if (result.shouldReportEmpty) {
+        } else if (result.isShouldReportEmpty()) {
             Msg.info(player, "No items were stored.");
         }
     }
 
+    @Getter
     class StorageResult {
         final List<ItemStack> returnedItems = new ArrayList<>();
         final List<ItemStack> storedItems = new ArrayList<>();
@@ -131,7 +132,7 @@ final class Session {
             return result;
         }
         private boolean outOfStorage = false;
-        boolean shouldReportEmpty = false;
+        @Setter private boolean shouldReportEmpty = false;
         private Map<String, Integer> rejectedItemNames = new HashMap<>();
         private Map<String, Integer> storedItemNames = new HashMap<>();
         void addItemName(Map<String, Integer> map, ItemStack item) {

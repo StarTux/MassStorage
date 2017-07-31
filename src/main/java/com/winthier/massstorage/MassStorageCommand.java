@@ -320,6 +320,7 @@ public final class MassStorageCommand implements TabExecutor {
         player.sendMessage("");
         Msg.info(player, "&9&lMass Storage&r Help");
         Msg.raw(player, " ", Msg.button("/ms", "&a/ms\n&oOpen Mass Storage Menu", "/ms"), Msg.format(" &8-&r Open Mass Storage Menu."));
+        Msg.raw(player, "  ", Msg.button(ChatColor.GRAY, "Left-click&8=&7Open item chest", null, null));
         Msg.raw(player, "  ", Msg.button(ChatColor.GRAY, "Right-click&8=&7Info", null, null));
         Msg.raw(player, "  ", Msg.button(ChatColor.GRAY, "Shift-click&8=&7Drop stack", null, null));
         Msg.raw(player, "  ", Msg.button(ChatColor.GRAY, "Shift-right-click&8=&7Drop chest", null, null));

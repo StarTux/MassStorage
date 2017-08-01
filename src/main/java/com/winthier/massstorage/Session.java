@@ -35,6 +35,8 @@ final class Session {
     @Setter private boolean autoStorageEnabled = false;
     @Setter private boolean debugModeEnabled = false;
     @Setter private long lastAutoStorage = 0;
+    @Setter private int openCategory = -1;
+    @Setter private boolean informed = false;
 
     Player getPlayer() {
         return Bukkit.getServer().getPlayer(uuid);

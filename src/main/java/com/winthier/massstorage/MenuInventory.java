@@ -31,12 +31,12 @@ public final class MenuInventory implements CustomInventory {
     private boolean itemView = false;
     private long lastClick = 0;
     private boolean silentClose;
+    private int openCategory = -1;
 
     MenuInventory(MassStoragePlugin plugin, Player player) {
         this.plugin = plugin;
         this.player = player;
-        this.inventory = plugin.getServer().createInventory(player, 9 * 6, ChatColor.BLUE + "Mass Storage");
-        prepareMain();
+        this.inventory = plugin.getServer().createInventory(player, 9 * 6, ChatColor.BLUE + "Mass Storage Menu");
     }
 
     void prepareMain() {
@@ -93,9 +93,45 @@ public final class MenuInventory implements CustomInventory {
         itemView = false;
     }
 
+    void prepareCategory(Category category) {
+        Session session = plugin.getSession(player);
+        List<ItemStack> items = new ArrayList<>();
+        for (Map.Entry<Item, SQLItem> entry: session.getSQLItems().entrySet()) {
+            Item item = entry.getKey();
+            SQLItem sqlItem = entry.getValue();
+            if (sqlItem.getAmount() > 0
+                && (category.materials.contains(item.getMaterial())
+                    || category.items.contains(item))) {
+                items.add(entry.getKey().toItemStack(1));
+            }
+        }
+        Collections.sort(items, (a, b) -> {
+                int c = Integer.compare(a.getType().getId(), b.getType().getId());
+                if (c != 0) return c;
+                return Short.compare(a.getDurability(), b.getDurability());
+            });
+        int index = 0;
+        for (ItemStack item: items) {
+            if (index >= 6 * 9) break;
+            inventory.setItem(index++, item);
+        }
+        size = index;
+        itemView = true;
+    }
+
     @Override
     public void onInventoryOpen(InventoryOpenEvent event) {
-        player.playSound(player.getEyeLocation(), Sound.BLOCK_CHEST_OPEN, SoundCategory.MASTER, 0.2f, 1.5f);
+        Session session = plugin.getSession(player);
+        int cat = session.getOpenCategory();
+        if (cat < 0 || cat >= plugin.getCategories().size()) {
+            prepareMain();
+            player.playSound(player.getEyeLocation(), Sound.BLOCK_CHEST_OPEN, SoundCategory.MASTER, 0.2f, 1.5f);
+        } else {
+            openCategory = cat;
+            prepareCategory(plugin.getCategories().get(cat));
+            player.playSound(player.getEyeLocation(), Sound.BLOCK_CHEST_CLOSE, SoundCategory.MASTER, 0.2f, 1.5f);
+        }
+        session.setOpenCategory(-1);
     }
 
     @Override
@@ -118,15 +154,17 @@ public final class MenuInventory implements CustomInventory {
         if (!event.getClickedInventory().equals(event.getView().getTopInventory())) return;
         int slot = event.getSlot();
         if (slot < 0 || slot > size) return;
+        if (event.getCurrentItem().getType() == Material.AIR) return;
         Session session = plugin.getSession(player);
+        long now = System.currentTimeMillis();
         if (!itemView) {
             if (slot < 9) {
-                long now = System.currentTimeMillis();
                 if (lastClick + 300L > now) return;
                 lastClick = now;
                 switch (slot) {
                 case 1:
                     plugin.getServer().getScheduler().runTask(plugin, () -> plugin.getSession(player).openInventory());
+                    session.setOpenCategory(-1);
                     silentClose = true;
                     return;
                 case 3:
@@ -149,6 +187,7 @@ public final class MenuInventory implements CustomInventory {
                     } else {
                         player.playSound(player.getEyeLocation(), Sound.BLOCK_LEVER_CLICK, SoundCategory.MASTER, 0.2f, 0.5f);
                     }
+                    inventory.clear();
                     prepareMain();
                     return;
                 default:
@@ -159,37 +198,16 @@ public final class MenuInventory implements CustomInventory {
             if (categoryIndex > plugin.getCategories().size()) return;
             Category category = plugin.getCategories().get(categoryIndex);
             inventory.clear();
-            List<ItemStack> items = new ArrayList<>();
-            for (Map.Entry<Item, SQLItem> entry: session.getSQLItems().entrySet()) {
-                Item item = entry.getKey();
-                SQLItem sqlItem = entry.getValue();
-                if (sqlItem.getAmount() > 0
-                    && (category.materials.contains(item.getMaterial())
-                        || category.items.contains(item))) {
-                    items.add(entry.getKey().toItemStack(1));
-                }
-            }
-            Collections.sort(items, (a, b) -> {
-                    int c = Integer.compare(a.getType().getId(), b.getType().getId());
-                    if (c != 0) return c;
-                    return Short.compare(a.getDurability(), b.getDurability());
-                });
-            int index = 0;
-            for (ItemStack item: items) {
-                if (index >= 6 * 9) break;
-                inventory.setItem(index++, item);
-            }
-            size = index;
-            itemView = true;
+            openCategory = categoryIndex;
+            prepareCategory(category);
             if (size <= 0) {
-                Msg.info(player, "No items found");
+                Msg.info(player, "%s: No items found", category.name);
             } else {
-                Msg.info(player, "%d unique items found", size);
+                Msg.info(player, "%s: %d unique items found", category.name, size);
             }
             player.playSound(player.getEyeLocation(), Sound.BLOCK_CHEST_OPEN, SoundCategory.MASTER, 0.2f, 1.5f);
         } else {
-            long now = System.currentTimeMillis();
-            if (lastClick + 500L > now) return;
+            if (lastClick + 300L > now) return;
             lastClick = now;
             ItemStack item = inventory.getItem(slot);
             if (item == null) return;
@@ -224,6 +242,7 @@ public final class MenuInventory implements CustomInventory {
                 player.playSound(player.getEyeLocation(), Sound.BLOCK_LEVER_CLICK, SoundCategory.MASTER, 0.2f, 2.0f);
             } else {
                 plugin.getServer().getScheduler().runTask(plugin, () -> player.performCommand("ms id " + item.getType().getId() + " " + (int)item.getDurability()));
+                session.setOpenCategory(openCategory);
                 silentClose = true;
             }
         }

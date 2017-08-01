@@ -86,13 +86,24 @@ public final class MassStorageCommand implements TabExecutor {
         if (player == null) return false;
         String cmd = args.length > 0 ? args[0].toLowerCase() : null;
         if (cmd == null) {
+            Session session = plugin.getSession(player);
+            session.setOpenCategory(-1);
             CustomPlugin.getInstance().getInventoryManager().openInventory(player, new MenuInventory(plugin, player));
-            Msg.info(player, "Free storage: &9%d&r items.", plugin.getSession(player).getFreeStorage());
+            if (!session.isInformed()) {
+                session.setInformed(true);
+                menuUsage(player);
+            }
             quickUsage(player);
         } else if (cmd.equals("store") && args.length == 1) {
             plugin.getSession(player).openInventory();
-        } else if ((cmd.equals("help") || cmd.equals("?")) && args.length == 1) {
-            usage(player);
+        } else if ((cmd.equals("help") || cmd.equals("?")) && args.length >= 1 && args.length <= 2) {
+            if (args.length == 1) {
+                usage(player);
+            } else if (args.length == 2 && "menu".equals(args[1])) {
+                menuUsage(player);
+            } else {
+                return false;
+            }
         } else if (cmd.equals("info") && args.length == 1) {
             player.sendMessage("");
             Msg.info(player, "&9&lMass Storage&r Info");
@@ -319,21 +330,17 @@ public final class MassStorageCommand implements TabExecutor {
     void usage(Player player) {
         player.sendMessage("");
         Msg.info(player, "&9&lMass Storage&r Help");
-        Msg.raw(player, " ", Msg.button("/ms", "&a/ms\n&oOpen Mass Storage Menu", "/ms"), Msg.format(" &8-&r Open Mass Storage Menu."));
-        Msg.raw(player, "  ", Msg.button(ChatColor.GRAY, "Left-click&8=&7Open item chest", null, null));
-        Msg.raw(player, "  ", Msg.button(ChatColor.GRAY, "Right-click&8=&7Info", null, null));
-        Msg.raw(player, "  ", Msg.button(ChatColor.GRAY, "Shift-click&8=&7Drop stack", null, null));
-        Msg.raw(player, "  ", Msg.button(ChatColor.GRAY, "Shift-right-click&8=&7Drop chest", null, null));
-        Msg.raw(player, " ", Msg.button("/ms &7[item]", "&a/ms [item]\n&oRetrieve items", "/ms "), Msg.format(" &8-&r Retrieve items."));
-        Msg.raw(player, " ", Msg.button("/ms info", "&a/ms info\n&oShow some info", "/ms info"), Msg.format(" &8-&r Show some info."));
-        Msg.raw(player, " ", Msg.button("/ms list &7[-n|-a]", "&a/ms list\n&oList Mass Storage contents", "/ms list"), Msg.format(" &8-&r List Mass Storage contents."));
-        Msg.raw(player, " ", Msg.button("/ms search &7[item] [-n|-a]", "&a/ms search [item]\n&oFind stored items", "/ms search "), Msg.format(" &8-&r Find stored items."));
-        Msg.raw(player, "  ", Msg.button(ChatColor.GRAY, "&7-n&8 = &7Sort by name&8; &7-a&8 = &7by amount", null, null));
-        Msg.raw(player, " ", Msg.button("/ms dump", "&a/ms dump\n&oDump inventory into Mass Storage", "/ms dump "), Msg.format(" &8-&r Dump inventory."));
-        Msg.raw(player, " ", Msg.button("/ms auto", "&a/ms auto\n&oToggle automatic storage", "/ms auto "), Msg.format(" &8-&r Toggle auto storage."));
+        Msg.raw(player, Msg.button("/ms", "&a/ms\n&r&oOpen Mass Storage Menu", "/ms"), Msg.format(" &8-&r Open Mass Storage Menu."));
+        Msg.raw(player, Msg.button("/ms help menu", "&a/ms help menu\n&r&oMass Storage\n&oMenu Help", "/ms help menu"), Msg.format(" &8-&r Menu Help."));
+        Msg.raw(player, Msg.button("/ms &7[item]", "&a/ms [item]\n&r&oRetrieve items", "/ms "), Msg.format(" &8-&r Retrieve items."));
+        Msg.raw(player, Msg.button("/ms info", "&a/ms info\n&r&oShow some info", "/ms info"), Msg.format(" &8-&r Show some info."));
+        Msg.raw(player, Msg.button("/ms list &7[-n|-a]", "&a/ms list\n&r&oList Mass Storage contents", "/ms list"), Msg.format(" &8-&r List Mass Storage contents."));
+        Msg.raw(player, Msg.button("/ms search &7[item] [-n|-a]", "&a/ms search [item]\n&r&oFind stored items", "/ms search "), Msg.format(" &8-&r Find stored items."));
+        Msg.raw(player, " ", Msg.button(ChatColor.GRAY, "&7-n&8 = &7Sort by name&8; &7-a&8 = &7by amount", null, null));
+        Msg.raw(player, Msg.button("/ms dump", "&a/ms dump\n&r&oDump inventory into Mass Storage", "/ms dump "), Msg.format(" &8-&r Dump inventory."));
+        Msg.raw(player, Msg.button("/ms auto", "&a/ms auto\n&r&oToggle automatic storage", "/ms auto "), Msg.format(" &8-&r Toggle auto storage."));
         String purchaseCost = plugin.getVaultHandler().formatMoney(plugin.getConfig().getDouble("BuyCapacity.Price", 500.0));
-        Msg.raw(player, " ", Msg.button("/ms buy &7[amount]", "&a/ms buy [amount]\n&oBuy additional storage\nPrice: " + purchaseCost, "/ms buy "), Msg.format(" &8-&r Buy additional storage."));
-        player.sendMessage("");
+        Msg.raw(player, Msg.button("/ms buy &7[amount]", "&a/ms buy [amount]\n&r&oBuy additional storage\nPrice: " + purchaseCost, "/ms buy "), Msg.format(" &8-&r Buy additional storage."));
     }
 
     void quickUsage(Player player) {
@@ -354,6 +361,15 @@ public final class MassStorageCommand implements TabExecutor {
             Msg.button(ChatColor.DARK_AQUA, "[Dump]", "&3/ms dump\n&r&oDump your inventory\ninto Mass Storage", "/ms dump"),
             " ",
             Msg.button(ChatColor.AQUA, "[Auto]", "&a/ms auto\n&r&oToggle auto storage.\n&oYour inventory will\n&obe dumped whenever\n&oit gets close to full.", "/ms auto"));
+    }
+
+    void menuUsage(Player player) {
+        Msg.info(player, "Mass Storage Menu");
+        Msg.raw(player, " ", Msg.button(ChatColor.GRAY, "Left-click&8=&7Open item chest", null, null));
+        Msg.raw(player, " ", Msg.button(ChatColor.GRAY, "Right-click&8=&7Info", null, null));
+        Msg.raw(player, " ", Msg.button(ChatColor.GRAY, "Shift-click&8=&7Drop stack", null, null));
+        Msg.raw(player, " ", Msg.button(ChatColor.GRAY, "Shift-right-click&8=&7Drop chest", null, null));
+        Msg.raw(player, " ", Msg.button(ChatColor.GRAY, "Click outside of chest&8=&7Go back", null, null));
     }
 
     void sendItemList(Player player, List<NamedItem> items) {

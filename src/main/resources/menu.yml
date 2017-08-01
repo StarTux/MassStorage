@@ -305,7 +305,7 @@ Categories:
   - WOOD_BUTTON
   - WOOD_PLATE
 - Name: Transportation
-  Icon: POWERED_RAIL
+  Icon: MINECART
   Materials:
   - ACTIVATOR_RAIL
   - DETECTOR_RAIL

@@ -214,8 +214,8 @@ final class Session {
                 continue; // Ignore. Warn maybe?
             } else if (storage >= capacity) {
                 result.returnedItems.add(item);
-                result.outOfStorage = true;
                 result.addRejectedItemName(item);
+                result.outOfStorage = true;
             } else if (!Item.canStore(item)) {
                 result.returnedItems.add(item);
                 result.addRejectedItemName(item);

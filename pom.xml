@@ -4,7 +4,7 @@
   <groupId>com.winthier.massstorage</groupId>
   <artifactId>massstorage</artifactId>
   <packaging>jar</packaging>
-  <version>0.1</version>
+  <version>0.1-SNAPSHOT</version>
   <name>MassStorage</name>
   <url>http://www.winthier.com</url>
   <properties>
@@ -27,7 +27,7 @@
     <dependency>
       <groupId>org.spigotmc</groupId>
       <artifactId>spigot-api</artifactId>
-      <version>1.12-R0.1-SNAPSHOT</version>
+      <version>1.12.2-R0.1-SNAPSHOT</version>
     </dependency>
     <!-- Lombok -->
     <dependency>

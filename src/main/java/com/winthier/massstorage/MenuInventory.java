@@ -42,7 +42,7 @@ public final class MenuInventory implements CustomInventory {
     void prepareMain() {
         Session session = plugin.getSession(player);
         // Insert
-        ItemStack icon = new ItemStack(Material.STORAGE_MINECART);
+        ItemStack icon = new ItemStack(Material.CHEST_MINECART);
         ItemMeta meta = icon.getItemMeta();
         meta.addEnchant(Enchantment.DURABILITY, 1, true);
         meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
@@ -100,16 +100,15 @@ public final class MenuInventory implements CustomInventory {
             Item item = entry.getKey();
             SQLItem sqlItem = entry.getValue();
             if (sqlItem.getAmount() > 0
-                && (category.materials.contains(item.getMaterial())
-                    || category.items.contains(item))) {
+                && (category.materials.contains(item.getMaterial()))) {
                 items.add(entry.getKey().toItemStack(1));
             }
         }
-        Collections.sort(items, (a, b) -> {
-                int c = Integer.compare(a.getType().getId(), b.getType().getId());
-                if (c != 0) return c;
-                return Short.compare(a.getDurability(), b.getDurability());
-            });
+        // Collections.sort(items, (a, b) -> {
+        //         int c = Integer.compare(a.getType().getId(), b.getType().getId());
+        //         if (c != 0) return c;
+        //         return Short.compare(a.getDurability(), b.getDurability());
+        //     });
         int index = 0;
         for (ItemStack item: items) {
             if (index >= 6 * 9) break;
@@ -175,7 +174,7 @@ public final class MenuInventory implements CustomInventory {
                     Session.StorageResult result = session.storePlayerInventory(player);
                     result.setShouldReportEmpty(true);
                     session.reportStorageResult(player, result);
-                    player.playSound(player.getEyeLocation(), Sound.BLOCK_ENDERCHEST_OPEN, SoundCategory.MASTER, 0.2f, 1.25f);
+                    player.playSound(player.getEyeLocation(), Sound.BLOCK_ENDER_CHEST_OPEN, SoundCategory.MASTER, 0.2f, 1.25f);
                     return;
                 case 7:
                     boolean newVal = !session.isAutoStorageEnabled();
@@ -241,7 +240,7 @@ public final class MenuInventory implements CustomInventory {
                 Msg.info(player, "&r%d&8x&r%s &7(%d stacks)", named.getAmount(), named.getName(), stacks);
                 player.playSound(player.getEyeLocation(), Sound.BLOCK_LEVER_CLICK, SoundCategory.MASTER, 0.2f, 2.0f);
             } else {
-                plugin.getServer().getScheduler().runTask(plugin, () -> player.performCommand("ms id " + item.getType().getId() + " " + (int)item.getDurability()));
+                plugin.getServer().getScheduler().runTask(plugin, () -> player.performCommand("ms id " + item.getType().name().toLowerCase()));
                 session.setOpenCategory(openCategory);
                 silentClose = true;
             }

@@ -125,7 +125,7 @@ public final class MassStorageCommand implements TabExecutor {
             Session.StorageResult result = session.storePlayerInventory(player);
             result.setShouldReportEmpty(true);
             session.reportStorageResult(player, result);
-            player.playSound(player.getEyeLocation(), Sound.BLOCK_ENDERCHEST_OPEN, SoundCategory.MASTER, 0.2f, 1.25f);
+            player.playSound(player.getEyeLocation(), Sound.BLOCK_ENDER_CHEST_OPEN, SoundCategory.MASTER, 0.2f, 1.25f);
         } else if (cmd.equals("auto") && args.length == 1) {
             Session session = plugin.getSession(player);
             boolean newVal = !session.isAutoStorageEnabled();
@@ -144,11 +144,11 @@ public final class MassStorageCommand implements TabExecutor {
                 player.playSound(player.getEyeLocation(), Sound.BLOCK_LEVER_CLICK, SoundCategory.MASTER, 0.2f, 0.5f);
             }
         } else if (cmd.equals("id")) {
-            if (args.length != 3) return true;
+            if (args.length != 2) return true;
             Item item;
             try {
-                item = new Item(Integer.parseInt(args[1]), Integer.parseInt(args[2]));
-            } catch (NumberFormatException nfe) {
+                item = new Item(Material.valueOf(args[1].toUpperCase()));
+            } catch (IllegalArgumentException iae) {
                 return true;
             }
             plugin.getSession(player).openInventory();
@@ -382,11 +382,11 @@ public final class MassStorageCommand implements TabExecutor {
             int doubleChests = (stacks - 1) / (6 * 9) + 1;
             json.add(Msg.button(ChatColor.WHITE,
                                 " " + item.getAmount() + "&8x&r" + item.getName(),
-                                Msg.format("&r%s (#%04d/%d)\n&8craftbukkit:%s\n&8--------------------\n&7In Storage:\n&8Items: &7%d\n&8Stacks: &7%d\n&8Double Chests: &7%d",
-                                           item.getName(), item.getType(), item.getData(),
+                                Msg.format("&r%s\n&8minecraft:%s\n&8--------------------\n&7In Storage:\n&8Items: &7%d\n&8Stacks: &7%d\n&8Double Chests: &7%d",
+                                           item.getName(),
                                            mat.name().toLowerCase(),
                                            amount, stacks, doubleChests),
-                                "/ms id " + item.getType() + " " + item.getData()));
+                                "/ms id " + item.getMaterial()));
             jsons.add(json);
         }
         getPlayerContext(player).clear();

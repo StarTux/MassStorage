@@ -3,7 +3,6 @@ MaterialBlacklist:
 - MAP
 - POTION
 - SPLASH_POTION
-- MONSTER_EGG
 PermitNonStackingItems: true
 DefaultCapacity: 1728
 BuyCapacity:

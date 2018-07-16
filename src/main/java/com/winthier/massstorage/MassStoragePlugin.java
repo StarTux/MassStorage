@@ -4,6 +4,7 @@ import com.winthier.massstorage.sql.SQLItem;
 import com.winthier.massstorage.sql.SQLPlayer;
 import com.winthier.massstorage.vault.VaultHandler;
 import com.winthier.sql.SQLDatabase;
+import java.io.File;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.EnumSet;
@@ -102,7 +103,13 @@ public final class MassStoragePlugin extends JavaPlugin {
         }
         categories.clear();
         Set<Material> miscMaterials = EnumSet.allOf(Material.class);
-        ConfigurationSection menuConfig = YamlConfiguration.loadConfiguration(new InputStreamReader(getResource("menu.yml")));
+        ConfigurationSection menuConfig;
+        File file = new File(getDataFolder(), "menu.yml");
+        if (file.isFile()) {
+            menuConfig = YamlConfiguration.loadConfiguration(file);
+        } else {
+            menuConfig = YamlConfiguration.loadConfiguration(new InputStreamReader(getResource("menu.yml")));
+        }
         for (Map<?, ?> map: menuConfig.getMapList("Categories")) {
             ConfigurationSection section = menuConfig.createSection("tmp", map);
             try {
@@ -111,38 +118,29 @@ public final class MassStoragePlugin extends JavaPlugin {
                 if (misc) {
                     materials = miscMaterials;
                 } else {
-                    materials = EnumSet.copyOf(section.getStringList("Materials").stream().map(s -> Material.valueOf(s)).collect(Collectors.toList()));
-                    miscMaterials.removeAll(materials);
-                }
-                Set<Item> items = new HashSet<>();
-                if (section.isSet("Items")) {
-                    for (Object o: section.getList("Items")) {
-                        Material mat;
-                        int data;
-                        if (o instanceof List) {
-                            List ls = (List)o;
-                            mat = Material.valueOf((String)ls.get(0));
-                            data = ((Number)ls.get(1)).intValue();
-                        } else {
-                            mat = Material.valueOf((String)o);
-                            data = 0;
+                    materials = EnumSet.noneOf(Material.class);
+                    for (String str: section.getStringList("Materials")) {
+                        try {
+                            materials.add(Material.valueOf(str));
+                        } catch (IllegalArgumentException iae) {
+                            iae.printStackTrace();
+                            continue;
                         }
-                        items.add(new Item(mat.getId(), data));
                     }
+                    miscMaterials.removeAll(materials);
                 }
                 String name = section.getString("Name");
                 ItemStack icon;
-                if (section.isList("Icon")) {
-                    List<?> il = section.getList("Icon");
-                    icon = new ItemStack(Material.valueOf((String)il.get(0)),
-                                         1, ((Number)il.get(1)).shortValue());
-                } else {
+                try {
                     icon = new ItemStack(Material.valueOf(section.getString("Icon")));
+                } catch (IllegalArgumentException iae) {
+                    iae.printStackTrace();
+                    icon = new ItemStack(Material.SMOOTH_STONE);
                 }
                 ItemMeta meta = icon.getItemMeta();
                 meta.setDisplayName(ChatColor.RESET + name);
                 icon.setItemMeta(meta);
-                Category category = new Category(name, icon, misc, materials, items);
+                Category category = new Category(name, icon, misc, materials);
                 categories.add(category);
             } catch (Exception e) {
                 e.printStackTrace();
@@ -184,5 +182,4 @@ class Category {
     final ItemStack icon;
     final boolean misc;
     final Set<Material> materials;
-    final Set<Item> items;
 }

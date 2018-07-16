@@ -6,18 +6,14 @@ import org.bukkit.inventory.ItemStack;
 
 @Value
 public final class Item {
-    private final int type, data;
+    private final Material material;
 
     public static Item of(ItemStack itemStack) {
-        return new Item(itemStack.getType().getId(), (int)itemStack.getDurability());
-    }
-
-    public Material getMaterial() {
-        return Material.getMaterial(type);
+        return new Item(itemStack.getType());
     }
 
     public ItemStack toItemStack(int amount) {
-        return new ItemStack(getMaterial(), amount, (short)data);
+        return new ItemStack(material, amount);
     }
 
     public ItemStack toItemStack() {

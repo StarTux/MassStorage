@@ -2,6 +2,7 @@ name: MassStorage
 description: Mass Storage for Spam Items
 author: StarTux
 version: 0.1
+api-version: 1.13
 main: com.winthier.massstorage.MassStoragePlugin
 depend: [ SQL, Custom ]
 softdepend: [ Vault ]

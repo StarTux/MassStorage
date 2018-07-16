@@ -15,10 +15,11 @@ import javax.persistence.Version;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.bukkit.Material;
 
 @Entity
 @Table(name = "items",
-       uniqueConstraints = @UniqueConstraint(columnNames = {"owner", "item_type", "item_data"}))
+       uniqueConstraints = @UniqueConstraint(columnNames = {"owner", "material"}))
 @Getter
 @Setter
 @NoArgsConstructor
@@ -26,15 +27,13 @@ public final class SQLItem {
     @Id private Integer id;
     @Version private Date version;
     @Column(nullable = false) private UUID owner;
-    @Column(nullable = false) private Integer itemType;
-    @Column(nullable = false) private Integer itemData;
+    @Column(nullable = false) private String material;
     @Column(nullable = false) private Integer amount;
 
     public static SQLItem of(UUID owner, Item item) {
         SQLItem result = new SQLItem();
         result.setOwner(owner);
-        result.setItemType(item.getType());
-        result.setItemData(item.getData());
+        result.setMaterial(item.getMaterial().name().toLowerCase());
         result.setAmount(0);
         return result;
     }
@@ -44,10 +43,10 @@ public final class SQLItem {
     }
 
     public Item getItem() {
-        return new Item(getItemType(), getItemData());
+        return new Item(Material.valueOf(getMaterial().toUpperCase()));
     }
 
     public NamedItem getNamedItem() {
-        return new NamedItem(getItemType(), getItemData(), getAmount());
+        return new NamedItem(Material.valueOf(getMaterial().toUpperCase()), getAmount());
     }
 }

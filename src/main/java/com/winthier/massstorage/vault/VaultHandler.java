@@ -6,8 +6,6 @@ import java.util.ArrayList;
 import java.util.List;
 import net.milkbowl.vault.economy.Economy;
 import net.milkbowl.vault.economy.EconomyResponse;
-import net.milkbowl.vault.item.ItemInfo;
-import net.milkbowl.vault.item.Items;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -44,25 +42,11 @@ public final class VaultHandler {
 
     // Item
 
-    public List<Item> findItems(String searchTerm) {
-        List<Item> result = new ArrayList<>();
-        ItemInfo info = Items.itemByName(searchTerm);
-        if (info != null) {
-            Item item = Item.of(info.toStack());
-            if (!result.contains(item)) {
-                result.add(item);
-            }
-        }
-        return result;
-    }
-
     public String getItemName(Item item) {
         return getItemName(item.toItemStack());
     }
 
     public String getItemName(ItemStack itemStack) {
-        ItemInfo info = Items.itemByStack(itemStack);
-        if (info != null) return info.getName();
         String name = itemStack.getType().name();
         String[] arr = name.split("_");
         if (arr.length == 0) return name;

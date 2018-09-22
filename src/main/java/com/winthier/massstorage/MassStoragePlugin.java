@@ -93,7 +93,7 @@ public final class MassStoragePlugin extends JavaPlugin {
     }
 
     void reloadAll() {
-        // saveDefaultConfig(); TODO TODO FIXME !!!!!
+        saveDefaultConfig();
         reloadConfig();
         materialBlacklist = null;
         if (sessions != null) {

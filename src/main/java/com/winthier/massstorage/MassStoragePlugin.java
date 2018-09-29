@@ -102,7 +102,12 @@ public final class MassStoragePlugin extends JavaPlugin {
             }
         }
         categories.clear();
-        Set<Material> miscMaterials = EnumSet.allOf(Material.class);
+        Set<Material> miscMaterials = EnumSet.noneOf(Material.class);
+        for (Material mat: Material.values()) {
+            if (!getMaterialBlacklist().contains(mat) && mat.isItem() && !mat.isLegacy() && !mat.name().startsWith("LEGACY_")) {
+                miscMaterials.add(mat);
+            }
+        }
         ConfigurationSection menuConfig;
         File file = new File(getDataFolder(), "menu.yml");
         if (file.isFile()) {

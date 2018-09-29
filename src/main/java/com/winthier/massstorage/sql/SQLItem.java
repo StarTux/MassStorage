@@ -27,7 +27,7 @@ public final class SQLItem {
     @Id private Integer id;
     @Version private Date version;
     @Column(nullable = false) private UUID owner;
-    @Column(nullable = false) private String material;
+    @Column(nullable = false, length = 64) private String material;
     @Column(nullable = false) private Integer amount;
 
     public static SQLItem of(UUID owner, Item item) {

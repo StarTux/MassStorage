@@ -23,7 +23,7 @@ public final class SQLPlayer {
     @Id private Integer id;
     @Version private Date version;
     @Column(nullable = false) private UUID uuid;
-    private String name;
+    @Column(nullable = true, length = 16) private String name;
     @Column(nullable = false) private Integer capacity;
 
     public static SQLPlayer get(UUID uuid) {

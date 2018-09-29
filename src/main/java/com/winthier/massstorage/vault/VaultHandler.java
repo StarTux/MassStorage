@@ -2,8 +2,6 @@ package com.winthier.massstorage.vault;
 
 import com.winthier.massstorage.Item;
 import com.winthier.massstorage.MassStoragePlugin;
-import java.util.ArrayList;
-import java.util.List;
 import net.milkbowl.vault.economy.Economy;
 import net.milkbowl.vault.economy.EconomyResponse;
 import org.bukkit.Bukkit;

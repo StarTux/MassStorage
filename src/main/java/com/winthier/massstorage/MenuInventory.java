@@ -4,7 +4,6 @@ import com.winthier.custom.inventory.CustomInventory;
 import com.winthier.massstorage.sql.SQLItem;
 import com.winthier.massstorage.util.Msg;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import lombok.Getter;

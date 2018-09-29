@@ -12,6 +12,16 @@ commands:
     aliases: [ ms ]
     description: User interface
     permission: massstorage.ms
+    usage: |-
+      /ms - Open chest menu
+      /ms <item> - Search items and offer in storage chest
+      /ms store - Open storage chest
+      /ms help - Get help
+      /ms info - Get info about your mass storage
+      /ms dump - Store your entire inventory
+      /ms auto - Toggle automatic storage mode
+      /ms find <term> - Search items and show info
+      /ms buy <amount> - Buy additional storage space
   massstorageadmin:
     aliases: [ msadmin, msadm ]
     description: Admin interface

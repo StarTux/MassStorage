@@ -1,7 +1,7 @@
 # MassStorage
 Store simple items en masse in virtual chests.  The items are stored in a database where they can linger indefinitely.  Storage space is purchased via Vault economy.
 
-![Mass Storage Menu](https://github.com/StarTux/MassStorage/MassStorageMenu.jpg)
+![Mass Storage Menu](https://raw.githubusercontent.com/StarTux/MassStorage/master/MassStorageMenu.jpg)
 
 ## Description
 This plugin provides a virtual chest interface to insert items which will then be stored in the database.  Retrieval can either happen with a search term or via the chest menu which is organized in various categories.  Items can be removed like with any vanilla chest, and the menu offers additional click gestures to retrieve stacks and whole inventories worth, assuming there is enough capacity.

@@ -7,7 +7,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 import javax.persistence.Column;
-import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
@@ -15,14 +14,12 @@ import javax.persistence.Version;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 import org.bukkit.Material;
 
-@Entity
 @Table(name = "items",
        uniqueConstraints = @UniqueConstraint(columnNames = {"owner", "material"}))
-@Getter
-@Setter
-@NoArgsConstructor
+@Getter @Setter @NoArgsConstructor @ToString
 public final class SQLItem {
     @Id private Integer id;
     @Version private Date version;

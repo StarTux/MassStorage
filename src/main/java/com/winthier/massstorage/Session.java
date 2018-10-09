@@ -191,7 +191,7 @@ final class Session {
         }
         if (!dirtyItems.isEmpty()) {
             try {
-                MassStoragePlugin.getInstance().getDb().save(dirtyItems);
+                MassStoragePlugin.getInstance().getDb().saveAsync(dirtyItems, null);
             } catch (PersistenceException pe) {
                 pe.printStackTrace();
                 System.err.println(result.storedItemNames);
@@ -245,7 +245,7 @@ final class Session {
         }
         if (!dirtyItems.isEmpty()) {
             try {
-                MassStoragePlugin.getInstance().getDb().save(dirtyItems);
+                MassStoragePlugin.getInstance().getDb().saveAsync(dirtyItems, null);
             } catch (PersistenceException pe) {
                 pe.printStackTrace();
                 System.err.println(result.storedItemNames);
@@ -278,7 +278,7 @@ final class Session {
         }
         if (!dirtyItems.isEmpty()) {
             try {
-                MassStoragePlugin.getInstance().getDb().save(dirtyItems);
+                MassStoragePlugin.getInstance().getDb().saveAsync(dirtyItems, null);
             } catch (PersistenceException pe) {
                 pe.printStackTrace();
                 flush();
@@ -306,7 +306,7 @@ final class Session {
                 if (sqlPlayer.getName() == null
                     || !sqlPlayer.getName().equals(player.getName())) {
                     sqlPlayer.setName(player.getName());
-                    MassStoragePlugin.getInstance().getDb().save(sqlPlayer);
+                    MassStoragePlugin.getInstance().getDb().saveAsync(sqlPlayer, null);
                 }
             }
         }
@@ -332,7 +332,7 @@ final class Session {
     int addCapacity(int amount) {
         SQLPlayer player = getSQLPlayer();
         player.setCapacity(player.getCapacity() + amount);
-        MassStoragePlugin.getInstance().getDb().save(player);
+        MassStoragePlugin.getInstance().getDb().saveAsync(player, null);
         return player.getCapacity();
     }
 

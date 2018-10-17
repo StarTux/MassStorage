@@ -20,6 +20,7 @@ import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -51,6 +52,12 @@ public final class MassStoragePlugin extends JavaPlugin {
     @Override
     public void onDisable() {
         for (Session session: sessions.values()) session.close();
+        for (Player player: getServer().getOnlinePlayers()) {
+            InventoryView playerView = player.getOpenInventory();
+            if (playerView == null) continue;
+            if (!(playerView.getTopInventory().getHolder() instanceof MenuInventory)) continue;
+            player.closeInventory();
+        }
         sessions.clear();
     }
 

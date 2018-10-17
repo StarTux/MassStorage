@@ -1,6 +1,5 @@
 package com.winthier.massstorage;
 
-import com.winthier.custom.inventory.CustomInventory;
 import com.winthier.massstorage.sql.SQLItem;
 import com.winthier.massstorage.util.Msg;
 import java.util.ArrayList;
@@ -15,14 +14,17 @@ import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
+import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.InventoryHolder;
+import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
 @Getter
-public final class MenuInventory implements CustomInventory {
+public final class MenuInventory implements InventoryHolder {
     private final MassStoragePlugin plugin;
     private final Player player;
     private final Inventory inventory;
@@ -31,11 +33,18 @@ public final class MenuInventory implements CustomInventory {
     private long lastClick = 0;
     private boolean silentClose;
     private int openCategory = -1;
+    private InventoryView view = null;
 
     MenuInventory(MassStoragePlugin plugin, Player player) {
         this.plugin = plugin;
         this.player = player;
-        this.inventory = plugin.getServer().createInventory(player, 9 * 6, ChatColor.BLUE + "Mass Storage Menu");
+        this.inventory = plugin.getServer().createInventory(this, 9 * 6, ChatColor.BLUE + "Mass Storage Menu");
+    }
+
+    InventoryView open() {
+        if (this.view != null) throw new IllegalStateException("MenuInventory opened more than once!");
+        this.view = player.openInventory(this.inventory);
+        return this.view;
     }
 
     void prepareMain() {
@@ -117,8 +126,7 @@ public final class MenuInventory implements CustomInventory {
         itemView = true;
     }
 
-    @Override
-    public void onInventoryOpen(InventoryOpenEvent event) {
+    void onInventoryOpen(InventoryOpenEvent event) {
         Session session = plugin.getSession(player);
         int cat = session.getOpenCategory();
         if (cat < 0 || cat >= plugin.getCategories().size()) {
@@ -132,15 +140,13 @@ public final class MenuInventory implements CustomInventory {
         session.setOpenCategory(-1);
     }
 
-    @Override
-    public void onInventoryClose(InventoryCloseEvent event) {
+    void onInventoryClose(InventoryCloseEvent event) {
         if (!silentClose) {
             player.playSound(player.getEyeLocation(), Sound.BLOCK_CHEST_CLOSE, SoundCategory.MASTER, 0.2f, 1.4f);
         }
     }
 
-    @Override
-    public void onInventoryClick(InventoryClickEvent event) {
+    void onInventoryClick(InventoryClickEvent event) {
         if (event.getClickedInventory() == null) {
             if (itemView) {
                 inventory.clear();
@@ -244,5 +250,9 @@ public final class MenuInventory implements CustomInventory {
                 silentClose = true;
             }
         }
+    }
+
+    void onInventoryDrag(InventoryDragEvent event) {
+        event.setCancelled(true);
     }
 }

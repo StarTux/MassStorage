@@ -11,7 +11,6 @@ Storage space is limited per player, with a configurable starting amount.  Addit
 ## Requirements
 The plugin requires a few other plugins for economy and database as well as a properly configured **MySQL** database.
 - [SQL](https://github.com/StarTux/SQL)
-- [Custom](https://github.com/StarTux/Custom)
 - [Vault](https://github.com/MilkBowl/Vault)
 
 ## Commands

@@ -1,6 +1,5 @@
 package com.winthier.massstorage;
 
-import com.winthier.custom.CustomPlugin;
 import com.winthier.massstorage.sql.SQLItem;
 import com.winthier.massstorage.util.Msg;
 import java.util.ArrayList;
@@ -25,6 +24,7 @@ import org.bukkit.entity.Player;
 @RequiredArgsConstructor
 public final class MassStorageCommand implements TabExecutor {
     final MassStoragePlugin plugin;
+    final Map<UUID, PlayerContext> contexts = new HashMap<>();
 
     static class Page {
         final List<List<Object>> lines = new ArrayList<>();
@@ -79,7 +79,6 @@ public final class MassStorageCommand implements TabExecutor {
         return result;
     }
 
-    final Map<UUID, PlayerContext> contexts = new HashMap<>();
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         Player player = sender instanceof Player ? (Player)sender : null;
@@ -88,7 +87,7 @@ public final class MassStorageCommand implements TabExecutor {
         if (cmd == null) {
             Session session = plugin.getSession(player);
             session.setOpenCategory(-1);
-            CustomPlugin.getInstance().getInventoryManager().openInventory(player, new MenuInventory(plugin, player));
+            new MenuInventory(plugin, player).open();
             if (!session.isInformed()) {
                 session.setInformed(true);
                 menuUsage(player);

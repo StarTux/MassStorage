@@ -5,8 +5,8 @@ version: 0.1
 api-version: 1.13
 main: com.winthier.massstorage.MassStoragePlugin
 website: https://cavetale.com
-depend: [ SQL, Custom ]
-softdepend: [ Vault ]
+depend: [SQL]
+softdepend: [Vault]
 commands:
   massstorage:
     aliases: [ ms ]

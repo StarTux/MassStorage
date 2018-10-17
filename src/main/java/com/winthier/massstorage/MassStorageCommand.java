@@ -1,5 +1,6 @@
 package com.winthier.massstorage;
 
+import com.winthier.generic_events.GenericEvents;
 import com.winthier.massstorage.sql.SQLItem;
 import com.winthier.massstorage.util.Msg;
 import java.util.ArrayList;
@@ -237,8 +238,8 @@ public final class MassStorageCommand implements TabExecutor {
             int itemAmount = plugin.getConfig().getInt("BuyCapacity.Amount", 3 * 9 * 64) * amount;
             double price = plugin.getConfig().getDouble("BuyCapacity.Price", 500.0) * (double)amount;
             String displayName = plugin.getConfig().getString("BuyCapacity.DisplayName", "Chest");
-            String priceFormat = plugin.getVaultHandler().formatMoney(price);
-            if (!plugin.getVaultHandler().hasMoney(player, price)) {
+            String priceFormat = GenericEvents.formatMoney(price);
+            if (GenericEvents.getPlayerBalance(player.getUniqueId()) < price) {
                 Msg.warn(player, "You cannot afford %s.", priceFormat);
                 return true;
             }
@@ -286,9 +287,8 @@ public final class MassStorageCommand implements TabExecutor {
             int itemAmount = plugin.getConfig().getInt("BuyCapacity.Amount", 6 * 9 * 64) * amount;
             double price = plugin.getConfig().getDouble("BuyCapacity.Price", 500.0) * (double)amount;
             String displayName = plugin.getConfig().getString("BuyCapacity.DisplayName", "Double Chest");
-            String priceFormat = plugin.getVaultHandler().formatMoney(price);
-            if (!plugin.getVaultHandler().hasMoney(player, price)
-                || !plugin.getVaultHandler().takeMoney(player, price)) {
+            String priceFormat = GenericEvents.formatMoney(price);
+            if (!GenericEvents.takePlayerMoney(player.getUniqueId(), price, plugin, "" + itemAmount + " mass storage slots")) {
                 Msg.warn(player, "You cannot afford %s.", priceFormat);
                 return true;
             }
@@ -301,7 +301,7 @@ public final class MassStorageCommand implements TabExecutor {
             LinkedList<Item> items = new LinkedList<>();
             for (SQLItem sqlItem: plugin.getSession(player).getSQLItems().values()) {
                 Item item = sqlItem.getItem();
-                String itemName = plugin.getVaultHandler().getItemName(item).toLowerCase();
+                String itemName = plugin.getItemName(item.toItemStack()).toLowerCase();
                 if (itemName.equals(searchTerm)) {
                     items.addFirst(item);
                 } else if (itemName.contains(searchTerm)) {
@@ -321,6 +321,14 @@ public final class MassStorageCommand implements TabExecutor {
         String term = args.length > 0 ? args[args.length - 1].toLowerCase() : "";
         if (args.length <= 1) {
             return Arrays.asList("store", "help", "?", "info", "dump", "auto", "find", "search", "list", "page", "buy").stream().filter(s -> s.startsWith(term)).collect(Collectors.toList());
+        } else if (args.length == 2 && args[0].equals("buy")) {
+            String arg = args[1];
+            if (arg.isEmpty()) return Arrays.asList("1");
+            try {
+                int val = Integer.parseInt(arg);
+                if (val > 0) return Arrays.asList("" + val, "" + val * 10);
+            } catch (NumberFormatException nfe) { }
+            return Collections.emptyList();
         } else {
             return null;
         }
@@ -338,12 +346,12 @@ public final class MassStorageCommand implements TabExecutor {
         Msg.raw(player, " ", Msg.button(ChatColor.GRAY, "&7-n&8 = &7Sort by name&8; &7-a&8 = &7by amount", null, null));
         Msg.raw(player, Msg.button("/ms dump", "&a/ms dump\n&r&oDump inventory into Mass Storage", "/ms dump "), Msg.format(" &8-&r Dump inventory."));
         Msg.raw(player, Msg.button("/ms auto", "&a/ms auto\n&r&oToggle automatic storage", "/ms auto "), Msg.format(" &8-&r Toggle auto storage."));
-        String purchaseCost = plugin.getVaultHandler().formatMoney(plugin.getConfig().getDouble("BuyCapacity.Price", 500.0));
+        String purchaseCost = GenericEvents.formatMoney(plugin.getConfig().getDouble("BuyCapacity.Price", 500.0));
         Msg.raw(player, Msg.button("/ms buy &7[amount]", "&a/ms buy [amount]\n&r&oBuy additional storage\nPrice: " + purchaseCost, "/ms buy "), Msg.format(" &8-&r Buy additional storage."));
     }
 
     void quickUsage(Player player) {
-        String purchaseCost = plugin.getVaultHandler().formatMoney(plugin.getConfig().getDouble("BuyCapacity.Price", 500.0));
+        String purchaseCost = GenericEvents.formatMoney(plugin.getConfig().getDouble("BuyCapacity.Price", 500.0));
         Msg.raw(
             player,
             Msg.format(" &oClick here:&r "),

@@ -138,7 +138,7 @@ final class Session {
         private Map<String, Integer> rejectedItemNames = new HashMap<>();
         private Map<String, Integer> storedItemNames = new HashMap<>();
         void addItemName(Map<String, Integer> map, ItemStack item) {
-            String itemName = MassStoragePlugin.getInstance().getVaultHandler().getItemName(item);
+            String itemName = MassStoragePlugin.getInstance().getItemName(item);
             Integer amount = map.get(itemName);
             if (amount == null) amount = 0;
             map.put(itemName, amount + item.getAmount());

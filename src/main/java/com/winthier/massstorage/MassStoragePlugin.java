@@ -1,8 +1,8 @@
 package com.winthier.massstorage;
 
+import com.winthier.generic_events.GenericEvents;
 import com.winthier.massstorage.sql.SQLItem;
 import com.winthier.massstorage.sql.SQLPlayer;
-import com.winthier.massstorage.vault.VaultHandler;
 import com.winthier.sql.SQLDatabase;
 import java.io.File;
 import java.io.InputStreamReader;
@@ -32,7 +32,6 @@ public final class MassStoragePlugin extends JavaPlugin {
     private final Map<UUID, Session> sessions = new HashMap<>();
     private final List<Category> categories = new ArrayList<>();
     private Set<Material> materialBlacklist = null;
-    private VaultHandler vaultHandler = null;
     private SQLDatabase db;
     private final MassStorageCommand massStorageCommand = new MassStorageCommand(this);
 
@@ -84,17 +83,6 @@ public final class MassStoragePlugin extends JavaPlugin {
             }
         }
         return materialBlacklist;
-    }
-
-    VaultHandler getVaultHandler() {
-        if (vaultHandler == null) {
-            if (null != getServer().getPluginManager().getPlugin("Vault")) {
-                vaultHandler = new VaultHandler();
-            } else {
-                getLogger().warning("Could not find Vault!");
-            }
-        }
-        return vaultHandler;
     }
 
     void reloadAll() {
@@ -183,6 +171,22 @@ public final class MassStoragePlugin extends JavaPlugin {
             Session.StorageResult result = session.storePlayerInventory(player);
             session.reportStorageResult(player, result);
         }
+    }
+
+    String getItemName(ItemStack item) {
+        String genName = GenericEvents.getItemName(item);
+        if (genName != null) return genName;
+        String name = item.getType().name();
+        String[] arr = name.split("_");
+        if (arr.length == 0) return name;
+        for (int i = 0; i < arr.length; ++i) {
+            arr[i] = arr[i].substring(0, 1) + arr[i].substring(1).toLowerCase();
+        }
+        StringBuilder sb = new StringBuilder(arr[0]);
+        for (int i = 1; i < arr.length; ++i) {
+            sb.append(" ").append(arr[i]);
+        }
+        return sb.toString();
     }
 }
 

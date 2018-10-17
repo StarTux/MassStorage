@@ -1,17 +1,17 @@
 # MassStorage
-Store simple items en masse in virtual chests.  The items are stored in a database where they can linger indefinitely.  Storage space is purchased via Vault economy.
+Store simple items en masse in virtual chests.  The items are stored in a database where they can linger indefinitely.  Storage space is purchased via GenericEvents economy.
 
 ![Mass Storage Menu](https://raw.githubusercontent.com/StarTux/MassStorage/master/MassStorageMenu.jpg)
 
 ## Description
 This plugin provides a virtual chest interface to insert items which will then be stored in the database.  Retrieval can either happen with a search term or via the chest menu which is organized in various categories.  Items can be removed like with any vanilla chest, and the menu offers additional click gestures to retrieve stacks and whole inventories worth, assuming there is enough capacity.
 
-Storage space is limited per player, with a configurable starting amount.  Additional space can be purchased by spending currency in the Vault economy, int amounts and for a price which is also configurable.
+Storage space is limited per player, with a configurable starting amount.  Additional space can be purchased by spending currency in the GenericEvents economy, int amounts and for a price which is also configurable.
 
 ## Requirements
 The plugin requires a few other plugins for economy and database as well as a properly configured **MySQL** database.
 - [SQL](https://github.com/StarTux/SQL)
-- [Vault](https://github.com/MilkBowl/Vault)
+- [GenericEvents](https://github.com/StarTux/GenericEvents)
 
 ## Commands
 Even with the focus on a custom chest menu, players may choose to use a set of simple commands to get additional info or search for items by name.

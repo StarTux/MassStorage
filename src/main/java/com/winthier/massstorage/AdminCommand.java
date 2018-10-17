@@ -45,7 +45,7 @@ public final class AdminCommand implements CommandExecutor {
             sender.sendMessage("Used: " + total + "/" + sqlPlayer.getCapacity());
             sender.sendMessage("Free: " + (sqlPlayer.getCapacity() - total));
             StringBuilder sb = new StringBuilder("Items");
-            for (SQLItem item: items) sb.append(" ").append(item.getAmount()).append("x").append(plugin.getVaultHandler().getItemName(item.getItem()));
+            for (SQLItem item: items) sb.append(" ").append(item.getAmount()).append("x").append(plugin.getItemName(item.getItem().toItemStack()));
             sender.sendMessage(sb.toString());
         } else if (cmd.equals("grant") && args.length == 3) {
             Player target = plugin.getServer().getPlayer(args[1]);

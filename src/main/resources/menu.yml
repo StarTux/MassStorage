@@ -25,7 +25,7 @@ Categories:
   - SPONGE
   - WET_SPONGE
 - Name: Topsoil
-  Icon: GRASS
+  Icon: GRASS_BLOCK
   Materials:
   - DIRT
   - PODZOL

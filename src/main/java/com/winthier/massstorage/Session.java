@@ -10,7 +10,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import javax.persistence.PersistenceException;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -26,6 +25,7 @@ import org.bukkit.inventory.PlayerInventory;
 
 @RequiredArgsConstructor @Getter
 final class Session {
+    private final MassStoragePlugin plugin;
     private final UUID uuid;
     private static final int CHEST_SIZE = 6 * 9;
     private Inventory inventory = null;
@@ -138,7 +138,7 @@ final class Session {
         private Map<String, Integer> rejectedItemNames = new HashMap<>();
         private Map<String, Integer> storedItemNames = new HashMap<>();
         void addItemName(Map<String, Integer> map, ItemStack item) {
-            String itemName = MassStoragePlugin.getInstance().getItemName(item);
+            String itemName = Session.this.plugin.getItemName(item);
             Integer amount = map.get(itemName);
             if (amount == null) amount = 0;
             map.put(itemName, amount + item.getAmount());
@@ -190,13 +190,7 @@ final class Session {
             }
         }
         if (!dirtyItems.isEmpty()) {
-            try {
-                MassStoragePlugin.getInstance().getDb().saveAsync(dirtyItems, null);
-            } catch (PersistenceException pe) {
-                pe.printStackTrace();
-                System.err.println(result.storedItemNames);
-                flush();
-            }
+            this.plugin.saveToDatabase(dirtyItems);
         }
         return result;
     }
@@ -244,13 +238,7 @@ final class Session {
             }
         }
         if (!dirtyItems.isEmpty()) {
-            try {
-                MassStoragePlugin.getInstance().getDb().saveAsync(dirtyItems, null);
-            } catch (PersistenceException pe) {
-                pe.printStackTrace();
-                System.err.println(result.storedItemNames);
-                flush();
-            }
+            this.plugin.saveToDatabase(dirtyItems);
         }
         return result;
     }
@@ -277,12 +265,7 @@ final class Session {
             } while (true);
         }
         if (!dirtyItems.isEmpty()) {
-            try {
-                MassStoragePlugin.getInstance().getDb().saveAsync(dirtyItems, null);
-            } catch (PersistenceException pe) {
-                pe.printStackTrace();
-                flush();
-            }
+            this.plugin.saveToDatabase(dirtyItems);
         }
         return result;
     }
@@ -306,7 +289,7 @@ final class Session {
                 if (sqlPlayer.getName() == null
                     || !sqlPlayer.getName().equals(player.getName())) {
                     sqlPlayer.setName(player.getName());
-                    MassStoragePlugin.getInstance().getDb().saveAsync(sqlPlayer, null);
+                    this.plugin.saveToDatabase(sqlPlayer);
                 }
             }
         }
@@ -332,7 +315,7 @@ final class Session {
     int addCapacity(int amount) {
         SQLPlayer player = getSQLPlayer();
         player.setCapacity(player.getCapacity() + amount);
-        MassStoragePlugin.getInstance().getDb().saveAsync(player, null);
+        this.plugin.saveToDatabase(player);
         return player.getCapacity();
     }
 

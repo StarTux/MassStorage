@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import javax.persistence.PersistenceException;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.bukkit.ChatColor;
@@ -34,6 +35,7 @@ public final class MassStoragePlugin extends JavaPlugin {
     private Set<Material> materialBlacklist = null;
     private SQLDatabase db;
     private final MassStorageCommand massStorageCommand = new MassStorageCommand(this);
+    private boolean saveAsync = false;
 
     @Override
     public void onEnable() {
@@ -46,10 +48,12 @@ public final class MassStoragePlugin extends JavaPlugin {
         db.registerTables(SQLItem.class, SQLPlayer.class);
         db.createAllTables();
         getServer().getScheduler().runTaskTimer(this, () -> on20Ticks(), 20, 20);
+        this.saveAsync = true;
     }
 
     @Override
     public void onDisable() {
+        this.saveAsync = false;
         for (Session session: sessions.values()) session.close();
         for (Player player: getServer().getOnlinePlayers()) {
             InventoryView playerView = player.getOpenInventory();
@@ -58,13 +62,26 @@ public final class MassStoragePlugin extends JavaPlugin {
             player.closeInventory();
         }
         sessions.clear();
+        instance = null;
+    }
+
+    void saveToDatabase(Object rows) {
+        if (this.saveAsync) {
+            MassStoragePlugin.getInstance().getDb().saveAsync(rows, null);
+        } else {
+            try {
+                MassStoragePlugin.getInstance().getDb().save(rows);
+            } catch (PersistenceException pe) {
+                pe.printStackTrace();
+            }
+        }
     }
 
     Session getSession(Player player) {
         final UUID uuid = player.getUniqueId();
         Session result = sessions.get(uuid);
         if (result == null) {
-            result = new Session(uuid);
+            result = new Session(this, uuid);
             sessions.put(uuid, result);
         }
         return result;
@@ -87,6 +104,7 @@ public final class MassStoragePlugin extends JavaPlugin {
 
     void reloadAll() {
         saveDefaultConfig();
+        saveResource("menu.yml", false);
         reloadConfig();
         materialBlacklist = null;
         if (sessions != null) {

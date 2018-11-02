@@ -20,11 +20,12 @@ import org.bukkit.Sound;
 import org.bukkit.SoundCategory;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 
 @RequiredArgsConstructor @Getter
-final class Session {
+final class Session implements InventoryHolder {
     private final MassStoragePlugin plugin;
     private final UUID uuid;
     private static final int CHEST_SIZE = 6 * 9;
@@ -46,7 +47,7 @@ final class Session {
         final Player player = getPlayer();
         if (player == null) return null;
         if (inventory != null) return inventory;
-        Inventory inv = Bukkit.getServer().createInventory(player, CHEST_SIZE, "Mass Storage");
+        Inventory inv = Bukkit.getServer().createInventory(this, CHEST_SIZE, "Mass Storage");
         player.openInventory(inv);
         this.inventory = inv;
         player.playSound(player.getEyeLocation(), Sound.BLOCK_CHEST_OPEN, SoundCategory.MASTER, 0.2f, 1.5f);
@@ -58,12 +59,13 @@ final class Session {
         Player player = getPlayer();
         if (player == null) return;
         player.closeInventory();
+        onInventoryClose();
     }
 
     StorageResult onInventoryClose() {
         Inventory inv = this.inventory;
         this.inventory = null;
-        if (inv == null) return null; // Should never happen.
+        if (inv == null) return null;
         StorageResult result = storeItems(inv.getContents());
         Player player = getPlayer();
         if (player != null) reportStorageResult(player, result);

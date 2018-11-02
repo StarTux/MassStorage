@@ -54,12 +54,15 @@ public final class MassStoragePlugin extends JavaPlugin {
     @Override
     public void onDisable() {
         this.saveAsync = false;
-        for (Session session: sessions.values()) session.close();
+        for (Session session: sessions.values()) {
+            session.close();
+        }
         for (Player player: getServer().getOnlinePlayers()) {
             InventoryView playerView = player.getOpenInventory();
             if (playerView == null) continue;
-            if (!(playerView.getTopInventory().getHolder() instanceof MenuInventory)) continue;
-            player.closeInventory();
+            if (playerView.getTopInventory().getHolder() instanceof MenuInventory) {
+                player.closeInventory();
+            }
         }
         sessions.clear();
         instance = null;

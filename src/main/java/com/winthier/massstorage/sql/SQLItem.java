@@ -39,7 +39,7 @@ public final class SQLItem {
     }
 
     public boolean prep(MassStoragePlugin plugin) {
-        mat = plugin.materialOf(material);
+        mat = plugin.materialOf(material.toUpperCase());
         return mat != null;
     }
 

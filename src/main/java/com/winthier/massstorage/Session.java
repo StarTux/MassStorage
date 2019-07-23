@@ -275,7 +275,7 @@ final class Session implements InventoryHolder {
     Map<Item, SQLItem> getSQLItems() {
         if (sqlItems == null) {
             Map<Item, SQLItem> result = new HashMap<>();
-            for (SQLItem item: SQLItem.find(uuid)) {
+            for (SQLItem item: SQLItem.find(plugin, uuid)) {
                 result.put(item.getItem(), item);
             }
             sqlItems = result;

@@ -39,7 +39,7 @@ public final class AdminCommand implements CommandExecutor {
                 return true;
             }
             int total = 0;
-            List<SQLItem> items = SQLItem.find(sqlPlayer.getUuid());
+            List<SQLItem> items = SQLItem.find(plugin, sqlPlayer.getUuid());
             for (SQLItem item: items) total += item.getAmount();
             sender.sendMessage("Storage info of " + sqlPlayer.getName());
             sender.sendMessage("Used: " + total + "/" + sqlPlayer.getCapacity());

@@ -1,50 +1,62 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project>
   <modelVersion>4.0.0</modelVersion>
+
   <groupId>com.winthier.massstorage</groupId>
   <artifactId>massstorage</artifactId>
   <packaging>jar</packaging>
   <version>0.1-SNAPSHOT</version>
+
   <name>MassStorage</name>
-  <url>https://cavetale.com</url>
+  <url>https://github.com/StarTux/MassStorage</url>
+
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
   <repositories>
+
     <!-- Spigot Repo -->
     <repository>
       <id>spigot-repo</id>
       <url>https://hub.spigotmc.org/nexus/content/groups/public/</url>
     </repository>
+
   </repositories>
   <dependencies>
+
     <!-- Spigot-API -->
     <dependency>
       <groupId>org.spigotmc</groupId>
       <artifactId>spigot-api</artifactId>
-      <version>1.13.1-R0.1-SNAPSHOT</version>
+      <version>1.14.4-R0.1-SNAPSHOT</version>
+      <optional>true</optional>
     </dependency>
+
     <!-- Lombok -->
     <dependency>
       <groupId>org.projectlombok</groupId>
       <artifactId>lombok</artifactId>
       <version>1.14.8</version>
-      <scope>provided</scope>
+      <scope>compile</scope>
     </dependency>
+
     <!-- SQL -->
     <dependency>
       <groupId>com.winthier.sql</groupId>
       <artifactId>sql</artifactId>
       <version>0.1-SNAPSHOT</version>
       <scope>provided</scope>
+      <optional>true</optional>
     </dependency>
+
     <!-- GenericEvents -->
     <dependency>
       <groupId>com.winthier.generic_events</groupId>
       <artifactId>generic_events</artifactId>
       <version>0.1-SNAPSHOT</version>
       <scope>provided</scope>
+      <optional>true</optional>
     </dependency>
+
   </dependencies>
   <build>
     <finalName>${project.name}</finalName>

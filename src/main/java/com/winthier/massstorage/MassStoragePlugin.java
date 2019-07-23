@@ -94,12 +94,9 @@ public final class MassStoragePlugin extends JavaPlugin {
         if (materialBlacklist == null) {
             materialBlacklist = EnumSet.noneOf(Material.class);
             for (String str: getConfig().getStringList("MaterialBlacklist")) {
-                try {
-                    Material mat = Material.valueOf(str.toUpperCase());
-                    materialBlacklist.add(mat);
-                } catch (IllegalArgumentException iae) {
-                    getLogger().warning("Unknown material: " + str);
-                }
+                Material mat = materialOf(str.toUpperCase());
+                if (mat == null) continue;
+                materialBlacklist.add(mat);
             }
         }
         return materialBlacklist;
@@ -139,23 +136,16 @@ public final class MassStoragePlugin extends JavaPlugin {
                 } else {
                     materials = EnumSet.noneOf(Material.class);
                     for (String str: section.getStringList("Materials")) {
-                        try {
-                            materials.add(Material.valueOf(str));
-                        } catch (IllegalArgumentException iae) {
-                            iae.printStackTrace();
-                            continue;
-                        }
+                        Material mat = materialOf(str);
+                        if (mat == null) continue;
+                        materials.add(mat);
                     }
                     miscMaterials.removeAll(materials);
                 }
                 String name = section.getString("Name");
-                ItemStack icon;
-                try {
-                    icon = new ItemStack(Material.valueOf(section.getString("Icon")));
-                } catch (IllegalArgumentException iae) {
-                    iae.printStackTrace();
-                    icon = new ItemStack(Material.SMOOTH_STONE);
-                }
+                Material iconMat = materialOf(section.getString("Icon"));
+                if (iconMat == null) iconMat = Material.SMOOTH_STONE;
+                ItemStack icon = new ItemStack(iconMat);
                 ItemMeta meta = icon.getItemMeta();
                 meta.setDisplayName(ChatColor.RESET + name);
                 icon.setItemMeta(meta);
@@ -164,6 +154,15 @@ public final class MassStoragePlugin extends JavaPlugin {
             } catch (Exception e) {
                 e.printStackTrace();
             }
+        }
+    }
+
+    public Material materialOf(String str) {
+        try {
+            return Material.valueOf(str);
+        } catch (IllegalArgumentException iae) {
+            getLogger().warning("Invalid material: " + str);
+            return null;
         }
     }
 

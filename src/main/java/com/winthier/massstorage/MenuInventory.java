@@ -158,6 +158,7 @@ public final class MenuInventory implements InventoryHolder {
         if (!event.getClickedInventory().equals(event.getView().getTopInventory())) return;
         int slot = event.getSlot();
         if (slot < 0 || slot > size) return;
+        if (event.getCurrentItem() == null) return;
         if (event.getCurrentItem().getType() == Material.AIR) return;
         Session session = plugin.getSession(player);
         long now = System.currentTimeMillis();

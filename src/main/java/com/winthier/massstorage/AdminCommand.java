@@ -9,6 +9,7 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 
 @RequiredArgsConstructor
 public final class AdminCommand implements CommandExecutor {
@@ -82,6 +83,30 @@ public final class AdminCommand implements CommandExecutor {
             sb = new StringBuilder(category.name).append(":");
             for (Material mat: category.materials) sb.append(" ").append(mat.name().toLowerCase());
             sender.sendMessage(sb.toString());
+        } else if (cmd.equals("misc") && (args.length == 1 || args.length == 2)) {
+            String pat = args.length < 2 ? null : args[1].toUpperCase();
+            int count = 0;
+            StringBuilder sb = new StringBuilder();
+            for (Material mat : plugin.miscMaterials) {
+                if (pat != null && !mat.name().contains(pat)) continue;
+                sb.append("\n  - ").append(mat.name());
+                count += 1;
+            }
+            sender.sendMessage("" + count + " mats:" + sb.toString());
+        } else if (cmd.equals("one") && args.length == 1) {
+            if (player == null) return false;
+            Session session = plugin.getSession(player);
+            int count = 0;
+            for (Material mat: Material.values()) {
+                if (!plugin.getMaterialBlacklist().contains(mat) && mat.isItem() && !mat.isLegacy() && !mat.name().startsWith("LEGACY_")) {
+                    SQLItem sqli = session.getSQLItems().get(new Item(mat));
+                    if (sqli == null || sqli.getAmount() == 0) {
+                        session.storeItems(new ItemStack(mat));
+                        count += 1;
+                    }
+                }
+            }
+            player.sendMessage(count + " items stored");
         } else {
             return false;
         }

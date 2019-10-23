@@ -36,6 +36,7 @@ public final class MassStoragePlugin extends JavaPlugin {
     private SQLDatabase db;
     private final MassStorageCommand massStorageCommand = new MassStorageCommand(this);
     private boolean saveAsync = false;
+    Set<Material> miscMaterials = EnumSet.noneOf(Material.class);
 
     @Override
     public void onEnable() {
@@ -95,7 +96,12 @@ public final class MassStoragePlugin extends JavaPlugin {
             materialBlacklist = EnumSet.noneOf(Material.class);
             for (String str: getConfig().getStringList("MaterialBlacklist")) {
                 Material mat = materialOf(str.toUpperCase());
-                if (mat == null) continue;
+                if (mat == null) {
+                    continue;
+                } else if (!mat.isItem() || mat.isLegacy()) {
+                    getLogger().warning("MaterialBlacklist: Obsolete material: " + mat);
+                    continue;
+                }
                 materialBlacklist.add(mat);
             }
         }
@@ -104,7 +110,9 @@ public final class MassStoragePlugin extends JavaPlugin {
 
     void reloadAll() {
         saveDefaultConfig();
-        saveResource("menu.yml", false);
+        if (!new File(getDataFolder(), "menu.yml").exists()) {
+            saveResource("menu.yml", false);
+        }
         reloadConfig();
         materialBlacklist = null;
         if (sessions != null) {
@@ -113,7 +121,6 @@ public final class MassStoragePlugin extends JavaPlugin {
             }
         }
         categories.clear();
-        Set<Material> miscMaterials = EnumSet.noneOf(Material.class);
         for (Material mat: Material.values()) {
             if (!getMaterialBlacklist().contains(mat) && mat.isItem() && !mat.isLegacy() && !mat.name().startsWith("LEGACY_")) {
                 miscMaterials.add(mat);
@@ -131,18 +138,23 @@ public final class MassStoragePlugin extends JavaPlugin {
             try {
                 boolean misc = section.getBoolean("Misc");
                 Set<Material> materials;
+                String name = section.getString("Name");
                 if (misc) {
                     materials = miscMaterials;
                 } else {
                     materials = EnumSet.noneOf(Material.class);
                     for (String str: section.getStringList("Materials")) {
                         Material mat = materialOf(str);
-                        if (mat == null) continue;
+                        if (mat == null) {
+                            continue;
+                        } else if (!mat.isItem() || mat.isLegacy()) {
+                            getLogger().warning("Categories: Obsolete material: " + mat);
+                            continue;
+                        }
                         materials.add(mat);
                     }
                     miscMaterials.removeAll(materials);
                 }
-                String name = section.getString("Name");
                 Material iconMat = materialOf(section.getString("Icon"));
                 if (iconMat == null) iconMat = Material.SMOOTH_STONE;
                 ItemStack icon = new ItemStack(iconMat);

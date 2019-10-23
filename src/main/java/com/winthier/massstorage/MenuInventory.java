@@ -93,7 +93,7 @@ public final class MenuInventory implements InventoryHolder {
         //
         int index = 9;
         for (Category category: plugin.getCategories()) {
-            if (category.misc && !session.isDebugModeEnabled()) continue;
+            // if (category.misc && !session.isDebugModeEnabled()) continue;
             if (category.materials.isEmpty()) continue;
             inventory.setItem(index++, category.icon.clone());
         }

@@ -106,6 +106,8 @@ public final class MassStorageCommand implements TabExecutor {
             player.sendMessage("");
             Msg.info(player, "&9&lMass Storage&r Info");
             Msg.raw(player, " ", Msg.button(ChatColor.GRAY, plugin.getConfig().getString("CommandHelp", ""), null, null));
+            int storage = plugin.getSession(player).getStorage();
+            Msg.send(player, " &7&oTotal storage:&f %d items", storage);
             quickUsage(player);
             player.sendMessage("");
         } else if (cmd.equals("dump") && args.length == 1) {

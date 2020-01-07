@@ -41,7 +41,7 @@ public final class MassStoragePlugin extends JavaPlugin {
         getCommand("massstorageadmin").setExecutor(new AdminCommand(this));
         getServer().getPluginManager().registerEvents(new InventoryListener(this), this);
         db = new SQLDatabase(this);
-        db.registerTables(SQLItem.class, SQLPlayer.class);
+        db.registerTables(SQLItem.class);
         db.createAllTables();
         getServer().getScheduler().runTaskTimer(this, () -> on20Ticks(), 20, 20);
         this.saveAsync = true;

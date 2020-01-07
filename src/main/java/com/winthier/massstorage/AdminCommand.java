@@ -107,27 +107,6 @@ public final class AdminCommand implements CommandExecutor {
             player.sendMessage(count + " items stored");
             return true;
         }
-        case "reimburse": {
-            if (args.length != 1) return false;
-            List<SQLPlayer> rows = plugin.db.find(SQLPlayer.class).findList();
-            sender.sendMessage("" + rows.size() + " players found.");
-            int i = 0;
-            for (SQLPlayer row : rows) {
-                int amount = (row.capacity - 1728) / 1728;
-                if (amount <= 0) continue;
-                String name = row.name;
-                int money = amount * 500;
-                sender.sendMessage("" + (i++) + ":"
-                                   + " player=" + name
-                                   + " amount=" + amount
-                                   + " money=" + money);
-                GenericEvents.givePlayerMoney(row.uuid, (double) money, plugin,
-                                              "Mass storage reimbursement for "
-                                              + amount + " chests.");
-            }
-            sender.sendMessage("Reimbursements done.");
-            return true;
-        }
         default:
             return false;
         }

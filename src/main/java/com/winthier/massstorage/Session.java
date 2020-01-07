@@ -1,7 +1,5 @@
 package com.winthier.massstorage;
 
-import com.winthier.massstorage.sql.SQLItem;
-import com.winthier.massstorage.sql.SQLPlayer;
 import com.winthier.massstorage.util.Msg;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -26,18 +24,16 @@ import org.bukkit.inventory.PlayerInventory;
 
 @RequiredArgsConstructor @Getter
 final class Session implements InventoryHolder {
-    private final MassStoragePlugin plugin;
-    private final UUID uuid;
-    private static final int CHEST_SIZE = 6 * 9;
-    private Inventory inventory = null;
-    private Map<Item, SQLItem> sqlItems = null;
-    private SQLPlayer sqlPlayer = null;
-    @Setter private UUID buyConfirmationCode = null;
-    @Setter private boolean autoStorageEnabled = false;
-    @Setter private boolean debugModeEnabled = false;
-    @Setter private long lastAutoStorage = 0;
-    @Setter private int openCategory = -1;
-    @Setter private boolean informed = false;
+    final MassStoragePlugin plugin;
+    final UUID uuid;
+    static final int CHEST_SIZE = 6 * 9;
+    Inventory inventory = null;
+    Map<Item, SQLItem> sqlItems = null;
+    @Setter boolean autoStorageEnabled = false;
+    @Setter boolean debugModeEnabled = false;
+    @Setter long lastAutoStorage = 0;
+    @Setter int openCategory = -1;
+    @Setter boolean informed = false;
 
     Player getPlayer() {
         return Bukkit.getServer().getPlayer(uuid);
@@ -74,7 +70,7 @@ final class Session implements InventoryHolder {
     }
 
     void reportStorageResult(Player player, StorageResult result) {
-        for (ItemStack drop: player.getInventory().addItem(result.returnedItems.toArray(new ItemStack[0])).values()) {
+        for (ItemStack drop : player.getInventory().addItem(result.returnedItems.toArray(new ItemStack[0])).values()) {
             player.getWorld().dropItem(player.getEyeLocation(), drop).setPickupDelay(0);
         }
         int storedItemCount = result.getStoredItemCount();
@@ -83,7 +79,7 @@ final class Session implements InventoryHolder {
             List<Object> messages = new ArrayList<>();
             if (storedItemCount > 0) {
                 StringBuilder tooltip = new StringBuilder("&aStored items: &2").append(storedItemCount);
-                for (Map.Entry<String, Integer> entry: result.storedItemNames.entrySet()) {
+                for (Map.Entry<String, Integer> entry : result.storedItemNames.entrySet()) {
                     tooltip.append("\n&a").append(entry.getKey()).append("&2: ").append(entry.getValue());
                 }
                 messages.add(Msg.button(ChatColor.WHITE,
@@ -93,12 +89,9 @@ final class Session implements InventoryHolder {
             }
             if (returnedItemCount > 0) {
                 StringBuilder tooltip = new StringBuilder("&4Returned items: &c").append(returnedItemCount);
-                if (result.outOfStorage) {
-                    tooltip.append("\n&4Out of storage: &c").append(getCapacity());
-                }
                 if (!result.rejectedItemNames.isEmpty()) {
                     tooltip.append("\n&4Unable to store items:");
-                    for (Map.Entry<String, Integer> entry: result.rejectedItemNames.entrySet()) {
+                    for (Map.Entry<String, Integer> entry : result.rejectedItemNames.entrySet()) {
                         tooltip.append("\n&8- &c").append(entry.getKey()).append("&4: ").append(entry.getValue());
                     }
                 }
@@ -107,11 +100,10 @@ final class Session implements InventoryHolder {
                                         Msg.format(tooltip.toString()),
                                         null));
             }
-            messages.add(Msg.format("Free storage: &9%d&r items.", getFreeStorage()));
             List<Object> json = new ArrayList<>();
             json.add("");
             json.add(Msg.pluginTag());
-            for (Object o: messages) {
+            for (Object o : messages) {
                 json.add(" ");
                 json.add(o);
             }
@@ -127,15 +119,14 @@ final class Session implements InventoryHolder {
         final List<ItemStack> storedItems = new ArrayList<>();
         int getReturnedItemCount() {
             int result = 0;
-            for (ItemStack item: returnedItems) result += item.getAmount();
+            for (ItemStack item : returnedItems) result += item.getAmount();
             return result;
         }
         int getStoredItemCount() {
             int result = 0;
-            for (ItemStack item: storedItems) result += item.getAmount();
+            for (ItemStack item : storedItems) result += item.getAmount();
             return result;
         }
-        private boolean outOfStorage = false;
         @Setter private boolean shouldReportEmpty = false;
         private Map<String, Integer> rejectedItemNames = new HashMap<>();
         private Map<String, Integer> storedItemNames = new HashMap<>();
@@ -155,19 +146,16 @@ final class Session implements InventoryHolder {
 
     StorageResult storePlayerInventory(Player player) {
         PlayerInventory inv = player.getInventory();
-        int capacity = getCapacity();
         int storage = getStorage();
         Set<SQLItem> dirtyItems = new HashSet<>();
         StorageResult result = new StorageResult();
-        for (int i = 9; i < 36; ++i) {
+        for (int i = 9; i < 36; i += 1) {
             ItemStack item = inv.getItem(i);
             if (item == null || item.getType() == Material.AIR) {
                 continue; // Ignore
             } else if (item.getAmount() <= 0) {
                 continue; // Ignore. Warn maybe?
-            } else if (storage >= capacity) {
-                result.outOfStorage = true;
-            } else if (!Item.canStore(item)) {
+            } else if (!plugin.canStore(item)) {
                 continue; // Ignore
             } else {
                 // Fetch SQL item
@@ -178,7 +166,7 @@ final class Session implements InventoryHolder {
                     getSQLItems().put(itemKey, sqlItem);
                 }
                 dirtyItems.add(sqlItem);
-                int storedAmount = Math.min(item.getAmount(), capacity - storage);
+                int storedAmount = item.getAmount();
                 sqlItem.setAmount(sqlItem.getAmount() + storedAmount);
                 storage += storedAmount;
                 if (item.getAmount() > storedAmount) {
@@ -199,20 +187,15 @@ final class Session implements InventoryHolder {
 
     // Returns items that could not be stored
     StorageResult storeItems(ItemStack... items) {
-        int capacity = getCapacity();
         int storage = getStorage();
         Set<SQLItem> dirtyItems = new HashSet<>();
         StorageResult result = new StorageResult();
-        for (ItemStack item: items) {
+        for (ItemStack item : items) {
             if (item == null || item.getType() == Material.AIR) {
                 continue; // Ignore
             } else if (item.getAmount() <= 0) {
                 continue; // Ignore. Warn maybe?
-            } else if (storage >= capacity) {
-                result.returnedItems.add(item);
-                result.addRejectedItemName(item);
-                result.outOfStorage = true;
-            } else if (!Item.canStore(item)) {
+            } else if (!plugin.canStore(item)) {
                 result.returnedItems.add(item);
                 result.addRejectedItemName(item);
             } else {
@@ -224,7 +207,7 @@ final class Session implements InventoryHolder {
                     getSQLItems().put(itemKey, sqlItem);
                 }
                 dirtyItems.add(sqlItem);
-                int storedAmount = Math.min(item.getAmount(), capacity - storage);
+                int storedAmount = item.getAmount();
                 sqlItem.setAmount(sqlItem.getAmount() + storedAmount);
                 storage += storedAmount;
                 if (item.getAmount() > storedAmount) {
@@ -232,7 +215,6 @@ final class Session implements InventoryHolder {
                     returnedItem.setAmount(item.getAmount() - storedAmount);
                     result.returnedItems.add(returnedItem);
                     result.addRejectedItemName(returnedItem);
-                    result.outOfStorage = true;
                     item.setAmount(storedAmount);
                 }
                 result.storedItems.add(item);
@@ -251,7 +233,7 @@ final class Session implements InventoryHolder {
         int invIndex = 0;
         Set<SQLItem> dirtyItems = new HashSet<>();
         int result = 0;
-    itemLoop: for (Item itemKey: itemKeys) {
+    itemLoop: for (Item itemKey : itemKeys) {
             do {
                 while (inv.getItem(invIndex) != null && inv.getItem(invIndex).getType() != Material.AIR) {
                     invIndex += 1;
@@ -275,7 +257,7 @@ final class Session implements InventoryHolder {
     Map<Item, SQLItem> getSQLItems() {
         if (sqlItems == null) {
             Map<Item, SQLItem> result = new HashMap<>();
-            for (SQLItem item: SQLItem.find(plugin, uuid)) {
+            for (SQLItem item : SQLItem.find(plugin, uuid)) {
                 result.put(item.getItem(), item);
             }
             sqlItems = result;
@@ -283,46 +265,15 @@ final class Session implements InventoryHolder {
         return sqlItems;
     }
 
-    SQLPlayer getSQLPlayer() {
-        if (sqlPlayer == null) {
-            sqlPlayer = SQLPlayer.get(uuid);
-            Player player = getPlayer();
-            if (player != null) {
-                if (sqlPlayer.getName() == null
-                    || !sqlPlayer.getName().equals(player.getName())) {
-                    sqlPlayer.setName(player.getName());
-                    this.plugin.saveToDatabase(sqlPlayer);
-                }
-            }
-        }
-        return sqlPlayer;
-    }
-
     int getStorage() {
         int result = 0;
-        for (SQLItem item: getSQLItems().values()) {
+        for (SQLItem item : getSQLItems().values()) {
             result += item.getAmount();
         }
         return result;
     }
 
-    int getCapacity() {
-        return getSQLPlayer().getCapacity();
-    }
-
-    int getFreeStorage() {
-        return getCapacity() - getStorage();
-    }
-
-    int addCapacity(int amount) {
-        SQLPlayer player = getSQLPlayer();
-        player.setCapacity(player.getCapacity() + amount);
-        this.plugin.saveToDatabase(player);
-        return player.getCapacity();
-    }
-
     void flush() {
-        sqlPlayer = null;
         sqlItems = null;
     }
 }

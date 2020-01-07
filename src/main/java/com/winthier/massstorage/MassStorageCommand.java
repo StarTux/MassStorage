@@ -1,7 +1,5 @@
 package com.winthier.massstorage;
 
-import com.winthier.generic_events.GenericEvents;
-import com.winthier.massstorage.sql.SQLItem;
 import com.winthier.massstorage.util.Msg;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -82,7 +80,7 @@ public final class MassStorageCommand implements TabExecutor {
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        Player player = sender instanceof Player ? (Player)sender : null;
+        Player player = sender instanceof Player ? (Player) sender : null;
         if (player == null) return false;
         String cmd = args.length > 0 ? args[0].toLowerCase() : null;
         if (cmd == null) {
@@ -108,13 +106,6 @@ public final class MassStorageCommand implements TabExecutor {
             player.sendMessage("");
             Msg.info(player, "&9&lMass Storage&r Info");
             Msg.raw(player, " ", Msg.button(ChatColor.GRAY, plugin.getConfig().getString("CommandHelp", ""), null, null));
-            int storage = plugin.getSession(player).getStorage();
-            int capacity = plugin.getSession(player).getCapacity();
-            int buyAmount = plugin.getConfig().getInt("BuyCapacity.Amount", 3 * 9 * 64);
-            String buyName = plugin.getConfig().getString("BuyCapacity.DisplayName", "Chest");
-            int free = plugin.getSession(player).getFreeStorage();
-            Msg.send(player, " &oUsed storage:&r &7%d&8/&7%d &8(&7%d&8x&7%s&8)", storage, capacity, capacity / buyAmount, buyName);
-            Msg.send(player, " &oFree storage:&r &9%d&r items &r(&9%d&8x&9%s&r)", free, free / buyAmount, buyName);
             quickUsage(player);
             player.sendMessage("");
         } else if (cmd.equals("dump") && args.length == 1) {
@@ -152,9 +143,8 @@ public final class MassStorageCommand implements TabExecutor {
                 return true;
             }
             plugin.getSession(player).openInventory();
-            int freeStorage = plugin.getSession(player).getFreeStorage();
             int displayed = plugin.getSession(player).fillInventory(item);
-            Msg.info(player, "Found &a%d&r items. Free storage: &9%d&r items.", displayed, freeStorage);
+            Msg.info(player, "Found &a%d&r items.", displayed);
         } else if (cmd.equals("find") || cmd.equals("search") || cmd.equals("list")) {
             String searchTerm;
             StringBuilder sb = new StringBuilder("");
@@ -189,7 +179,7 @@ public final class MassStorageCommand implements TabExecutor {
             List<NamedItem> items = new ArrayList<>();
             for (SQLItem sqlItem: plugin.getSession(player).getSQLItems().values()) {
                 if (sqlItem.getAmount() <= 0) continue;
-                NamedItem item = sqlItem.getNamedItem();
+                NamedItem item = plugin.getNamedItem(sqlItem);
                 if (searchTerm != null && !item.getName().toLowerCase().contains(searchTerm)) continue;
                 items.add(item);
             }
@@ -219,81 +209,6 @@ public final class MassStorageCommand implements TabExecutor {
             }
             if (page <= 0) return false;
             showPage(player, page - 1);
-        } else if (cmd.equals("buy")) {
-            int amount;
-            if (args.length == 1) {
-                amount = 1;
-            } else if (args.length == 2) {
-                try {
-                    amount = Integer.parseInt(args[1]);
-                    if (amount < 1) throw new NumberFormatException();
-                } catch (NumberFormatException nfe) {
-                    Msg.warn(player, "Number expected: %s.", args[1]);
-                    return true;
-                }
-            } else {
-                usage(player);
-                return true;
-            }
-            int itemAmount = plugin.getConfig().getInt("BuyCapacity.Amount", 3 * 9 * 64) * amount;
-            double price = plugin.getConfig().getDouble("BuyCapacity.Price", 500.0) * (double)amount;
-            String displayName = plugin.getConfig().getString("BuyCapacity.DisplayName", "Chest");
-            String priceFormat = GenericEvents.formatMoney(price);
-            if (GenericEvents.getPlayerBalance(player.getUniqueId()) < price) {
-                Msg.warn(player, "You cannot afford %s.", priceFormat);
-                return true;
-            }
-            UUID code = UUID.randomUUID();
-            plugin.getSession(player).setBuyConfirmationCode(code);
-            Msg.raw(player,
-                    "",
-                    Msg.pluginTag(),
-                    " ",
-                    Msg.button(ChatColor.WHITE,
-                               "Buy &9" + amount + "&8x&9" + displayName + "&r for &9" + priceFormat + "&r? ",
-                               "&aThat is " + itemAmount + " items worth of Mass Storage.", null),
-                    Msg.button(ChatColor.GREEN,
-                               "&r[&aConfirm&r]",
-                               "&aConfirm",
-                               "/ms confirm " + amount + " " + code),
-                    " ",
-                    Msg.button(ChatColor.RED,
-                               "&r[&cCancel&r]",
-                               "&aCancel",
-                               "/ms cancel"));
-        } else if (cmd.equals("cancel")) {
-            UUID uuid = plugin.getSession(player).getBuyConfirmationCode();
-            if (uuid != null) {
-                plugin.getSession(player).setBuyConfirmationCode(null);
-                Msg.info(player, "Purchase cancelled.");
-            }
-        } else if (cmd.equals("confirm")) {
-            if (args.length != 3) return true;
-            int amount;
-            try {
-                amount = Integer.parseInt(args[1]);
-                if (amount < 1) throw new NumberFormatException();
-            } catch (NumberFormatException nfe) {
-                return true;
-            }
-            UUID code;
-            try {
-                code = UUID.fromString(args[2]);
-            } catch (IllegalArgumentException iae) {
-                return true;
-            }
-            if (!code.equals(plugin.getSession(player).getBuyConfirmationCode())) return true;
-            plugin.getSession(player).setBuyConfirmationCode(null);
-            int itemAmount = plugin.getConfig().getInt("BuyCapacity.Amount", 6 * 9 * 64) * amount;
-            double price = plugin.getConfig().getDouble("BuyCapacity.Price", 500.0) * (double)amount;
-            String displayName = plugin.getConfig().getString("BuyCapacity.DisplayName", "Double Chest");
-            String priceFormat = GenericEvents.formatMoney(price);
-            if (!GenericEvents.takePlayerMoney(player.getUniqueId(), price, plugin, "" + itemAmount + " mass storage slots")) {
-                Msg.warn(player, "You cannot afford %s.", priceFormat);
-                return true;
-            }
-            plugin.getSession(player).addCapacity(itemAmount);
-            Msg.info(player, "Purchased &9%d&8x&9%s&r for &9%s&r.", amount, displayName, priceFormat);
         } else {
             StringBuilder sb = new StringBuilder(args[0]);
             for (int i = 1; i < args.length; ++i) sb.append(" ").append(args[i]);
@@ -309,9 +224,8 @@ public final class MassStorageCommand implements TabExecutor {
                 }
             }
             plugin.getSession(player).openInventory();
-            int freeStorage = plugin.getSession(player).getFreeStorage();
             int displayed = plugin.getSession(player).fillInventory(items.toArray(new Item[0]));
-            Msg.info(player, "Found &a%d&r items. Free storage: &9%d&r items.", displayed, freeStorage);
+            Msg.info(player, "Found &a%d&r items.", displayed);
         }
         return true;
     }
@@ -320,15 +234,7 @@ public final class MassStorageCommand implements TabExecutor {
     public List<String> onTabComplete(CommandSender sender, Command command, String label, String[] args) {
         String term = args.length > 0 ? args[args.length - 1].toLowerCase() : "";
         if (args.length <= 1) {
-            return Arrays.asList("store", "help", "?", "info", "dump", "auto", "find", "search", "list", "page", "buy").stream().filter(s -> s.startsWith(term)).collect(Collectors.toList());
-        } else if (args.length == 2 && args[0].equals("buy")) {
-            String arg = args[1];
-            if (arg.isEmpty()) return Arrays.asList("1");
-            try {
-                int val = Integer.parseInt(arg);
-                if (val > 0) return Arrays.asList("" + val, "" + val * 10);
-            } catch (NumberFormatException nfe) { }
-            return Collections.emptyList();
+            return Arrays.asList("store", "help", "?", "info", "dump", "auto", "find", "search", "list", "page").stream().filter(s -> s.startsWith(term)).collect(Collectors.toList());
         } else {
             return null;
         }
@@ -346,28 +252,24 @@ public final class MassStorageCommand implements TabExecutor {
         Msg.raw(player, " ", Msg.button(ChatColor.GRAY, "&7-n&8 = &7Sort by name&8; &7-a&8 = &7by amount", null, null));
         Msg.raw(player, Msg.button("/ms dump", "&a/ms dump\n&r&oDump inventory into Mass Storage", "/ms dump "), Msg.format(" &8-&r Dump inventory."));
         Msg.raw(player, Msg.button("/ms auto", "&a/ms auto\n&r&oToggle automatic storage", "/ms auto "), Msg.format(" &8-&r Toggle auto storage."));
-        String purchaseCost = GenericEvents.formatMoney(plugin.getConfig().getDouble("BuyCapacity.Price", 500.0));
-        Msg.raw(player, Msg.button("/ms buy &7[amount]", "&a/ms buy [amount]\n&r&oBuy additional storage\nPrice: " + purchaseCost, "/ms buy "), Msg.format(" &8-&r Buy additional storage."));
     }
 
     void quickUsage(Player player) {
-        String purchaseCost = GenericEvents.formatMoney(plugin.getConfig().getDouble("BuyCapacity.Price", 500.0));
+        ChatColor c = ChatColor.GOLD;
         Msg.raw(
             player,
             Msg.format(" &oClick here:&r "),
-            Msg.button(ChatColor.GREEN, "[MS]", "&a/ms [item]\n&r&oOpen Mass Storage Inventory", "/ms "),
+            Msg.button(c, "[MS]", "&a/ms [item]\n&r&oOpen Mass Storage Inventory", "/ms "),
             " ",
-            Msg.button(ChatColor.RED, "[?]", "&c/ms ?\n&r&oHelp Screen", "/ms ?"),
+            Msg.button(c, "[?]", "&c/ms ?\n&r&oHelp Screen", "/ms ?"),
             " ",
-            Msg.button(ChatColor.YELLOW, "[Info]", "&e/ms info\n&r&oShow some info", "/ms info"),
+            Msg.button(c, "[Info]", "&e/ms info\n&r&oShow some info", "/ms info"),
             " ",
-            Msg.button(ChatColor.BLUE, "[List]", "&9/ms list [item]\n&r&oList Mass Storage contents", "/ms list "),
+            Msg.button(c, "[List]", "&9/ms list [item]\n&r&oList Mass Storage contents", "/ms list "),
             " ",
-            Msg.button(ChatColor.DARK_GREEN, "[Buy]", "&2/ms buy [amount]\n&r&oBuy additional storage\nPrice: " + purchaseCost, "/ms buy "),
+            Msg.button(c, "[Dump]", "&3/ms dump\n&r&oDump your inventory\ninto Mass Storage", "/ms dump"),
             " ",
-            Msg.button(ChatColor.DARK_AQUA, "[Dump]", "&3/ms dump\n&r&oDump your inventory\ninto Mass Storage", "/ms dump"),
-            " ",
-            Msg.button(ChatColor.AQUA, "[Auto]", "&a/ms auto\n&r&oToggle auto storage.\n&oYour inventory will\n&obe dumped whenever\n&oit gets close to full.", "/ms auto"));
+            Msg.button(c, "[Auto]", "&a/ms auto\n&r&oToggle auto storage.\n&oYour inventory will\n&obe dumped whenever\n&oit gets close to full.", "/ms auto"));
     }
 
     void menuUsage(Player player) {
@@ -393,7 +295,7 @@ public final class MassStorageCommand implements TabExecutor {
                                            item.getName(),
                                            mat.name().toLowerCase(),
                                            amount, stacks, doubleChests),
-                                "/ms id " + item.getMaterial()));
+                                "/ms id " + item.item.material));
             jsons.add(json);
         }
         getPlayerContext(player).clear();

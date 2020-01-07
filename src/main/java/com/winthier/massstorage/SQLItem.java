@@ -1,8 +1,5 @@
-package com.winthier.massstorage.sql;
+package com.winthier.massstorage;
 
-import com.winthier.massstorage.Item;
-import com.winthier.massstorage.MassStoragePlugin;
-import com.winthier.massstorage.NamedItem;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -22,12 +19,12 @@ import org.bukkit.Material;
        uniqueConstraints = @UniqueConstraint(columnNames = {"owner", "material"}))
 @Getter @Setter @NoArgsConstructor @ToString
 public final class SQLItem {
-    @Id private Integer id;
-    @Version private Date version;
-    @Column(nullable = false) private UUID owner;
-    @Column(nullable = false, length = 64) private String material;
-    @Column(nullable = false) private Integer amount;
-    transient private Material mat;
+    @Id Integer id;
+    @Version Date version;
+    @Column(nullable = false) UUID owner;
+    @Column(nullable = false, length = 64) String material;
+    @Column(nullable = false) Integer amount;
+    transient Material mat;
 
     public static SQLItem of(UUID owner, Item item) {
         SQLItem result = new SQLItem();
@@ -52,9 +49,5 @@ public final class SQLItem {
 
     public Item getItem() {
         return new Item(mat);
-    }
-
-    public NamedItem getNamedItem() {
-        return new NamedItem(mat, getAmount());
     }
 }

@@ -4,9 +4,7 @@ Store simple items en masse in virtual chests.  The items are stored in a databa
 ![Mass Storage Menu](https://raw.githubusercontent.com/StarTux/MassStorage/master/MassStorageMenu.jpg)
 
 ## Description
-This plugin provides a virtual chest interface to insert items which will then be stored in the database.  Retrieval can either happen with a search term or via the chest menu which is organized in various categories.  Items can be removed like with any vanilla chest, and the menu offers additional click gestures to retrieve stacks and whole inventories worth, assuming there is enough capacity.
-
-Storage space is limited per player, with a configurable starting amount.  Additional space can be purchased by spending currency in the GenericEvents economy, int amounts and for a price which is also configurable.
+This plugin provides a virtual chest interface to insert items which will then be stored in the database.  Retrieval can either happen with a search term or via the chest menu which is organized in various categories.  Items can be removed like with any vanilla chest, and the menu offers additional click gestures to retrieve stacks and whole inventories worth.
 
 ## Requirements
 The plugin requires a few other plugins for economy and database as well as a properly configured **MySQL** database.
@@ -23,7 +21,6 @@ Even with the focus on a custom chest menu, players may choose to use a set of s
 - **`/ms dump`** Store your entire inventory.
 - **`/ms auto`** Toggle automatic storage mode.
 - **`/ms find <term>`** Search items and show info.
-- **`/ms buy <amount>`** Buy additional storage space.
 
 For admins, there is a special command to look at users' stored items or grant them more storage space, or view some debug information.
 - **`/msadm debug`** Toggle debug mode.
@@ -41,13 +38,8 @@ Permissions are kept simple.  There is one command for users and one for admins.
 Most of what `MassStorage` has to offer can be configured in the main configuration file. Below is an excerpt with the long blacklist removed.
 
 ```yaml
-CommandHelp: Put all your spam items in the Mass Storage system. It can hold most simple, stackable items. Your storage space is limited, but you can buy more any time.
+CommandHelp: Put all your spam items in the Mass Storage system. It can hold most simple, stackable items.
 PermitNonStackingItems: true
-DefaultCapacity: 1728
-BuyCapacity:
-  Amount: 1728
-  DisplayName: Chest
-  Price: 500
 MaterialBlacklist:
 - AIR
 ```

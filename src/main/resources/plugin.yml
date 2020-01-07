@@ -9,7 +9,7 @@ depend: [SQL, GenericEvents]
 softdepend: []
 commands:
   massstorage:
-    aliases: [ ms ]
+    aliases: [ms]
     description: User interface
     permission: massstorage.ms
     usage: |-
@@ -21,16 +21,14 @@ commands:
       /ms dump - Store your entire inventory
       /ms auto - Toggle automatic storage mode
       /ms find <term> - Search items and show info
-      /ms buy <amount> - Buy additional storage space
   massstorageadmin:
-    aliases: [ msadmin, msadm ]
+    aliases: [msadmin, msadm]
     description: Admin interface
     permission: massstorage.admin
     usage: |-
       /msadm debug - Toggle debug mode
       /msadm reload - Reload configuration
       /msadm info <player> - Player info
-      /msadm grant <player> <amount> - Grant player storage units
       /msadm category <category> - View category
 permissions:
   massstorage.ms:

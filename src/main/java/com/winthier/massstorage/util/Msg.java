@@ -97,18 +97,18 @@ public final class Msg {
             return "";
         } else if (json instanceof List) {
             StringBuilder sb = new StringBuilder();
-            for (Object o: (List)json) {
+            for (Object o: (List) json) {
                 sb.append(jsonToString(o));
             }
             return sb.toString();
         } else if (json instanceof Map) {
-            Map map = (Map)json;
+            Map map = (Map) json;
             StringBuilder sb = new StringBuilder();
             sb.append(map.get("text"));
             sb.append(map.get("extra"));
             return sb.toString();
         } else if (json instanceof String) {
-            return (String)json;
+            return (String) json;
         } else {
             return json.toString();
         }

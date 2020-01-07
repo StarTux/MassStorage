@@ -1,8 +1,8 @@
 package com.winthier.massstorage;
 
-import com.winthier.massstorage.sql.SQLItem;
-import com.winthier.massstorage.sql.SQLPlayer;
+import com.winthier.generic_events.GenericEvents;
 import java.util.List;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
@@ -17,14 +17,17 @@ public final class AdminCommand implements CommandExecutor {
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        String cmd = args.length > 0 ? args[0].toLowerCase() : null;
-        Player player = sender instanceof Player ? (Player)sender : null;
-        if (cmd == null) {
-            return false;
-        } else if (cmd.equals("reload") && args.length == 1) {
+        if (args.length == 0) return false;
+        Player player = sender instanceof Player ? (Player) sender : null;
+        switch (args[0]) {
+        case "reload": {
+            if (args.length != 1) return false;
             plugin.reloadAll();
             sender.sendMessage("Configuration reloaded.");
-        } else if (cmd.equals("debug") && args.length == 1) {
+            return true;
+        }
+        case "debug": {
+            if (args.length != 1) return false;
             if (player == null) return false;
             boolean newVal = !plugin.getSession(player).isDebugModeEnabled();
             plugin.getSession(player).setDebugModeEnabled(newVal);
@@ -33,39 +36,28 @@ public final class AdminCommand implements CommandExecutor {
             } else {
                 sender.sendMessage("Debug mode disabled");
             }
-        } else if (cmd.equals("info") && args.length == 2) {
-            SQLPlayer sqlPlayer = SQLPlayer.find(args[1]);
-            if (sqlPlayer == null) {
+            return true;
+        }
+        case "info": {
+            if (args.length != 2) return false;
+            UUID uuid = GenericEvents.cachedPlayerUuid(args[1]);
+            if (uuid == null) {
                 sender.sendMessage("Player not found: " + args[1]);
                 return true;
             }
+            String name = GenericEvents.cachedPlayerName(uuid);
             int total = 0;
-            List<SQLItem> items = SQLItem.find(plugin, sqlPlayer.getUuid());
+            List<SQLItem> items = SQLItem.find(plugin, uuid);
             for (SQLItem item: items) total += item.getAmount();
-            sender.sendMessage("Storage info of " + sqlPlayer.getName());
-            sender.sendMessage("Used: " + total + "/" + sqlPlayer.getCapacity());
-            sender.sendMessage("Free: " + (sqlPlayer.getCapacity() - total));
+            sender.sendMessage("Storage info of " + name);
+            sender.sendMessage("Used: " + total);
             StringBuilder sb = new StringBuilder("Items");
             for (SQLItem item: items) sb.append(" ").append(item.getAmount()).append("x").append(plugin.getItemName(item.getItem().toItemStack()));
             sender.sendMessage(sb.toString());
-        } else if (cmd.equals("grant") && args.length == 3) {
-            Player target = plugin.getServer().getPlayer(args[1]);
-            SQLPlayer sqlPlayer;
-            if (target == null) {
-                sqlPlayer = SQLPlayer.find(args[1]);
-                if (sqlPlayer == null) {
-                    sender.sendMessage("Player not found: " + args[1]);
-                    return true;
-                }
-            } else {
-                sqlPlayer = plugin.getSession(target).getSQLPlayer();
-            }
-            int amount = Integer.parseInt(args[2]);
-            int itemAmount = plugin.getConfig().getInt("BuyCapacity.Amount", 6 * 9 * 64) * amount;
-            sqlPlayer.setCapacity(Math.max(0, sqlPlayer.getCapacity() + itemAmount));
-            plugin.getDb().save(sqlPlayer);
-            sender.sendMessage("Adjusted capacity of " + sqlPlayer.getName() + " by " + itemAmount + ". Total: " + sqlPlayer.getCapacity());
-        } else if (cmd.equals("category") && args.length >= 2) {
+            return true;
+        }
+        case "category": {
+            if (args.length < 2) return false;
             StringBuilder sb = new StringBuilder(args[1]);
             for (int i = 2; i < args.length; i += 1) sb.append(" ").append(args[i]);
             String name = sb.toString();
@@ -83,7 +75,10 @@ public final class AdminCommand implements CommandExecutor {
             sb = new StringBuilder(category.name).append(":");
             for (Material mat: category.materials) sb.append(" ").append(mat.name().toLowerCase());
             sender.sendMessage(sb.toString());
-        } else if (cmd.equals("misc") && (args.length == 1 || args.length == 2)) {
+            return true;
+        }
+        case "misc": {
+            if (args.length != 1 && args.length != 2) return false;
             String pat = args.length < 2 ? null : args[1].toUpperCase();
             int count = 0;
             StringBuilder sb = new StringBuilder();
@@ -93,7 +88,10 @@ public final class AdminCommand implements CommandExecutor {
                 count += 1;
             }
             sender.sendMessage("" + count + " mats:" + sb.toString());
-        } else if (cmd.equals("one") && args.length == 1) {
+            return true;
+        }
+        case "one": {
+            if (args.length != 1) return false;
             if (player == null) return false;
             Session session = plugin.getSession(player);
             int count = 0;
@@ -107,9 +105,31 @@ public final class AdminCommand implements CommandExecutor {
                 }
             }
             player.sendMessage(count + " items stored");
-        } else {
+            return true;
+        }
+        case "reimburse": {
+            if (args.length != 1) return false;
+            List<SQLPlayer> rows = plugin.db.find(SQLPlayer.class).findList();
+            sender.sendMessage("" + rows.size() + " players found.");
+            int i = 0;
+            for (SQLPlayer row : rows) {
+                int amount = (row.capacity - 1728) / 1728;
+                if (amount <= 0) continue;
+                String name = row.name;
+                int money = amount * 500;
+                sender.sendMessage("" + (i++) + ":"
+                                   + " player=" + name
+                                   + " amount=" + amount
+                                   + " money=" + money);
+                GenericEvents.givePlayerMoney(row.uuid, (double) money, plugin,
+                                              "Mass storage reimbursement for "
+                                              + amount + " chests.");
+            }
+            sender.sendMessage("Reimbursements done.");
+            return true;
+        }
+        default:
             return false;
         }
-        return true;
     }
 }

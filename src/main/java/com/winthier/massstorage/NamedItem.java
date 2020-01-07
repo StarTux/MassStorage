@@ -2,8 +2,6 @@ package com.winthier.massstorage;
 
 import java.util.Comparator;
 import lombok.Value;
-import org.bukkit.Material;
-import org.bukkit.inventory.ItemStack;
 
 @Value
 public final class NamedItem {
@@ -18,15 +16,7 @@ public final class NamedItem {
         }
     };
 
-    private final Item item;
-    private final Material material;
-    private final int amount;
-    private final String name;
-
-    public NamedItem(Material material, int amount) {
-        this.item = new Item(material);
-        this.material = material;
-        this.amount = amount;
-        this.name = MassStoragePlugin.getInstance().getItemName(new ItemStack(material, amount));
-    }
+    public final Item item;
+    public final int amount;
+    public final String name;
 }

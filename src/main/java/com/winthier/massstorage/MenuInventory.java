@@ -1,6 +1,5 @@
 package com.winthier.massstorage;
 
-import com.winthier.massstorage.sql.SQLItem;
 import com.winthier.massstorage.util.Msg;
 import java.util.ArrayList;
 import java.util.List;
@@ -23,19 +22,18 @@ import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
-@Getter
 public final class MenuInventory implements InventoryHolder {
-    private final MassStoragePlugin plugin;
-    private final Player player;
-    private final Inventory inventory;
-    private int size;
-    private boolean itemView = false;
-    private long lastClick = 0;
-    private boolean silentClose;
-    private int openCategory = -1;
-    private InventoryView view = null;
+    final MassStoragePlugin plugin;
+    final Player player;
+    @Getter final Inventory inventory;
+    int size;
+    boolean itemView = false;
+    long lastClick = 0;
+    boolean silentClose;
+    int openCategory = -1;
+    InventoryView view = null;
 
-    MenuInventory(MassStoragePlugin plugin, Player player) {
+    MenuInventory(final MassStoragePlugin plugin, final Player player) {
         this.plugin = plugin;
         this.player = player;
         this.inventory = plugin.getServer().createInventory(this, 9 * 6, ChatColor.BLUE + "Mass Storage Menu");
@@ -241,7 +239,7 @@ public final class MenuInventory implements InventoryHolder {
             } else if (event.isRightClick()) {
                 Item key = Item.of(item);
                 SQLItem sqlItem = session.getSQLItems().get(key);
-                NamedItem named = sqlItem.getNamedItem();
+                NamedItem named = plugin.getNamedItem(sqlItem);
                 int stacks = (named.getAmount() - 1) / key.getMaterial().getMaxStackSize() + 1;
                 Msg.info(player, "&r%d&8x&r%s &7(%d stacks)", named.getAmount(), named.getName(), stacks);
                 player.playSound(player.getEyeLocation(), Sound.BLOCK_LEVER_CLICK, SoundCategory.MASTER, 0.2f, 2.0f);

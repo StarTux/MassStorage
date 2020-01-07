@@ -1,10 +1,5 @@
-CommandHelp: Put all your spam items in the Mass Storage system. It can hold most simple, stackable items. Your storage space is limited, but you can buy more any time.
+CommandHelp: Put all your spam items in the Mass Storage system. It can hold most simple, stackable items.
 PermitNonStackingItems: true
-DefaultCapacity: 1728
-BuyCapacity:
-  Amount: 1728
-  DisplayName: Chest
-  Price: 500
 MaterialBlacklist:
 - AIR
 - BARRIER

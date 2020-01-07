@@ -12,16 +12,16 @@ import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
 @RequiredArgsConstructor
-public class InventoryListener implements Listener {
+public final class InventoryListener implements Listener {
     final MassStoragePlugin plugin;
 
     @EventHandler
     public void onInventoryOpen(InventoryOpenEvent event) {
         if (!(event.getPlayer() instanceof Player)) return;
-        Player player = (Player)event.getPlayer();
+        Player player = (Player) event.getPlayer();
         plugin.getSession(player).onInventoryClose();
         if (event.getInventory().getHolder() instanceof MenuInventory) {
-            MenuInventory menu = (MenuInventory)event.getInventory().getHolder();
+            MenuInventory menu = (MenuInventory) event.getInventory().getHolder();
             menu.onInventoryOpen(event);
         }
     }
@@ -29,10 +29,10 @@ public class InventoryListener implements Listener {
     @EventHandler
     public void onInventoryClose(InventoryCloseEvent event) {
         if (!(event.getPlayer() instanceof Player)) return;
-        Player player = (Player)event.getPlayer();
+        Player player = (Player) event.getPlayer();
         plugin.getSession(player).onInventoryClose();
         if (event.getInventory().getHolder() instanceof MenuInventory) {
-            MenuInventory menu = (MenuInventory)event.getInventory().getHolder();
+            MenuInventory menu = (MenuInventory) event.getInventory().getHolder();
             menu.onInventoryClose(event);
         }
     }
@@ -40,7 +40,7 @@ public class InventoryListener implements Listener {
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
         if (!(event.getWhoClicked() instanceof Player)) return;
-        Player player = (Player)event.getWhoClicked();
+        Player player = (Player) event.getWhoClicked();
         Session session = plugin.getSession(player);
         if (session.getInventory() != null && event.getSlot() < 0 && event.getCursor().getType() == Material.AIR) {
             // Click outside the window
@@ -50,7 +50,7 @@ public class InventoryListener implements Listener {
                 });
         }
         if (!event.isCancelled() && event.getInventory().getHolder() instanceof MenuInventory) {
-            MenuInventory menu = (MenuInventory)event.getInventory().getHolder();
+            MenuInventory menu = (MenuInventory) event.getInventory().getHolder();
             event.setCancelled(true);
             menu.onInventoryClick(event);
         }
@@ -59,9 +59,9 @@ public class InventoryListener implements Listener {
     @EventHandler
     public void onInventoryDrag(InventoryDragEvent event) {
         if (!(event.getWhoClicked() instanceof Player)) return;
-        Player player = (Player)event.getWhoClicked();
+        Player player = (Player) event.getWhoClicked();
         if (!event.isCancelled() && event.getInventory().getHolder() instanceof MenuInventory) {
-            MenuInventory menu = (MenuInventory)event.getInventory().getHolder();
+            MenuInventory menu = (MenuInventory) event.getInventory().getHolder();
             event.setCancelled(true);
             menu.onInventoryDrag(event);
         }

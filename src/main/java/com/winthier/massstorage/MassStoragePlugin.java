@@ -226,7 +226,7 @@ public final class MassStoragePlugin extends JavaPlugin {
         switch (itemStack.getType()) {
         case FIREWORK_ROCKET: {
             FireworkMeta meta = (FireworkMeta) dfl.getItemMeta();
-            meta.setPower(2); // Default power
+            meta.setPower(1); // Default power
             dfl.setItemMeta(meta);
             return dfl.isSimilar(itemStack);
         }

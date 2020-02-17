@@ -21,6 +21,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
+import org.bukkit.inventory.meta.FireworkMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -220,8 +221,17 @@ public final class MassStoragePlugin extends JavaPlugin {
         if (getMaterialBlacklist().contains(mat)) return false;
         if (mat.getMaxStackSize() == 1 && !permitNonStackingItems()) return false;
         if (mat.getMaxDurability() > 0 && itemStack.getDurability() > 0) return false;
-        if (!Item.of(itemStack).toItemStack().isSimilar(itemStack)) return false;
-        return true;
+        ItemStack dfl = new ItemStack(itemStack.getType());
+        if (dfl.isSimilar(itemStack)) return true;
+        switch (itemStack.getType()) {
+        case FIREWORK_ROCKET: {
+            FireworkMeta meta = (FireworkMeta) dfl.getItemMeta();
+            meta.setPower(2); // Default power
+            dfl.setItemMeta(meta);
+            return dfl.isSimilar(itemStack);
+        }
+        default: return false;
+        }
     }
 
     public NamedItem getNamedItem(SQLItem row) {

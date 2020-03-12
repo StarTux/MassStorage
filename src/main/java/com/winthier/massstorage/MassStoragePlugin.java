@@ -21,6 +21,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
+import org.bukkit.inventory.meta.BannerMeta;
 import org.bukkit.inventory.meta.FireworkMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -229,6 +230,25 @@ public final class MassStoragePlugin extends JavaPlugin {
             meta.setPower(1); // Default power
             dfl.setItemMeta(meta);
             return dfl.isSimilar(itemStack);
+        }
+        case BLACK_BANNER:
+        case BLUE_BANNER:
+        case BROWN_BANNER:
+        case CYAN_BANNER:
+        case GRAY_BANNER:
+        case GREEN_BANNER:
+        case LIGHT_BLUE_BANNER:
+        case LIGHT_GRAY_BANNER:
+        case LIME_BANNER:
+        case MAGENTA_BANNER:
+        case ORANGE_BANNER:
+        case PINK_BANNER:
+        case PURPLE_BANNER:
+        case RED_BANNER:
+        case WHITE_BANNER:
+        case YELLOW_BANNER: {
+            BannerMeta meta = (BannerMeta) dfl.getItemMeta();
+            return meta.equals(itemStack.getItemMeta());
         }
         default: return false;
         }

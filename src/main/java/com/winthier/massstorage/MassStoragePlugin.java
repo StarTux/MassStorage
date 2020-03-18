@@ -14,6 +14,7 @@ import java.util.UUID;
 import javax.persistence.PersistenceException;
 import lombok.Getter;
 import org.bukkit.ChatColor;
+import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -184,6 +185,8 @@ public final class MassStoragePlugin extends JavaPlugin {
             if (!session.isAutoStorageEnabled()) continue;
             Player player = session.getPlayer();
             if (player == null) continue;
+            if (player.getGameMode() != GameMode.SURVIVAL
+                && player.getGameMode() != GameMode.ADVENTURE) continue;
             if (session.getLastAutoStorage() + 1000L >= now) continue;
             int emptySlots = 0;
             PlayerInventory inv = player.getInventory();

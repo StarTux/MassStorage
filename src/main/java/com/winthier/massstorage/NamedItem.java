@@ -19,4 +19,15 @@ public final class NamedItem {
     public final Item item;
     public final int amount;
     public final String name;
+    public final String i18nName;
+
+    public boolean matches(String in) {
+        return (name != null && name.toLowerCase().contains(in))
+            || (i18nName != null && i18nName.toLowerCase().contains(in));
+    }
+
+    public boolean equalsName(String in) {
+        return (name != null && name.equalsIgnoreCase(in))
+            || (i18nName != null && i18nName.equalsIgnoreCase(in));
+    }
 }

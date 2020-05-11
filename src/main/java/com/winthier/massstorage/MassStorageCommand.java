@@ -182,7 +182,7 @@ public final class MassStorageCommand implements TabExecutor {
             for (SQLItem sqlItem: plugin.getSession(player).getSQLItems().values()) {
                 if (sqlItem.getAmount() <= 0) continue;
                 NamedItem item = plugin.getNamedItem(sqlItem);
-                if (searchTerm != null && !item.getName().toLowerCase().contains(searchTerm)) continue;
+                if (searchTerm != null && !item.matches(searchTerm)) continue;
                 items.add(item);
             }
             if (items.isEmpty()) {
@@ -218,10 +218,10 @@ public final class MassStorageCommand implements TabExecutor {
             LinkedList<Item> items = new LinkedList<>();
             for (SQLItem sqlItem: plugin.getSession(player).getSQLItems().values()) {
                 Item item = sqlItem.getItem();
-                String itemName = plugin.getItemName(item.toItemStack()).toLowerCase();
-                if (itemName.equals(searchTerm)) {
+                NamedItem namedItem = plugin.getNamedItem(sqlItem);
+                if (namedItem.equalsName(searchTerm)) {
                     items.addFirst(item);
-                } else if (itemName.contains(searchTerm)) {
+                } else if (namedItem.matches(searchTerm)) {
                     items.addLast(item);
                 }
             }

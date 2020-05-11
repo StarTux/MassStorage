@@ -259,6 +259,8 @@ public final class MassStoragePlugin extends JavaPlugin {
 
     public NamedItem getNamedItem(SQLItem row) {
         Item item = row.getItem();
-        return new NamedItem(item, row.amount, getItemName(item.toItemStack()));
+        ItemStack stack = item.toItemStack();
+        String i18n = stack.getI18NDisplayName();
+        return new NamedItem(item, row.amount, getItemName(stack), i18n);
     }
 }

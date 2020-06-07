@@ -292,7 +292,7 @@ public final class MassStorageCommand implements TabExecutor {
             int stacks = (amount - 1) / mat.getMaxStackSize() + 1;
             int doubleChests = (stacks - 1) / (6 * 9) + 1;
             json.add(Msg.button(ChatColor.WHITE,
-                                " " + item.getAmount() + "&8x&r" + item.getName(),
+                                " " + item.getAmount() + "&8x&r" + item.i18nName,
                                 Msg.format("&r%s\n&8minecraft:%s\n&8--------------------\n&7In Storage:\n&8Items: &7%d\n&8Stacks: &7%d\n&8Double Chests: &7%d",
                                            item.getName(),
                                            mat.name().toLowerCase(),

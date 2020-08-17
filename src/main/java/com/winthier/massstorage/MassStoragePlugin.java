@@ -223,6 +223,7 @@ public final class MassStoragePlugin extends JavaPlugin {
     boolean canStore(ItemStack itemStack) {
         Material mat = itemStack.getType();
         if (getMaterialBlacklist().contains(mat)) return false;
+        if (mat.name().endsWith("_SPAWN_EGG")) return false;
         if (mat.getMaxStackSize() == 1 && !permitNonStackingItems()) return false;
         if (mat.getMaxDurability() > 0 && itemStack.getDurability() > 0) return false;
         ItemStack dfl = new ItemStack(itemStack.getType());

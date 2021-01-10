@@ -5,6 +5,7 @@ import com.winthier.sql.SQLDatabase;
 import java.io.File;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
@@ -134,12 +135,12 @@ public final class MassStoragePlugin extends JavaPlugin {
             ConfigurationSection section = menuConfig.createSection("tmp", map);
             try {
                 boolean misc = section.getBoolean("Misc");
-                Set<Material> materials;
+                Collection<Material> materials;
                 String name = section.getString("Name");
                 if (misc) {
                     materials = miscMaterials;
                 } else {
-                    materials = EnumSet.noneOf(Material.class);
+                    materials = new ArrayList<>();
                     for (String str : section.getStringList("Materials")) {
                         Material mat = materialOf(str);
                         if (mat == null) {
@@ -148,7 +149,9 @@ public final class MassStoragePlugin extends JavaPlugin {
                             getLogger().warning("Categories: Obsolete material: " + mat);
                             continue;
                         }
-                        materials.add(mat);
+                        if (!materials.contains(mat)) {
+                            materials.add(mat);
+                        }
                     }
                     miscMaterials.removeAll(materials);
                 }

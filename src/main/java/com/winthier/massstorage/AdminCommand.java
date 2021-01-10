@@ -52,7 +52,10 @@ public final class AdminCommand implements CommandExecutor {
             sender.sendMessage("Storage info of " + name);
             sender.sendMessage("Used: " + total);
             StringBuilder sb = new StringBuilder("Items");
-            for (SQLItem item: items) sb.append(" ").append(item.getAmount()).append("x").append(plugin.getItemName(item.getItem().toItemStack()));
+            for (SQLItem item : items) {
+                sb.append(" ").append(item.getAmount()).append("x")
+                    .append(plugin.getItemName(new ItemStack(item.getMat())));
+            }
             sender.sendMessage(sb.toString());
             return true;
         }
@@ -97,7 +100,7 @@ public final class AdminCommand implements CommandExecutor {
             int count = 0;
             for (Material mat: Material.values()) {
                 if (!plugin.getMaterialBlacklist().contains(mat) && mat.isItem() && !mat.isLegacy() && !mat.name().startsWith("LEGACY_")) {
-                    SQLItem sqli = session.getSQLItems().get(new Item(mat));
+                    SQLItem sqli = session.getSQLItems().get(mat);
                     if (sqli == null || sqli.getAmount() == 0) {
                         session.storeItems(new ItemStack(mat));
                         count += 1;

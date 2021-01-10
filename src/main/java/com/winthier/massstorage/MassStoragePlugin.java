@@ -1,6 +1,7 @@
 package com.winthier.massstorage;
 
 import com.winthier.generic_events.GenericEvents;
+import com.winthier.massstorage.util.Msg;
 import com.winthier.sql.SQLDatabase;
 import java.io.File;
 import java.io.InputStreamReader;
@@ -21,6 +22,7 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.InventoryView;
+import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.BannerMeta;
@@ -120,9 +122,11 @@ public final class MassStoragePlugin extends JavaPlugin {
         }
         categories.clear();
         for (Material mat : Material.values()) {
-            if (!getMaterialBlacklist().contains(mat) && mat.isItem() && !mat.isLegacy() && !mat.name().startsWith("LEGACY_")) {
-                miscMaterials.add(mat);
-            }
+            if (getMaterialBlacklist().contains(mat)) continue;
+            if (!mat.isItem()) continue;
+            if (mat.isLegacy() || mat.name().startsWith("LEGACY_")) continue;
+            if (mat.name().endsWith("_SPAWN_EGG")) continue;
+            miscMaterials.add(mat);
         }
         ConfigurationSection menuConfig;
         File file = new File(getDataFolder(), "menu.yml");
@@ -160,6 +164,13 @@ public final class MassStoragePlugin extends JavaPlugin {
                 ItemStack icon = new ItemStack(iconMat);
                 ItemMeta meta = icon.getItemMeta();
                 meta.setDisplayName(ChatColor.RESET + name);
+                List<String> lore = new ArrayList<>();
+                lore.add("" + ChatColor.GRAY + materials.size() + " items");
+                lore.add("");
+                lore.add(Msg.format("Left-click &7Open item list"));
+                lore.add(Msg.format("Click outside chest &7Go back"));
+                meta.setLore(lore);
+                meta.addItemFlags(ItemFlag.values());
                 icon.setItemMeta(meta);
                 Category category = new Category(name, icon, misc, materials);
                 categories.add(category);
@@ -262,9 +273,9 @@ public final class MassStoragePlugin extends JavaPlugin {
     }
 
     public NamedItem getNamedItem(SQLItem row) {
-        Item item = row.getItem();
-        ItemStack stack = item.toItemStack();
+        Material mat = row.getMat();
+        ItemStack stack = new ItemStack(mat);
         String i18n = stack.getI18NDisplayName();
-        return new NamedItem(item, row.amount, getItemName(stack), i18n);
+        return new NamedItem(mat, row.amount, getItemName(stack), i18n);
     }
 }

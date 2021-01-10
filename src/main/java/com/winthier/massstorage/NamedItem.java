@@ -2,6 +2,7 @@ package com.winthier.massstorage;
 
 import java.util.Comparator;
 import lombok.Value;
+import org.bukkit.Material;
 
 @Value
 public final class NamedItem {
@@ -16,7 +17,7 @@ public final class NamedItem {
         }
     };
 
-    public final Item item;
+    public final Material mat;
     public final int amount;
     public final String name;
     public final String i18nName;

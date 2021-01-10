@@ -26,12 +26,12 @@ public final class SQLItem {
     @Column(nullable = false) Integer amount;
     transient Material mat;
 
-    public static SQLItem of(UUID owner, Item item) {
+    public static SQLItem of(UUID owner, Material mat) {
         SQLItem result = new SQLItem();
         result.setOwner(owner);
-        result.setMaterial(item.getMaterial().name().toLowerCase());
+        result.setMaterial(mat.name().toLowerCase());
         result.setAmount(0);
-        result.mat = item.getMaterial();
+        result.mat = mat;
         return result;
     }
 
@@ -45,9 +45,5 @@ public final class SQLItem {
             .eq("owner", uuid).findList().stream()
             .filter(row -> row.prep(plugin))
             .collect(Collectors.toList());
-    }
-
-    public Item getItem() {
-        return new Item(mat);
     }
 }

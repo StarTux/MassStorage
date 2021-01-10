@@ -2,6 +2,7 @@ package com.winthier.massstorage;
 
 import com.winthier.massstorage.util.Msg;
 import java.util.ArrayList;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -28,12 +29,13 @@ final class Session implements InventoryHolder {
     final UUID uuid;
     static final int CHEST_SIZE = 6 * 9;
     Inventory inventory = null;
-    Map<Item, SQLItem> sqlItems = null;
+    Map<Material, SQLItem> sqlItems = null;
     @Setter boolean autoStorageEnabled = false;
     @Setter boolean debugModeEnabled = false;
     @Setter long lastAutoStorage = 0;
     @Setter int openCategory = -1;
     @Setter boolean informed = false;
+    @Setter boolean showAll = true;
 
     Player getPlayer() {
         return Bukkit.getServer().getPlayer(uuid);
@@ -159,11 +161,11 @@ final class Session implements InventoryHolder {
                 continue; // Ignore
             } else {
                 // Fetch SQL item
-                Item itemKey = Item.of(item);
-                SQLItem sqlItem = getSQLItems().get(itemKey);
+                Material mat = item.getType();
+                SQLItem sqlItem = getSQLItems().get(mat);
                 if (sqlItem == null) {
-                    sqlItem = SQLItem.of(uuid, itemKey);
-                    getSQLItems().put(itemKey, sqlItem);
+                    sqlItem = SQLItem.of(uuid, mat);
+                    getSQLItems().put(mat, sqlItem);
                 }
                 dirtyItems.add(sqlItem);
                 int storedAmount = item.getAmount();
@@ -200,11 +202,11 @@ final class Session implements InventoryHolder {
                 result.addRejectedItemName(item);
             } else {
                 // Fetch SQL item
-                Item itemKey = Item.of(item);
-                SQLItem sqlItem = getSQLItems().get(itemKey);
+                Material mat = item.getType();
+                SQLItem sqlItem = getSQLItems().get(mat);
                 if (sqlItem == null) {
-                    sqlItem = SQLItem.of(uuid, itemKey);
-                    getSQLItems().put(itemKey, sqlItem);
+                    sqlItem = SQLItem.of(uuid, mat);
+                    getSQLItems().put(mat, sqlItem);
                 }
                 dirtyItems.add(sqlItem);
                 int storedAmount = item.getAmount();
@@ -227,24 +229,24 @@ final class Session implements InventoryHolder {
         return result;
     }
 
-    int fillInventory(Item... itemKeys) {
+    int fillInventory(Material... mats) {
         Inventory inv = this.inventory;
         if (inv == null) return 0;
         int invIndex = 0;
         Set<SQLItem> dirtyItems = new HashSet<>();
         int result = 0;
-    itemLoop: for (Item itemKey : itemKeys) {
+    itemLoop: for (Material mat : mats) {
             do {
                 while (inv.getItem(invIndex) != null && inv.getItem(invIndex).getType() != Material.AIR) {
                     invIndex += 1;
                     if (invIndex >= inv.getSize()) break itemLoop;
                 }
-                SQLItem sqlItem = getSQLItems().get(itemKey);
+                SQLItem sqlItem = getSQLItems().get(mat);
                 if (sqlItem == null || sqlItem.getAmount() <= 0) continue itemLoop;
-                int filledAmount = Math.min(sqlItem.getAmount(), itemKey.getMaterial().getMaxStackSize());
+                int filledAmount = Math.min(sqlItem.getAmount(), mat.getMaxStackSize());
                 sqlItem.setAmount(sqlItem.getAmount() - filledAmount);
                 dirtyItems.add(sqlItem);
-                inv.setItem(invIndex, itemKey.toItemStack(filledAmount));
+                inv.setItem(invIndex, new ItemStack(mat, filledAmount));
                 result += filledAmount;
             } while (true);
         }
@@ -254,11 +256,11 @@ final class Session implements InventoryHolder {
         return result;
     }
 
-    Map<Item, SQLItem> getSQLItems() {
+    Map<Material, SQLItem> getSQLItems() {
         if (sqlItems == null) {
-            Map<Item, SQLItem> result = new HashMap<>();
+            Map<Material, SQLItem> result = new EnumMap<>(Material.class);
             for (SQLItem item : SQLItem.find(plugin, uuid)) {
-                result.put(item.getItem(), item);
+                result.put(item.getMat(), item);
             }
             sqlItems = result;
         }

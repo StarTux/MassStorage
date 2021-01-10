@@ -138,14 +138,14 @@ public final class MassStorageCommand implements TabExecutor {
             }
         } else if (cmd.equals("id")) {
             if (args.length != 2) return true;
-            Item item;
+            Material mat;
             try {
-                item = new Item(Material.valueOf(args[1].toUpperCase()));
+                mat = Material.valueOf(args[1].toUpperCase());
             } catch (IllegalArgumentException iae) {
                 return true;
             }
             plugin.getSession(player).openInventory();
-            int displayed = plugin.getSession(player).fillInventory(item);
+            int displayed = plugin.getSession(player).fillInventory(mat);
             Msg.info(player, "Found &a%d&r items.", displayed);
         } else if (cmd.equals("find") || cmd.equals("search") || cmd.equals("list")) {
             String searchTerm;
@@ -215,18 +215,18 @@ public final class MassStorageCommand implements TabExecutor {
             StringBuilder sb = new StringBuilder(args[0]);
             for (int i = 1; i < args.length; ++i) sb.append(" ").append(args[i]);
             String searchTerm = sb.toString().toLowerCase();
-            LinkedList<Item> items = new LinkedList<>();
+            LinkedList<Material> mats = new LinkedList<>();
             for (SQLItem sqlItem: plugin.getSession(player).getSQLItems().values()) {
-                Item item = sqlItem.getItem();
+                Material mat = sqlItem.getMat();
                 NamedItem namedItem = plugin.getNamedItem(sqlItem);
                 if (namedItem.equalsName(searchTerm)) {
-                    items.addFirst(item);
+                    mats.addFirst(mat);
                 } else if (namedItem.matches(searchTerm)) {
-                    items.addLast(item);
+                    mats.addLast(mat);
                 }
             }
             plugin.getSession(player).openInventory();
-            int displayed = plugin.getSession(player).fillInventory(items.toArray(new Item[0]));
+            int displayed = plugin.getSession(player).fillInventory(mats.toArray(new Material[0]));
             Msg.info(player, "Found &a%d&r items.", displayed);
         }
         return true;
@@ -287,7 +287,7 @@ public final class MassStorageCommand implements TabExecutor {
         List<List<Object>> jsons = new ArrayList<>();
         for (NamedItem item: items) {
             List<Object> json = new ArrayList<>();
-            Material mat = item.getItem().getMaterial();
+            Material mat = item.getMat();
             int amount = item.getAmount();
             int stacks = (amount - 1) / mat.getMaxStackSize() + 1;
             int doubleChests = (stacks - 1) / (6 * 9) + 1;
@@ -297,7 +297,7 @@ public final class MassStorageCommand implements TabExecutor {
                                            item.getName(),
                                            mat.name().toLowerCase(),
                                            amount, stacks, doubleChests),
-                                "/ms id " + item.item.material));
+                                "/ms id " + item.mat));
             jsons.add(json);
         }
         getPlayerContext(player).clear();

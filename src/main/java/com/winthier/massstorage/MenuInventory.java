@@ -2,8 +2,8 @@ package com.winthier.massstorage;
 
 import com.winthier.massstorage.util.Msg;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import lombok.Getter;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -23,6 +23,11 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
 public final class MenuInventory implements InventoryHolder {
+    protected static final int SLOT_INSERT = 0;
+    protected static final int SLOT_INFO = 2;
+    protected static final int SLOT_DUMP = 4;
+    protected static final int SLOT_SHOWALL = 6;
+    protected static final int SLOT_AUTO = 8;
     final MassStoragePlugin plugin;
     final Player player;
     @Getter final Inventory inventory;
@@ -54,7 +59,7 @@ public final class MenuInventory implements InventoryHolder {
         meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
         meta.setDisplayName(ChatColor.BLUE + "Insert Items");
         icon.setItemMeta(meta);
-        inventory.setItem(1, icon);
+        inventory.setItem(SLOT_INSERT, icon);
         // Info
         icon = new ItemStack(Material.BOOK);
         meta = icon.getItemMeta();
@@ -62,7 +67,7 @@ public final class MenuInventory implements InventoryHolder {
         meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
         meta.setDisplayName(ChatColor.YELLOW + "Info");
         icon.setItemMeta(meta);
-        inventory.setItem(3, icon);
+        inventory.setItem(SLOT_INFO, icon);
         // Dump
         icon = new ItemStack(Material.HOPPER_MINECART);
         meta = icon.getItemMeta();
@@ -70,28 +75,48 @@ public final class MenuInventory implements InventoryHolder {
         meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
         meta.setDisplayName(ChatColor.DARK_AQUA + "Dump Your Inventory");
         icon.setItemMeta(meta);
-        inventory.setItem(5, icon);
+        inventory.setItem(SLOT_DUMP, icon);
+        // Show All
+        do {
+            final Material mat;
+            final String msg;
+            if (session.isShowAll()) {
+                mat = Material.CHEST;
+                msg = ChatColor.GREEN + "Show All Items";
+            } else {
+                mat = Material.BARRIER;
+                msg = ChatColor.RED + "Show Only Owned Items";
+            }
+            icon = new ItemStack(mat);
+            meta = icon.getItemMeta();
+            meta.addEnchant(Enchantment.DURABILITY, 1, true);
+            meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
+            meta.setDisplayName(msg);
+            icon.setItemMeta(meta);
+            inventory.setItem(SLOT_SHOWALL, icon);
+        } while (false);
         // Auto
-        final Material mat;
-        final String msg;
-        if (session.isAutoStorageEnabled()) {
-            mat = Material.SEA_LANTERN;
-            msg = ChatColor.AQUA + "Auto Storage Enabled";
-        } else {
-            mat = Material.BARRIER;
-            msg = ChatColor.DARK_RED + "Auto Storage Disabled";
-        }
-        icon = new ItemStack(mat);
-        meta = icon.getItemMeta();
-        meta.addEnchant(Enchantment.DURABILITY, 1, true);
-        meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
-        meta.setDisplayName(msg);
-        icon.setItemMeta(meta);
-        inventory.setItem(7, icon);
+        do {
+            final Material mat;
+            final String msg;
+            if (session.isAutoStorageEnabled()) {
+                mat = Material.LANTERN;
+                msg = ChatColor.AQUA + "Auto Storage Enabled";
+            } else {
+                mat = Material.SOUL_LANTERN;
+                msg = ChatColor.DARK_RED + "Auto Storage Disabled";
+            }
+            icon = new ItemStack(mat);
+            meta = icon.getItemMeta();
+            meta.addEnchant(Enchantment.DURABILITY, 1, true);
+            meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
+            meta.setDisplayName(msg);
+            icon.setItemMeta(meta);
+            inventory.setItem(SLOT_AUTO, icon);
+        } while (false);
         //
         int index = 9;
         for (Category category: plugin.getCategories()) {
-            // if (category.misc && !session.isDebugModeEnabled()) continue;
             if (category.materials.isEmpty()) continue;
             inventory.setItem(index++, category.icon.clone());
         }
@@ -102,21 +127,35 @@ public final class MenuInventory implements InventoryHolder {
     void prepareCategory(Category category) {
         Session session = plugin.getSession(player);
         List<ItemStack> items = new ArrayList<>();
-        for (Map.Entry<Item, SQLItem> entry: session.getSQLItems().entrySet()) {
-            Item item = entry.getKey();
-            SQLItem sqlItem = entry.getValue();
-            if (sqlItem.getAmount() > 0
-                && (category.materials.contains(item.getMaterial()))) {
-                items.add(entry.getKey().toItemStack(1));
+        for (Material mat : category.materials) {
+            SQLItem sqlItem = session.getSQLItems().get(mat);
+            final int amount = sqlItem != null ? sqlItem.getAmount() : 0;
+            int stackSize = Math.max(1, Math.min(mat.getMaxStackSize(), amount));
+            ItemStack itemStack = amount > 0 || session.isShowAll()
+                ? new ItemStack(mat, stackSize)
+                : new ItemStack(Material.BARRIER);
+            ItemMeta meta = itemStack.getItemMeta();
+            if (amount == 0) {
+                meta.setDisplayName(ChatColor.DARK_RED + new ItemStack(mat).getI18NDisplayName());
             }
+            int stacks = (amount == 0) ? 0 : (amount - 1) / mat.getMaxStackSize() + 1;
+            int doubleChests = (amount == 0) ? 0 : (stacks - 1) / (6 * 9) + 1;
+            meta.setLore(Arrays.asList(Msg.format("&7In Storage:"),
+                                       Msg.format("&8Items: &7%d", amount),
+                                       Msg.format("&8Stacks: &7%d", stacks),
+                                       Msg.format("&8Double Chests: &7%d", doubleChests),
+                                       "",
+                                       Msg.format("Left-click &7Open item chest"),
+                                       Msg.format("Right-click &7Info"),
+                                       Msg.format("Shift-click &7Drop stack"),
+                                       Msg.format("Shift-right-click &7Drop chest"),
+                                       Msg.format("Click outside chest &7Go back")));
+            meta.addItemFlags(ItemFlag.values());
+            itemStack.setItemMeta(meta);
+            items.add(itemStack);
         }
-        // Collections.sort(items, (a, b) -> {
-        //         int c = Integer.compare(a.getType().getId(), b.getType().getId());
-        //         if (c != 0) return c;
-        //         return Short.compare(a.getDurability(), b.getDurability());
-        //     });
         int index = 0;
-        for (ItemStack item: items) {
+        for (ItemStack item : items) {
             if (index >= 6 * 9) break;
             inventory.setItem(index++, item);
         }
@@ -165,34 +204,47 @@ public final class MenuInventory implements InventoryHolder {
                 if (lastClick + 300L > now) return;
                 lastClick = now;
                 switch (slot) {
-                case 1:
+                case SLOT_INSERT:
                     plugin.getServer().getScheduler().runTask(plugin, () -> plugin.getSession(player).openInventory());
                     session.setOpenCategory(-1);
                     silentClose = true;
                     return;
-                case 3:
+                case SLOT_INFO:
                     plugin.getServer().getScheduler().runTask(plugin, () -> player.performCommand("ms info"));
                     player.playSound(player.getEyeLocation(), Sound.BLOCK_LEVER_CLICK, SoundCategory.MASTER, 0.2f, 2.0f);
                     return;
-                case 5:
+                case SLOT_DUMP:
                     Session.StorageResult result = session.storePlayerInventory(player);
                     result.setShouldReportEmpty(true);
                     session.reportStorageResult(player, result);
                     player.playSound(player.getEyeLocation(), Sound.BLOCK_ENDER_CHEST_OPEN, SoundCategory.MASTER, 0.2f, 1.25f);
                     return;
-                case 7:
+                case SLOT_SHOWALL: {
+                    boolean newVal = !session.isShowAll();
+                    session.setShowAll(newVal);
+                    if (newVal) {
+                        player.playSound(player.getEyeLocation(), Sound.BLOCK_LEVER_CLICK, SoundCategory.MASTER, 0.5f, 1.5f);
+                    } else {
+                        player.playSound(player.getEyeLocation(), Sound.BLOCK_LEVER_CLICK, SoundCategory.MASTER, 0.5f, 0.5f);
+                    }
+                    inventory.clear();
+                    prepareMain();
+                    return;
+                }
+                case SLOT_AUTO: {
                     boolean newVal = !session.isAutoStorageEnabled();
                     session.setAutoStorageEnabled(newVal);
                     if (newVal) {
                         result = session.storePlayerInventory(player);
                         session.reportStorageResult(player, result);
-                        player.playSound(player.getEyeLocation(), Sound.BLOCK_LEVER_CLICK, SoundCategory.MASTER, 0.2f, 1.5f);
+                        player.playSound(player.getEyeLocation(), Sound.BLOCK_LEVER_CLICK, SoundCategory.MASTER, 0.5f, 1.5f);
                     } else {
-                        player.playSound(player.getEyeLocation(), Sound.BLOCK_LEVER_CLICK, SoundCategory.MASTER, 0.2f, 0.5f);
+                        player.playSound(player.getEyeLocation(), Sound.BLOCK_LEVER_CLICK, SoundCategory.MASTER, 0.5f, 0.5f);
                     }
                     inventory.clear();
                     prepareMain();
                     return;
+                }
                 default:
                     return;
                 }
@@ -215,17 +267,17 @@ public final class MenuInventory implements InventoryHolder {
             ItemStack item = inventory.getItem(slot);
             if (item == null) return;
             if (event.isShiftClick()) {
-                Item key = Item.of(item);
-                SQLItem sqlItem = session.getSQLItems().get(key);
+                Material mat = item.getType();
+                SQLItem sqlItem = session.getSQLItems().get(mat);
                 int times = event.isRightClick() ? 3 * 9 : 1;
                 if (sqlItem.getAmount() <= 0) {
                     inventory.setItem(slot, null);
                     return;
                 }
                 for (int i = 0; i < times; i += 1) {
-                    int amount = Math.min(sqlItem.getAmount(), key.getMaterial().getMaxStackSize());
+                    int amount = Math.min(sqlItem.getAmount(), mat.getMaxStackSize());
                     sqlItem.setAmount(sqlItem.getAmount() - amount);
-                    ItemStack stack = key.toItemStack(amount);
+                    ItemStack stack = new ItemStack(mat, amount);
                     for (ItemStack drop: player.getInventory().addItem(stack).values()) {
                         player.getWorld().dropItem(player.getEyeLocation(), drop).setPickupDelay(0);
                     }
@@ -237,10 +289,10 @@ public final class MenuInventory implements InventoryHolder {
                 plugin.getDb().save(sqlItem);
                 player.playSound(player.getEyeLocation(), Sound.BLOCK_DISPENSER_DISPENSE, SoundCategory.MASTER, 0.2f, 2.0f);
             } else if (event.isRightClick()) {
-                Item key = Item.of(item);
-                SQLItem sqlItem = session.getSQLItems().get(key);
+                Material mat = item.getType();
+                SQLItem sqlItem = session.getSQLItems().get(mat);
                 NamedItem named = plugin.getNamedItem(sqlItem);
-                int stacks = (named.getAmount() - 1) / key.getMaterial().getMaxStackSize() + 1;
+                int stacks = (named.getAmount() - 1) / mat.getMaxStackSize() + 1;
                 Msg.info(player, "&r%d&8x&r%s &7(%d stacks)", named.getAmount(), named.getName(), stacks);
                 player.playSound(player.getEyeLocation(), Sound.BLOCK_LEVER_CLICK, SoundCategory.MASTER, 0.2f, 2.0f);
             } else {

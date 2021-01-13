@@ -2,6 +2,7 @@ CommandHelp: Put all your spam items in the Mass Storage system. It can hold mos
 PermitNonStackingItems: true
 MaterialBlacklist:
 - AIR
+- BEDROCK
 - BARRIER
 - CHAIN_COMMAND_BLOCK
 - COMMAND_BLOCK
@@ -18,3 +19,4 @@ MaterialBlacklist:
 - STRUCTURE_VOID
 - TIPPED_ARROW
 - WRITTEN_BOOK
+- JIGSAW

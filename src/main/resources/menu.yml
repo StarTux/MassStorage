@@ -2,7 +2,6 @@ Categories:
 - Name: Building Blocks
   Icon: BRICKS
   Materials:
-  - BEDROCK
   - BONE_BLOCK
   - BRICKS
   - HAY_BLOCK
@@ -825,7 +824,6 @@ Categories:
   - FLETCHING_TABLE
   - FURNACE
   - GRINDSTONE
-  - JIGSAW
   - LECTERN
   - LOOM
   - SMITHING_TABLE

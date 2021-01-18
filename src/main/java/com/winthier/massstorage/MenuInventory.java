@@ -270,8 +270,7 @@ public final class MenuInventory implements InventoryHolder {
                 Material mat = item.getType();
                 SQLItem sqlItem = session.getSQLItems().get(mat);
                 int times = event.isRightClick() ? 3 * 9 : 1;
-                if (sqlItem.getAmount() <= 0) {
-                    inventory.setItem(slot, null);
+                if (sqlItem == null || sqlItem.getAmount() <= 0) {
                     return;
                 }
                 for (int i = 0; i < times; i += 1) {
@@ -291,6 +290,7 @@ public final class MenuInventory implements InventoryHolder {
             } else if (event.isRightClick()) {
                 Material mat = item.getType();
                 SQLItem sqlItem = session.getSQLItems().get(mat);
+                if (sqlItem == null) return;
                 NamedItem named = plugin.getNamedItem(sqlItem);
                 int stacks = (named.getAmount() - 1) / mat.getMaxStackSize() + 1;
                 Msg.info(player, "&r%d&8x&r%s &7(%d stacks)", named.getAmount(), named.getName(), stacks);

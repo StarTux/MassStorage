@@ -8,7 +8,6 @@ import javax.persistence.Column;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
-import javax.persistence.Version;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -20,7 +19,6 @@ import org.bukkit.Material;
 @Getter @Setter @NoArgsConstructor @ToString
 public final class SQLItem {
     @Id Integer id;
-    @Version Date version;
     @Column(nullable = false) UUID owner;
     @Column(nullable = false, length = 64) String material;
     @Column(nullable = false) Integer amount;

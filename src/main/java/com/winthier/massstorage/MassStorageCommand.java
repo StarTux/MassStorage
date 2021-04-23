@@ -236,7 +236,8 @@ public final class MassStorageCommand implements TabExecutor {
     public List<String> onTabComplete(CommandSender sender, Command command, String label, String[] args) {
         String term = args.length > 0 ? args[args.length - 1].toLowerCase() : "";
         if (args.length <= 1) {
-            return Arrays.asList("store", "help", "?", "info", "dump", "auto", "find", "search", "list", "page").stream().filter(s -> s.startsWith(term)).collect(Collectors.toList());
+            return Arrays.asList("store", "help", "?", "info", "dump", "auto", "find", "search", "list", "page")
+                .stream().filter(s -> s.startsWith(term)).collect(Collectors.toList());
         } else {
             return null;
         }
@@ -245,15 +246,23 @@ public final class MassStorageCommand implements TabExecutor {
     void usage(Player player) {
         player.sendMessage("");
         Msg.info(player, "&9&lMass Storage&r Help");
-        Msg.raw(player, Msg.button("/ms", "&a/ms\n&r&oOpen Mass Storage Menu", "/ms"), Msg.format(" &8-&r Open Mass Storage Menu."));
-        Msg.raw(player, Msg.button("/ms help menu", "&a/ms help menu\n&r&oMass Storage\n&oMenu Help", "/ms help menu"), Msg.format(" &8-&r Menu Help."));
-        Msg.raw(player, Msg.button("/ms &7[item]", "&a/ms [item]\n&r&oRetrieve items", "/ms "), Msg.format(" &8-&r Retrieve items."));
-        Msg.raw(player, Msg.button("/ms info", "&a/ms info\n&r&oShow some info", "/ms info"), Msg.format(" &8-&r Show some info."));
-        Msg.raw(player, Msg.button("/ms list &7[-n|-a]", "&a/ms list\n&r&oList Mass Storage contents", "/ms list"), Msg.format(" &8-&r List Mass Storage contents."));
-        Msg.raw(player, Msg.button("/ms search &7[item] [-n|-a]", "&a/ms search [item]\n&r&oFind stored items", "/ms search "), Msg.format(" &8-&r Find stored items."));
+        Msg.raw(player, Msg.button("/ms", "&a/ms\n&r&oOpen Mass Storage Menu", "/ms"),
+                Msg.format(" &8-&r Open Mass Storage Menu."));
+        Msg.raw(player, Msg.button("/ms help menu", "&a/ms help menu\n&r&oMass Storage\n&oMenu Help", "/ms help menu"),
+                Msg.format(" &8-&r Menu Help."));
+        Msg.raw(player, Msg.button("/ms &7[item]", "&a/ms [item]\n&r&oRetrieve items", "/ms "),
+                Msg.format(" &8-&r Retrieve items."));
+        Msg.raw(player, Msg.button("/ms info", "&a/ms info\n&r&oShow some info", "/ms info"),
+                Msg.format(" &8-&r Show some info."));
+        Msg.raw(player, Msg.button("/ms list &7[-n|-a]", "&a/ms list\n&r&oList Mass Storage contents", "/ms list"),
+                Msg.format(" &8-&r List Mass Storage contents."));
+        Msg.raw(player, Msg.button("/ms search &7[item] [-n|-a]", "&a/ms search [item]\n&r&oFind stored items", "/ms search "),
+                Msg.format(" &8-&r Find stored items."));
         Msg.raw(player, " ", Msg.button(ChatColor.GRAY, "&7-n&8 = &7Sort by name&8; &7-a&8 = &7by amount", null, null));
-        Msg.raw(player, Msg.button("/ms dump", "&a/ms dump\n&r&oDump inventory into Mass Storage", "/ms dump "), Msg.format(" &8-&r Dump inventory."));
-        Msg.raw(player, Msg.button("/ms auto", "&a/ms auto\n&r&oToggle automatic storage", "/ms auto "), Msg.format(" &8-&r Toggle auto storage."));
+        Msg.raw(player, Msg.button("/ms dump", "&a/ms dump\n&r&oDump inventory into Mass Storage", "/ms dump "),
+                Msg.format(" &8-&r Dump inventory."));
+        Msg.raw(player, Msg.button("/ms auto", "&a/ms auto\n&r&oToggle automatic storage", "/ms auto "),
+                Msg.format(" &8-&r Toggle auto storage."));
     }
 
     void quickUsage(Player player) {

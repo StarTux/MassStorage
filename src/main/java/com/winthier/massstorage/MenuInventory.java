@@ -6,10 +6,13 @@ import java.util.Arrays;
 import java.util.List;
 import lombok.Getter;
 import org.bukkit.ChatColor;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.SoundCategory;
+import org.bukkit.World;
 import org.bukkit.enchantments.Enchantment;
+import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
@@ -267,12 +270,25 @@ public final class MenuInventory implements InventoryHolder {
             ItemStack item = inventory.getItem(slot);
             if (item == null) return;
             if (event.isShiftClick()) {
+                if (now < session.shiftClickCooldown) {
+                    player.playSound(player.getEyeLocation(), Sound.BLOCK_DISPENSER_DISPENSE, SoundCategory.MASTER, 0.2f, 0.5f);
+                    return;
+                }
                 Material mat = item.getType();
                 SQLItem sqlItem = session.getSQLItems().get(mat);
-                int times = event.isRightClick() ? 3 * 9 : 1;
+                final int times;
+                if (event.isRightClick()) {
+                    Location location = player.getLocation();
+                    World world = location.getWorld();
+                    int nearbyItems = world.getNearbyEntitiesByType(Item.class, player.getLocation(), 2.0, 2.0, 2.0).size();
+                    times = Math.max(1, 3 * 9 - nearbyItems);
+                } else {
+                    times = 1;
+                }
                 if (sqlItem == null || sqlItem.getAmount() <= 0) {
                     return;
                 }
+                session.shiftClickCooldown = now + 5000L;
                 for (int i = 0; i < times; i += 1) {
                     int amount = Math.min(sqlItem.getAmount(), mat.getMaxStackSize());
                     sqlItem.setAmount(sqlItem.getAmount() - amount);

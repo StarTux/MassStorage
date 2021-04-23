@@ -36,6 +36,7 @@ final class Session implements InventoryHolder {
     @Setter int openCategory = -1;
     @Setter boolean informed = false;
     @Setter boolean showAll = true;
+    protected long shiftClickCooldown = 0;
 
     Player getPlayer() {
         return Bukkit.getServer().getPlayer(uuid);

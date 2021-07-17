@@ -2,12 +2,14 @@ name: MassStorage
 description: Mass Storage for Spam Items
 author: StarTux
 version: 0.1
-api-version: 1.13
+api-version: 1.17
 main: com.winthier.massstorage.MassStoragePlugin
 website: https://cavetale.com
 depend: [SQL, GenericEvents]
 softdepend: []
+
 commands:
+
   massstorage:
     aliases: [ms]
     description: User interface
@@ -21,6 +23,7 @@ commands:
       /ms dump - Store your entire inventory
       /ms auto - Toggle automatic storage mode
       /ms find <term> - Search items and show info
+
   massstorageadmin:
     aliases: [msadmin, msadm]
     description: Admin interface
@@ -30,10 +33,13 @@ commands:
       /msadm reload - Reload configuration
       /msadm info <player> - Player info
       /msadm category <category> - View category
+
 permissions:
+
   massstorage.ms:
     description: Use the /ms command
     default: op
+
   massstorage.admin:
     description: Use the admin command
     default: op

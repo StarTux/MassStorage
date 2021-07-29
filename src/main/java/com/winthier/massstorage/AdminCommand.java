@@ -1,6 +1,6 @@
 package com.winthier.massstorage;
 
-import com.winthier.generic_events.GenericEvents;
+import com.winthier.playercache.PlayerCache;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -40,12 +40,12 @@ public final class AdminCommand implements CommandExecutor {
         }
         case "info": {
             if (args.length != 2) return false;
-            UUID uuid = GenericEvents.cachedPlayerUuid(args[1]);
+            UUID uuid = PlayerCache.uuidForName(args[1]);
             if (uuid == null) {
                 sender.sendMessage("Player not found: " + args[1]);
                 return true;
             }
-            String name = GenericEvents.cachedPlayerName(uuid);
+            String name = PlayerCache.nameForUuid(uuid);
             int total = 0;
             List<SQLItem> items = SQLItem.find(plugin, uuid);
             for (SQLItem item: items) total += item.getAmount();

@@ -1,6 +1,5 @@
 package com.winthier.massstorage;
 
-import com.winthier.generic_events.GenericEvents;
 import com.winthier.massstorage.util.Msg;
 import com.winthier.sql.SQLDatabase;
 import java.io.File;
@@ -222,8 +221,6 @@ public final class MassStoragePlugin extends JavaPlugin {
     }
 
     String getItemName(ItemStack item) {
-        String genName = GenericEvents.getItemName(item);
-        if (genName != null) return genName;
         String name = item.getType().name();
         String[] arr = name.split("_");
         if (arr.length == 0) return name;

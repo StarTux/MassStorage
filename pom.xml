@@ -35,7 +35,6 @@
       <artifactId>paper-api</artifactId>
       <version>1.17.1-R0.1-SNAPSHOT</version>
       <scope>provided</scope>
-      <optional>true</optional>
     </dependency>
 
     <!-- Lombok -->
@@ -43,7 +42,7 @@
       <groupId>org.projectlombok</groupId>
       <artifactId>lombok</artifactId>
       <version>1.18.20</version>
-      <scope>compile</scope>
+      <scope>provided</scope>
     </dependency>
 
     <!-- SQL -->
@@ -52,16 +51,22 @@
       <artifactId>sql</artifactId>
       <version>0.1-SNAPSHOT</version>
       <scope>provided</scope>
-      <optional>true</optional>
     </dependency>
 
-    <!-- GenericEvents -->
+    <!-- Core -->
     <dependency>
-      <groupId>com.winthier.generic_events</groupId>
-      <artifactId>generic_events</artifactId>
+      <groupId>com.cavetale.core</groupId>
+      <artifactId>core</artifactId>
       <version>0.1-SNAPSHOT</version>
       <scope>provided</scope>
-      <optional>true</optional>
+    </dependency>
+
+    <!-- PlayerCache -->
+    <dependency>
+      <groupId>com.winthier.playercache</groupId>
+      <artifactId>playercache</artifactId>
+      <version>0.1-SNAPSHOT</version>
+      <scope>provided</scope>
     </dependency>
 
   </dependencies>

@@ -1,11 +1,16 @@
 package com.winthier.massstorage;
 
 import com.cavetale.core.event.player.PluginPlayerEvent;
+import com.cavetale.core.font.DefaultFont;
+import com.cavetale.mytems.Mytems;
 import com.winthier.massstorage.util.Msg;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import lombok.Getter;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -27,11 +32,10 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
 public final class MenuInventory implements InventoryHolder {
-    protected static final int SLOT_INSERT = 0;
-    protected static final int SLOT_INFO = 2;
-    protected static final int SLOT_DUMP = 4;
-    protected static final int SLOT_SHOWALL = 6;
-    protected static final int SLOT_AUTO = 8;
+    protected static final int SLOT_INSERT = 1;
+    protected static final int SLOT_DUMP = 3;
+    protected static final int SLOT_SHOWALL = 5;
+    protected static final int SLOT_AUTO = 7;
     final MassStoragePlugin plugin;
     final Player player;
     @Getter final Inventory inventory;
@@ -45,7 +49,12 @@ public final class MenuInventory implements InventoryHolder {
     MenuInventory(final MassStoragePlugin plugin, final Player player) {
         this.plugin = plugin;
         this.player = player;
-        this.inventory = plugin.getServer().createInventory(this, 9 * 6, ChatColor.BLUE + "Mass Storage Menu");
+        this.size = 9 * 6;
+        Component title = TextComponent.ofChildren(new Component[] {
+                DefaultFont.guiBlankOverlay(size, NamedTextColor.WHITE),
+                Component.text("Mass Storage Menu", NamedTextColor.BLUE),
+            });
+        this.inventory = plugin.getServer().createInventory(this, size, title);
     }
 
     InventoryView open() {
@@ -58,28 +67,20 @@ public final class MenuInventory implements InventoryHolder {
     void prepareMain() {
         Session session = plugin.getSession(player);
         // Insert
-        ItemStack icon = new ItemStack(Material.CHEST_MINECART);
-        ItemMeta meta = icon.getItemMeta();
-        meta.addEnchant(Enchantment.DURABILITY, 1, true);
-        meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
-        meta.setDisplayName(ChatColor.BLUE + "Insert Items");
-        icon.setItemMeta(meta);
+        ItemStack icon = Mytems.STAR.createIcon();
+        icon.editMeta(meta -> {
+                meta.addEnchant(Enchantment.DURABILITY, 1, true);
+                meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
+                meta.setDisplayName(ChatColor.BLUE + "Insert Items");
+            });
         inventory.setItem(SLOT_INSERT, icon);
-        // Info
-        icon = new ItemStack(Material.BOOK);
-        meta = icon.getItemMeta();
-        meta.addEnchant(Enchantment.DURABILITY, 1, true);
-        meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
-        meta.setDisplayName(ChatColor.YELLOW + "Info");
-        icon.setItemMeta(meta);
-        inventory.setItem(SLOT_INFO, icon);
         // Dump
         icon = new ItemStack(Material.HOPPER_MINECART);
-        meta = icon.getItemMeta();
-        meta.addEnchant(Enchantment.DURABILITY, 1, true);
-        meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
-        meta.setDisplayName(ChatColor.DARK_AQUA + "Dump Your Inventory");
-        icon.setItemMeta(meta);
+        icon.editMeta(meta -> {
+                meta.addEnchant(Enchantment.DURABILITY, 1, true);
+                meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
+                meta.setDisplayName(ChatColor.DARK_AQUA + "Dump Your Inventory");
+            });
         inventory.setItem(SLOT_DUMP, icon);
         // Show All
         do {
@@ -93,30 +94,28 @@ public final class MenuInventory implements InventoryHolder {
                 msg = ChatColor.RED + "Show Only Owned Items";
             }
             icon = new ItemStack(mat);
-            meta = icon.getItemMeta();
-            meta.addEnchant(Enchantment.DURABILITY, 1, true);
-            meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
-            meta.setDisplayName(msg);
-            icon.setItemMeta(meta);
+            icon.editMeta(meta -> {
+                    meta.addEnchant(Enchantment.DURABILITY, 1, true);
+                    meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
+                    meta.setDisplayName(msg);
+                });
             inventory.setItem(SLOT_SHOWALL, icon);
         } while (false);
         // Auto
         do {
-            final Material mat;
             final String msg;
             if (session.isAutoStorageEnabled()) {
-                mat = Material.LANTERN;
+                icon = Mytems.OK.createIcon();
                 msg = ChatColor.AQUA + "Auto Storage Enabled";
             } else {
-                mat = Material.SOUL_LANTERN;
+                icon = Mytems.NO.createIcon();
                 msg = ChatColor.DARK_RED + "Auto Storage Disabled";
             }
-            icon = new ItemStack(mat);
-            meta = icon.getItemMeta();
-            meta.addEnchant(Enchantment.DURABILITY, 1, true);
-            meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
-            meta.setDisplayName(msg);
-            icon.setItemMeta(meta);
+            icon.editMeta(meta -> {
+                    meta.addEnchant(Enchantment.DURABILITY, 1, true);
+                    meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
+                    meta.setDisplayName(msg);
+                });
             inventory.setItem(SLOT_AUTO, icon);
         } while (false);
         //
@@ -214,12 +213,8 @@ public final class MenuInventory implements InventoryHolder {
                     session.setOpenCategory(-1);
                     silentClose = true;
                     return;
-                case SLOT_INFO:
-                    plugin.getServer().getScheduler().runTask(plugin, () -> player.performCommand("ms info"));
-                    player.playSound(player.getEyeLocation(), Sound.BLOCK_LEVER_CLICK, SoundCategory.MASTER, 0.2f, 2.0f);
-                    return;
                 case SLOT_DUMP:
-                    Session.StorageResult result = session.storePlayerInventory(player);
+                    StorageResult result = session.storePlayerInventory(player);
                     result.setShouldReportEmpty(true);
                     session.reportStorageResult(player, result);
                     player.playSound(player.getEyeLocation(), Sound.BLOCK_ENDER_CHEST_OPEN, SoundCategory.MASTER, 0.2f, 1.25f);

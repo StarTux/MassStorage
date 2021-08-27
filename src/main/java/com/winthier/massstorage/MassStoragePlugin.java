@@ -41,9 +41,11 @@ public final class MassStoragePlugin extends JavaPlugin {
     final MassStorageCommand massStorageCommand = new MassStorageCommand(this);
     boolean saveAsync = false;
     Set<Material> miscMaterials = EnumSet.noneOf(Material.class);
+    @Getter protected static MassStoragePlugin instance;
 
     @Override
     public void onEnable() {
+        instance = this;
         reloadAll();
         getCommand("massstorage").setExecutor(massStorageCommand);
         getCommand("massstorageadmin").setExecutor(new AdminCommand(this));
@@ -215,7 +217,7 @@ public final class MassStoragePlugin extends JavaPlugin {
             }
             if (emptySlots > 4) continue;
             session.setLastAutoStorage(now);
-            Session.StorageResult result = session.storePlayerInventory(player);
+            StorageResult result = session.storePlayerInventory(player);
             session.reportStorageResult(player, result);
         }
     }

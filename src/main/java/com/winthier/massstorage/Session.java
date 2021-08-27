@@ -1,9 +1,10 @@
 package com.winthier.massstorage;
 
+import com.cavetale.core.event.player.PluginPlayerEvent.Detail;
+import com.cavetale.core.event.player.PluginPlayerEvent;
 import com.winthier.massstorage.util.Msg;
 import java.util.ArrayList;
 import java.util.EnumMap;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -69,6 +70,7 @@ final class Session implements InventoryHolder {
         Player player = getPlayer();
         if (player != null) reportStorageResult(player, result);
         player.playSound(player.getEyeLocation(), Sound.BLOCK_CHEST_CLOSE, SoundCategory.MASTER, 0.2f, 1.4f);
+        callEvent(result);
         return result;
     }
 
@@ -116,34 +118,19 @@ final class Session implements InventoryHolder {
         }
     }
 
-    @Getter
-    class StorageResult {
-        final List<ItemStack> returnedItems = new ArrayList<>();
-        final List<ItemStack> storedItems = new ArrayList<>();
-        int getReturnedItemCount() {
-            int result = 0;
-            for (ItemStack item : returnedItems) result += item.getAmount();
-            return result;
+    void callEvent(StorageResult result) {
+        if (result.storedItems.isEmpty()) return;
+        Player player = getPlayer();
+        if (player == null) return;
+        Map<Material, Integer> map = new EnumMap<>(Material.class);
+        for (ItemStack item : result.storedItems) {
+            map.compute(item.getType(), (m, i) -> (i != null ? i : 0) + item.getAmount());
         }
-        int getStoredItemCount() {
-            int result = 0;
-            for (ItemStack item : storedItems) result += item.getAmount();
-            return result;
-        }
-        @Setter private boolean shouldReportEmpty = false;
-        private Map<String, Integer> rejectedItemNames = new HashMap<>();
-        private Map<String, Integer> storedItemNames = new HashMap<>();
-        void addItemName(Map<String, Integer> map, ItemStack item) {
-            String itemName = Session.this.plugin.getItemName(item);
-            Integer amount = map.get(itemName);
-            if (amount == null) amount = 0;
-            map.put(itemName, amount + item.getAmount());
-        }
-        void addRejectedItemName(ItemStack item) {
-            addItemName(rejectedItemNames, item);
-        }
-        void addStoredItemName(ItemStack item) {
-            addItemName(storedItemNames, item);
+        for (Map.Entry<Material, Integer> entry : map.entrySet()) {
+            PluginPlayerEvent.Name.STORE_MASS_STORAGE.ultimate(plugin, player)
+                .detail(Detail.MATERIAL, entry.getKey())
+                .detail(Detail.COUNT, entry.getValue())
+                .call();
         }
     }
 
@@ -185,6 +172,7 @@ final class Session implements InventoryHolder {
         if (!dirtyItems.isEmpty()) {
             this.plugin.saveToDatabase(dirtyItems);
         }
+        callEvent(result);
         return result;
     }
 

@@ -115,7 +115,7 @@ public final class MassStorageCommand implements TabExecutor {
             Session session = plugin.getSession(player);
             if (session.getLastAutoStorage() + 1000L > now) return true;
             session.setLastAutoStorage(now);
-            Session.StorageResult result = session.storePlayerInventory(player);
+            StorageResult result = session.storePlayerInventory(player);
             result.setShouldReportEmpty(true);
             session.reportStorageResult(player, result);
             player.playSound(player.getEyeLocation(), Sound.BLOCK_ENDER_CHEST_OPEN, SoundCategory.MASTER, 0.2f, 1.25f);
@@ -128,7 +128,7 @@ public final class MassStorageCommand implements TabExecutor {
                 long now = System.currentTimeMillis();
                 if (session.getLastAutoStorage() + 1000L < now) {
                     session.setLastAutoStorage(now);
-                    Session.StorageResult result = session.storePlayerInventory(player);
+                    StorageResult result = session.storePlayerInventory(player);
                     session.reportStorageResult(player, result);
                 }
                 player.playSound(player.getEyeLocation(), Sound.BLOCK_LEVER_CLICK, SoundCategory.MASTER, 0.2f, 1.5f);

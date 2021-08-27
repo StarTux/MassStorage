@@ -1,5 +1,6 @@
 package com.winthier.massstorage;
 
+import com.cavetale.core.event.player.PluginPlayerEvent;
 import com.winthier.massstorage.util.Msg;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -50,6 +51,7 @@ public final class MenuInventory implements InventoryHolder {
     InventoryView open() {
         if (this.view != null) throw new IllegalStateException("MenuInventory opened more than once!");
         this.view = player.openInventory(this.inventory);
+        PluginPlayerEvent.Name.OPEN_MASS_STORAGE.call(plugin, player);
         return this.view;
     }
 

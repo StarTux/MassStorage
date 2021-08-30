@@ -1,5 +1,6 @@
 package com.winthier.massstorage;
 
+import com.cavetale.core.event.player.PluginPlayerEvent.Detail;
 import com.cavetale.core.event.player.PluginPlayerEvent;
 import com.cavetale.core.font.DefaultFont;
 import com.cavetale.mytems.Mytems;
@@ -309,7 +310,15 @@ public final class MenuInventory implements InventoryHolder {
                 Msg.info(player, "&r%d&8x&r%s &7(%d stacks)", named.getAmount(), named.getName(), stacks);
                 player.playSound(player.getEyeLocation(), Sound.BLOCK_LEVER_CLICK, SoundCategory.MASTER, 0.2f, 2.0f);
             } else {
-                plugin.getServer().getScheduler().runTask(plugin, () -> player.performCommand("ms id " + item.getType().name().toLowerCase()));
+                final Material mat = item.getType();
+                plugin.getServer().getScheduler().runTask(plugin, () -> {
+                        plugin.getSession(player).openInventory();
+                        int displayed = plugin.getSession(player).fillInventory(mat);
+                        Msg.info(player, "Found &a%d&r items.", displayed);
+                        PluginPlayerEvent.Name.FIND_MASS_STORAGE.ultimate(plugin, player)
+                            .detail(Detail.MATERIAL, mat)
+                            .call();
+                    });
                 session.setOpenCategory(openCategory);
                 silentClose = true;
             }

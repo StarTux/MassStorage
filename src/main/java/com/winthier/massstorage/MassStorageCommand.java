@@ -138,17 +138,6 @@ public final class MassStorageCommand implements TabExecutor {
                 Msg.info(player, "Auto Storage Disabled");
                 player.playSound(player.getEyeLocation(), Sound.BLOCK_LEVER_CLICK, SoundCategory.MASTER, 0.2f, 0.5f);
             }
-        } else if (cmd.equals("id")) {
-            if (args.length != 2) return true;
-            Material mat;
-            try {
-                mat = Material.valueOf(args[1].toUpperCase());
-            } catch (IllegalArgumentException iae) {
-                return true;
-            }
-            plugin.getSession(player).openInventory();
-            int displayed = plugin.getSession(player).fillInventory(mat);
-            Msg.info(player, "Found &a%d&r items.", displayed);
         } else if (cmd.equals("find") || cmd.equals("search") || cmd.equals("list")) {
             String searchTerm;
             StringBuilder sb = new StringBuilder("");
@@ -223,7 +212,13 @@ public final class MassStorageCommand implements TabExecutor {
                     mats.addFirst(mat);
                 } else if (namedItem.matches(searchTerm)) {
                     mats.addLast(mat);
+                } else {
+                    continue;
                 }
+                PluginPlayerEvent.Name.FIND_MASS_STORAGE.ultimate(plugin, player)
+                    .detail(Detail.MATERIAL, mat)
+                    .detail(Detail.NAME, searchTerm)
+                    .call();
             }
             plugin.getSession(player).openInventory();
             int displayed = plugin.getSession(player).fillInventory(mats.toArray(new Material[0]));

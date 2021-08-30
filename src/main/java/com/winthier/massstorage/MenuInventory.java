@@ -315,9 +315,11 @@ public final class MenuInventory implements InventoryHolder {
                         plugin.getSession(player).openInventory();
                         int displayed = plugin.getSession(player).fillInventory(mat);
                         Msg.info(player, "Found &a%d&r items.", displayed);
-                        PluginPlayerEvent.Name.FIND_MASS_STORAGE.ultimate(plugin, player)
-                            .detail(Detail.MATERIAL, mat)
-                            .call();
+                        if (displayed > 0) {
+                            PluginPlayerEvent.Name.FIND_MASS_STORAGE.ultimate(plugin, player)
+                                .detail(Detail.MATERIAL, mat)
+                                .call();
+                        }
                     });
                 session.setOpenCategory(openCategory);
                 silentClose = true;

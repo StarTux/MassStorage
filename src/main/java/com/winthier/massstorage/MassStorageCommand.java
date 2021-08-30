@@ -1,5 +1,7 @@
 package com.winthier.massstorage;
 
+import com.cavetale.core.event.player.PluginPlayerEvent.Detail;
+import com.cavetale.core.event.player.PluginPlayerEvent;
 import com.winthier.massstorage.util.Msg;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -212,9 +214,7 @@ public final class MassStorageCommand implements TabExecutor {
             if (page <= 0) return false;
             showPage(player, page - 1);
         } else {
-            StringBuilder sb = new StringBuilder(args[0]);
-            for (int i = 1; i < args.length; ++i) sb.append(" ").append(args[i]);
-            String searchTerm = sb.toString().toLowerCase();
+            String searchTerm = String.join(" ", args);
             LinkedList<Material> mats = new LinkedList<>();
             for (SQLItem sqlItem: plugin.getSession(player).getSQLItems().values()) {
                 Material mat = sqlItem.getMat();
@@ -228,6 +228,9 @@ public final class MassStorageCommand implements TabExecutor {
             plugin.getSession(player).openInventory();
             int displayed = plugin.getSession(player).fillInventory(mats.toArray(new Material[0]));
             Msg.info(player, "Found &a%d&r items.", displayed);
+            PluginPlayerEvent.Name.SEARCH_MASS_STORAGE.ultimate(plugin, player)
+                .detail(Detail.NAME, searchTerm)
+                .call();
         }
         return true;
     }

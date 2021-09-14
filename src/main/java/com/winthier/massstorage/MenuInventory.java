@@ -52,8 +52,8 @@ public final class MenuInventory implements InventoryHolder {
         this.player = player;
         this.size = 9 * 6;
         Component title = TextComponent.ofChildren(new Component[] {
-                DefaultFont.guiBlankOverlay(size, NamedTextColor.WHITE),
-                Component.text("Mass Storage Menu", NamedTextColor.BLUE),
+                DefaultFont.guiBlankOverlay(size, NamedTextColor.DARK_AQUA),
+                Component.text("Mass Storage Menu", NamedTextColor.WHITE),
             });
         this.inventory = plugin.getServer().createInventory(this, size, title);
     }

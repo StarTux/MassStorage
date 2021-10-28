@@ -8,15 +8,18 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import javax.persistence.PersistenceException;
 import lombok.Getter;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.Tag;
 import org.bukkit.block.Container;
 import org.bukkit.configuration.ConfigurationSection;
@@ -149,6 +152,26 @@ public final class MassStoragePlugin extends JavaPlugin {
                     materials = miscMaterials;
                 } else {
                     materials = new ArrayList<>();
+                    for (String str : section.getStringList("Tags")) {
+                        Set<Material> tagMaterials = new LinkedHashSet<>();
+                        Tag<Material> tag;
+                        tag = Bukkit.getTag(Tag.REGISTRY_ITEMS, NamespacedKey.minecraft(str.toLowerCase()), Material.class);
+                        if (tag != null) {
+                            tagMaterials.addAll(tag.getValues());
+                        }
+                        tag = Bukkit.getTag(Tag.REGISTRY_BLOCKS, NamespacedKey.minecraft(str.toLowerCase()), Material.class);
+                        if (tag != null) {
+                            tagMaterials.addAll(tag.getValues());
+                        }
+                        if (tagMaterials.isEmpty()) {
+                            getLogger().warning("Categories: Invalid tag: " + str);
+                            continue;
+                        }
+                        for (Material material : tagMaterials) {
+                            if (!material.isItem()) continue;
+                            materials.add(material);
+                        }
+                    }
                     for (String str : section.getStringList("Materials")) {
                         Material mat = materialOf(str);
                         if (mat == null) {

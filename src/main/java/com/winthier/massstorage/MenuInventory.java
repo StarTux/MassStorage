@@ -106,10 +106,10 @@ public final class MenuInventory implements InventoryHolder {
         do {
             final String msg;
             if (session.isAutoStorageEnabled()) {
-                icon = Mytems.OK.createIcon();
+                icon = Mytems.ON.createIcon();
                 msg = ChatColor.AQUA + "Auto Storage Enabled";
             } else {
-                icon = Mytems.NO.createIcon();
+                icon = Mytems.OFF.createIcon();
                 msg = ChatColor.DARK_RED + "Auto Storage Disabled";
             }
             icon.editMeta(meta -> {

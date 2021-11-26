@@ -113,8 +113,6 @@ public final class MenuInventory implements InventoryHolder {
                 msg = ChatColor.DARK_RED + "Auto Storage Disabled";
             }
             icon.editMeta(meta -> {
-                    meta.addEnchant(Enchantment.DURABILITY, 1, true);
-                    meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
                     meta.setDisplayName(msg);
                 });
             inventory.setItem(SLOT_AUTO, icon);

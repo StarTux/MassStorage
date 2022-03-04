@@ -153,23 +153,28 @@ public final class MassStoragePlugin extends JavaPlugin {
                 } else {
                     materials = new ArrayList<>();
                     for (String str : section.getStringList("Tags")) {
-                        Set<Material> tagMaterials = new LinkedHashSet<>();
-                        Tag<Material> tag;
-                        tag = Bukkit.getTag(Tag.REGISTRY_ITEMS, NamespacedKey.minecraft(str.toLowerCase()), Material.class);
-                        if (tag != null) {
-                            tagMaterials.addAll(tag.getValues());
-                        }
-                        tag = Bukkit.getTag(Tag.REGISTRY_BLOCKS, NamespacedKey.minecraft(str.toLowerCase()), Material.class);
-                        if (tag != null) {
-                            tagMaterials.addAll(tag.getValues());
-                        }
-                        if (tagMaterials.isEmpty()) {
-                            getLogger().warning("Categories: Invalid tag: " + str);
-                            continue;
-                        }
-                        for (Material material : tagMaterials) {
-                            if (!material.isItem()) continue;
-                            materials.add(material);
+                        try {
+                            Set<Material> tagMaterials = new LinkedHashSet<>();
+                            Tag<Material> tag;
+                            tag = Bukkit.getTag(Tag.REGISTRY_ITEMS, NamespacedKey.minecraft(str.toLowerCase()), Material.class);
+                            if (tag != null) {
+                                tagMaterials.addAll(tag.getValues());
+                            }
+                            tag = Bukkit.getTag(Tag.REGISTRY_BLOCKS, NamespacedKey.minecraft(str.toLowerCase()), Material.class);
+                            if (tag != null) {
+                                tagMaterials.addAll(tag.getValues());
+                            }
+                            if (tagMaterials.isEmpty()) {
+                                getLogger().warning("Categories: Invalid tag: " + str);
+                                continue;
+                            }
+                            for (Material material : tagMaterials) {
+                                if (!material.isItem()) continue;
+                                materials.add(material);
+                            }
+                        } catch (Exception e) {
+                            getLogger().warning("Error with Tag: str=" + str);
+                            e.printStackTrace();
                         }
                     }
                     for (String str : section.getStringList("Materials")) {

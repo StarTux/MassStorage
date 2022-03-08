@@ -2,6 +2,7 @@ package com.winthier.massstorage;
 
 import com.winthier.playercache.PlayerCache;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.bukkit.Material;
@@ -108,6 +109,45 @@ public final class AdminCommand implements CommandExecutor {
                 }
             }
             player.sendMessage(count + " items stored");
+            return true;
+        }
+        case "transfer": {
+            if (args.length != 3) return false;
+            PlayerCache from = PlayerCache.forArg(args[1]);
+            if (from == null) {
+                sender.sendMessage("Player not found: " + args[1]);
+                return true;
+            }
+            PlayerCache to = PlayerCache.forArg(args[2]);
+            if (to == null) {
+                sender.sendMessage("Player not found: " + args[2]);
+                return true;
+            }
+            if (from.equals(to)) {
+                sender.sendMessage("Players are identical!");
+                return true;
+            }
+            Session fromSession = plugin.getSession(from.uuid);
+            Session toSession = plugin.getSession(to.uuid);
+            Map<Material, SQLItem> materialMap = fromSession.getSQLItems();
+            if (materialMap.isEmpty()) {
+                sender.sendMessage(from.name + " does not have any items!");
+                return true;
+            }
+            int count = 0;
+            for (Map.Entry<Material, SQLItem> entry : materialMap.entrySet()) {
+                Material material = entry.getKey();
+                SQLItem row = entry.getValue();
+                if (row.getAmount() <= 0) continue;
+                toSession.storeItems(new ItemStack(material, row.getAmount()));
+                count += row.getAmount();
+            }
+            plugin.sessions.remove(from.uuid);
+            int deleted = plugin.db.find(SQLItem.class).eq("owner", from.uuid).delete();
+            plugin.sessions.remove(to.uuid);
+            sender.sendMessage("Transferred from " + from.name + " to " + to.name + ":"
+                               + " items=" + count
+                               + " rows=" + deleted);
             return true;
         }
         default:

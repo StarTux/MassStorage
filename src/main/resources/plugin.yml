@@ -36,6 +36,7 @@ commands:
       /msadm reload - Reload configuration
       /msadm info <player> - Player info
       /msadm category <category> - View category
+      /msadm transfer <from> <to> - Transfer player storage
 
 permissions:
 

@@ -37,13 +37,13 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 @Getter
 public final class MassStoragePlugin extends JavaPlugin {
-    final Map<UUID, Session> sessions = new HashMap<>();
-    final List<Category> categories = new ArrayList<>();
-    Set<Material> materialBlacklist = null;
-    SQLDatabase db;
-    final MassStorageCommand massStorageCommand = new MassStorageCommand(this);
-    boolean saveAsync = false;
-    Set<Material> miscMaterials = EnumSet.noneOf(Material.class);
+    protected final Map<UUID, Session> sessions = new HashMap<>();
+    protected final List<Category> categories = new ArrayList<>();
+    protected Set<Material> materialBlacklist = null;
+    protected SQLDatabase db;
+    protected final MassStorageCommand massStorageCommand = new MassStorageCommand(this);
+    protected boolean saveAsync = false;
+    protected Set<Material> miscMaterials = EnumSet.noneOf(Material.class);
     @Getter protected static MassStoragePlugin instance;
 
     @Override
@@ -76,7 +76,7 @@ public final class MassStoragePlugin extends JavaPlugin {
         sessions.clear();
     }
 
-    void saveToDatabase(Object rows) {
+    protected void saveToDatabase(Object rows) {
         if (this.saveAsync) {
             db.saveAsync(rows, null);
         } else {
@@ -88,8 +88,11 @@ public final class MassStoragePlugin extends JavaPlugin {
         }
     }
 
-    Session getSession(Player player) {
-        final UUID uuid = player.getUniqueId();
+    public Session getSession(Player player) {
+        return getSession(player.getUniqueId());
+    }
+
+    public Session getSession(UUID uuid) {
         Session result = sessions.get(uuid);
         if (result == null) {
             result = new Session(this, uuid);
@@ -98,7 +101,7 @@ public final class MassStoragePlugin extends JavaPlugin {
         return result;
     }
 
-    Set<Material> getMaterialBlacklist() {
+    protected Set<Material> getMaterialBlacklist() {
         if (materialBlacklist == null) {
             materialBlacklist = EnumSet.noneOf(Material.class);
             for (String str : getConfig().getStringList("MaterialBlacklist")) {
@@ -115,7 +118,7 @@ public final class MassStoragePlugin extends JavaPlugin {
         return materialBlacklist;
     }
 
-    void reloadAll() {
+    protected void reloadAll() {
         saveDefaultConfig();
         if (!new File(getDataFolder(), "menu.yml").exists()) {
             saveResource("menu.yml", false);
@@ -221,11 +224,11 @@ public final class MassStoragePlugin extends JavaPlugin {
         }
     }
 
-    boolean permitNonStackingItems() {
+    protected boolean permitNonStackingItems() {
         return getConfig().getBoolean("PermitNonStackingItems", true);
     }
 
-    void on20Ticks() {
+    protected void on20Ticks() {
         long now = System.currentTimeMillis();
         for (Session session : sessions.values()) {
             if (!session.isAutoStorageEnabled()) continue;
@@ -250,7 +253,7 @@ public final class MassStoragePlugin extends JavaPlugin {
         }
     }
 
-    String getItemName(ItemStack item) {
+    protected String getItemName(ItemStack item) {
         String name = item.getType().name();
         String[] arr = name.split("_");
         if (arr.length == 0) return name;
@@ -264,7 +267,7 @@ public final class MassStoragePlugin extends JavaPlugin {
         return sb.toString();
     }
 
-    boolean canStore(ItemStack itemStack) {
+    protected boolean canStore(ItemStack itemStack) {
         Material mat = itemStack.getType();
         if (getMaterialBlacklist().contains(mat)) return false;
         if (mat.name().endsWith("_SPAWN_EGG")) return false;

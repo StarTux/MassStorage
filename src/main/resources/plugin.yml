@@ -1,0 +1,30 @@
+main: com.cavetale.ms.MassStoragePlugin
+
+name: MassStorage
+version: 0.1
+description: Store massive amounts of items in the database
+api-version: 1.18
+
+author: StarTux
+website: https://github.com/StarTux/MassStorage
+
+depend: [Core, SQL, Mytems]
+softdepend: []
+
+commands:
+
+  ms:
+    aliases: [massstorage]
+    description: Access Mass Storage
+    permission: ms.ms
+
+  msi:
+    aliases: [massstorageinsert]
+    description: Mass Storage Insert
+    permission: ms.ms
+
+permissions:
+
+  ms.ms:
+    description: Use /ms
+    default: op

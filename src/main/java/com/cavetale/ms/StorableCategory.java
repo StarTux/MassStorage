@@ -479,7 +479,7 @@ public enum StorableCategory implements StorableSet {
             };
         }
     },
-    UTILITY(() -> new ItemStack(Material.CLOCK)) {
+    UTILITIES(() -> new ItemStack(Material.CLOCK)) {
         @Override protected Material[] getMaterials() {
             return new Material[] {
                 Material.AMETHYST_CLUSTER,
@@ -697,7 +697,7 @@ public enum StorableCategory implements StorableSet {
             };
         }
     },
-    SPECIAL(Mytems.WITCH_BROOM::createIcon) {
+    TOOLS(Mytems.ARMOR_STAND_EDITOR::createIcon) {
         @Override protected MytemsCategory[] getMytemsCategories() {
             return new MytemsCategory[] {
                 MytemsCategory.UTILITY,

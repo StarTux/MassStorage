@@ -7,7 +7,6 @@ import com.cavetale.core.command.CommandWarn;
 import com.cavetale.core.font.Unicode;
 import java.util.ArrayList;
 import java.util.List;
-import net.kyori.adventure.text.Component;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import static net.kyori.adventure.text.Component.text;
@@ -49,26 +48,21 @@ public final class MassStorageCommand extends AbstractCommand<MassStoragePlugin>
     private boolean massStorage(Player player, String[] args) {
         MassStorageSession session = plugin.sessions.require(player);
         if (args.length == 0) {
-            session.getDialogue().openOverview(player, 0);
+            session.getDialogue().openOverview(player);
             return true;
         }
         String term = String.join(" ", args);
         if (term.isEmpty()) return false;
         List<StorableItem> storables = session.storables(term);
-        MassStorageDialogue dialogue = session.getDialogue();
-        final int max = 26;
-        String titleTerm = term.length() <= max ? term : term.substring(0, max) + "...";
-        Component title = text(Unicode.tiny(titleTerm), WHITE);
-        dialogue.openItems(player, title, storables, 0);
+        if (storables.isEmpty()) {
+            throw new CommandWarn("Nothing found: " + Unicode.tiny(term.toLowerCase()));
+        }
+        session.getDialogue().openSearchResult(player, term, storables);
         return true;
     }
 
     private void list(Player player) {
-        MassStorageSession session = plugin.sessions.require(player);
-        List<StorableItem> storables = session.allStorables();
-        MassStorageDialogue dialogue = session.getDialogue();
-        Component title = text("All Items", WHITE);
-        dialogue.openItems(player, title, storables, 0);
+        plugin.sessions.require(player).getDialogue().openCategory(player, StorableCategory.ALL);
     }
 
     protected void insert(Player player) {

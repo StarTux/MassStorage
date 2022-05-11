@@ -36,7 +36,7 @@ public final class Gui implements InventoryHolder {
     @Getter @Setter private boolean editable = false;
     @Getter private int size = 3 * 9;
     @Getter private Component title = Component.empty();
-    boolean locked = false;
+    @Setter private boolean locked = false;
 
     @RequiredArgsConstructor @AllArgsConstructor
     private static final class Slot {

@@ -16,15 +16,24 @@ commands:
   ms:
     aliases: [massstorage]
     description: Access Mass Storage
-    permission: ms.ms
+    permission: massstorage.ms
 
   msi:
     aliases: [massstorageinsert]
     description: Mass Storage Insert
-    permission: ms.ms
+    permission: massstorage.ms
+
+  msadm:
+    aliases: [massstorageadmin]
+    description: Admin interface
+    permission: massstorage.admin
 
 permissions:
 
-  ms.ms:
+  massstorage.ms:
     description: Use /ms
+    default: op
+
+  massstorage.admin:
+    description: Use /msadm
     default: op

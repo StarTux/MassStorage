@@ -55,4 +55,9 @@ public final class StorableBukkitItem implements StorableItem {
     public ItemStack createIcon() {
         return new ItemStack(material);
     }
+
+    @Override
+    public int getMaxStackSize() {
+        return material.getMaxStackSize();
+    }
 }

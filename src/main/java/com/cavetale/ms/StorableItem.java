@@ -37,4 +37,6 @@ public sealed interface StorableItem permits UnstorableItem, StorableBukkitItem,
     ItemStack createItemStack(int amount);
 
     ItemStack createIcon();
+
+    int getMaxStackSize();
 }

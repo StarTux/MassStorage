@@ -35,7 +35,7 @@ public final class MassStorageSession {
 
     private void setupAsync() {
         Date now = new Date();
-        for (SQLMassStorage row : plugin.find(uuid)) {
+        for (SQLMassStorage row : plugin.database.find(SQLMassStorage.class).eq("owner", uuid).findList()) {
             StorableItem storable = plugin.index.get(row);
             if (!storable.isValid()) {
                 plugin.getLogger().warning("Invalid row: " + row);

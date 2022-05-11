@@ -48,4 +48,9 @@ public final class UnstorableItem implements StorableItem {
     public ItemStack createIcon() {
         throw new IllegalStateException("Cannot create unstorable item");
     }
+
+    @Override
+    public int getMaxStackSize() {
+        throw new IllegalStateException("Cannot get max stack size of unstorable item");
+    }
 }

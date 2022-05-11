@@ -53,4 +53,9 @@ public final class StorableMytemsItem implements StorableItem {
     public ItemStack createIcon() {
         return mytems.createIcon();
     }
+
+    @Override
+    public int getMaxStackSize() {
+        return mytems.getMytem().getMaxStackSize();
+    }
 }

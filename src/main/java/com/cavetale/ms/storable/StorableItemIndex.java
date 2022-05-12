@@ -1,5 +1,6 @@
-package com.cavetale.ms;
+package com.cavetale.ms.storable;
 
+import com.cavetale.ms.sql.SQLMassStorage;
 import com.cavetale.mytems.Mytems;
 import com.destroystokyo.paper.MaterialTags;
 import java.util.ArrayList;
@@ -49,7 +50,10 @@ public final class StorableItemIndex {
             Material.BUNDLE,
             Material.BUDDING_AMETHYST);
 
-    protected void populate() {
+    /**
+     * Initialize this index with all storable items.
+     */
+    public void populate() {
         for (Material material : Material.values()) {
             if (material.isAir()) continue;
             if (!material.isItem()) continue;

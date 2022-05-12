@@ -1,4 +1,4 @@
-package com.cavetale.ms;
+package com.cavetale.ms.storable;
 
 import com.cavetale.mytems.MytemTag;
 import com.cavetale.mytems.Mytems;

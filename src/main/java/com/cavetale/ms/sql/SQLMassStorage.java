@@ -1,5 +1,7 @@
-package com.cavetale.ms;
+package com.cavetale.ms.sql;
 
+import com.cavetale.ms.storable.StorableItem;
+import com.cavetale.ms.storable.StorageType;
 import com.cavetale.mytems.Mytems;
 import java.util.Date;
 import java.util.UUID;

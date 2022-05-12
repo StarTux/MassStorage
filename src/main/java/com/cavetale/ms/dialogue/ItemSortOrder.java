@@ -1,4 +1,4 @@
-package com.cavetale.ms;
+package com.cavetale.ms.dialogue;
 
 import com.cavetale.mytems.Mytems;
 import java.util.function.Supplier;

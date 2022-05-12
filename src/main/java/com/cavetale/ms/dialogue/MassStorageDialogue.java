@@ -1,6 +1,11 @@
-package com.cavetale.ms;
+package com.cavetale.ms.dialogue;
 
 import com.cavetale.core.font.GuiOverlay;
+import com.cavetale.ms.MassStoragePlugin;
+import com.cavetale.ms.session.MassStorageSession;
+import com.cavetale.ms.storable.StorableCategory;
+import com.cavetale.ms.storable.StorableItem;
+import com.cavetale.ms.storable.StorableSet;
 import com.cavetale.ms.util.Gui;
 import com.cavetale.mytems.Mytems;
 import com.cavetale.mytems.item.font.Glyph;

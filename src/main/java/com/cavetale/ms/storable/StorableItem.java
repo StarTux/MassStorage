@@ -1,4 +1,4 @@
-package com.cavetale.ms;
+package com.cavetale.ms.storable;
 
 import net.kyori.adventure.text.Component;
 import org.bukkit.inventory.ItemStack;

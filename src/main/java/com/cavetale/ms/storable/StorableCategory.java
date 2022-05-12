@@ -1,5 +1,6 @@
-package com.cavetale.ms;
+package com.cavetale.ms.storable;
 
+import com.cavetale.ms.MassStoragePlugin;
 import com.cavetale.mytems.Mytems;
 import com.cavetale.mytems.MytemsCategory;
 import com.cavetale.mytems.MytemsTag;
@@ -755,37 +756,41 @@ public enum StorableCategory implements StorableSet {
         this.title = text(name, (isSpecial() ? YELLOW : WHITE));
     }
 
-    protected static void initialize(MassStoragePlugin plugin) {
+    /**
+     * This must be called after the StorableItemIndex has been
+     * populated.
+     */
+    public static void initialize(MassStoragePlugin plugin) {
         final Map<StorableItem, Boolean> unusedSet = new IdentityHashMap<>();
-        for (StorableItem it : plugin.index.all()) {
+        for (StorableItem it : plugin.getIndex().all()) {
             unusedSet.put(it, true);
         }
         for (StorableCategory it : values()) {
             if (it == MISC || it == ALL) continue;
             final Map<StorableItem, Boolean> storableSet = new IdentityHashMap<>();
             for (Material material : it.getMaterials()) {
-                StorableItem storable = plugin.index.bukkitIndex.get(material);
+                StorableItem storable = plugin.getIndex().bukkitIndex.get(material);
                 if (storable != null) storableSet.put(storable, true);
             }
             for (Tag<Material> tag : it.getTags()) {
                 for (Material material : tag.getValues()) {
-                    StorableItem storable = plugin.index.bukkitIndex.get(material);
+                    StorableItem storable = plugin.getIndex().bukkitIndex.get(material);
                     if (storable != null) storableSet.put(storable, true);
                 }
             }
             for (Mytems mytems : it.getMytems()) {
-                StorableItem storable = plugin.index.mytemsIndex.get(mytems);
+                StorableItem storable = plugin.getIndex().mytemsIndex.get(mytems);
                 if (storable != null) storableSet.put(storable, true);
             }
             for (MytemsTag tag : it.getMytemsTags()) {
                 for (Mytems mytems : tag.getValues()) {
-                    StorableItem storable = plugin.index.mytemsIndex.get(mytems);
+                    StorableItem storable = plugin.getIndex().mytemsIndex.get(mytems);
                     if (storable != null) storableSet.put(storable, true);
                 }
             }
             for (MytemsCategory cat : it.getMytemsCategories()) {
                 for (Mytems mytems : MytemsTag.of(cat).getValues()) {
-                    StorableItem storable = plugin.index.mytemsIndex.get(mytems);
+                    StorableItem storable = plugin.getIndex().mytemsIndex.get(mytems);
                     if (storable != null) storableSet.put(storable, true);
                 }
             }
@@ -794,7 +799,7 @@ public enum StorableCategory implements StorableSet {
         }
         MISC.storables.clear();
         MISC.storables.addAll(unusedSet.keySet());
-        ALL.storables.addAll(plugin.index.all());
+        ALL.storables.addAll(plugin.getIndex().all());
     }
 
     protected static void clear() {
@@ -833,6 +838,6 @@ public enum StorableCategory implements StorableSet {
     }
 
     private static NamespacedKey keyOf(String name) {
-        return new NamespacedKey(MassStoragePlugin.instance, name);
+        return new NamespacedKey(MassStoragePlugin.getInstance(), name);
     }
 }

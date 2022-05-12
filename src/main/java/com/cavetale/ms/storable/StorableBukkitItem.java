@@ -1,4 +1,4 @@
-package com.cavetale.ms;
+package com.cavetale.ms.storable;
 
 import java.util.ArrayList;
 import java.util.List;

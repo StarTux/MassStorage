@@ -1,4 +1,4 @@
-package com.cavetale.ms;
+package com.cavetale.ms.storable;
 
 import java.util.List;
 import net.kyori.adventure.text.Component;

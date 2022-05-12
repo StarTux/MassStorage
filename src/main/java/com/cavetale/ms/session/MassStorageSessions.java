@@ -1,6 +1,7 @@
-package com.cavetale.ms;
+package com.cavetale.ms.session;
 
 import com.cavetale.core.command.CommandWarn;
+import com.cavetale.ms.MassStoragePlugin;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -18,7 +19,7 @@ public final class MassStorageSessions implements Listener {
     private final MassStoragePlugin plugin;
     private final Map<UUID, MassStorageSession> sessionsMap = new HashMap<>();
 
-    protected void enable() {
+    public void enable() {
         Bukkit.getPluginManager().registerEvents(this, plugin);
         for (Player player : Bukkit.getOnlinePlayers()) {
             of(player).setup();

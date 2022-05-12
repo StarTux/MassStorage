@@ -1,5 +1,6 @@
-package com.cavetale.ms;
+package com.cavetale.ms.dialogue;
 
+import com.cavetale.ms.storable.StorableItem;
 import java.util.List;
 import net.kyori.adventure.text.Component;
 

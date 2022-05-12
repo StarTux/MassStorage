@@ -1,4 +1,4 @@
-package com.cavetale.ms;
+package com.cavetale.ms.storable;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;

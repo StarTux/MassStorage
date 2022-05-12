@@ -1,5 +1,9 @@
-package com.cavetale.ms;
+package com.cavetale.ms.session;
 
+import com.cavetale.ms.MassStoragePlugin;
+import com.cavetale.ms.dialogue.MassStorageDialogue;
+import com.cavetale.ms.sql.SQLMassStorage;
+import com.cavetale.ms.storable.StorableItem;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.IdentityHashMap;
@@ -24,19 +28,19 @@ public final class MassStorageSession {
     protected MassStorageSession(final MassStoragePlugin plugin, final UUID uuid) {
         this.plugin = plugin;
         this.uuid = uuid;
-        final int size = plugin.index.size();
+        final int size = plugin.getIndex().size();
         this.ids = new int[size];
         this.amounts = new int[size];
     }
 
     public void setup() {
-        plugin.database.scheduleAsyncTask(this::setupAsync);
+        plugin.getDatabase().scheduleAsyncTask(this::setupAsync);
     }
 
     private void setupAsync() {
         Date now = new Date();
-        for (SQLMassStorage row : plugin.database.find(SQLMassStorage.class).eq("owner", uuid).findList()) {
-            StorableItem storable = plugin.index.get(row);
+        for (SQLMassStorage row : plugin.getDatabase().find(SQLMassStorage.class).eq("owner", uuid).findList()) {
+            StorableItem storable = plugin.getIndex().get(row);
             if (!storable.isValid()) {
                 plugin.getLogger().warning("Invalid row: " + row);
                 continue;
@@ -45,12 +49,12 @@ public final class MassStorageSession {
             ids[index] = row.getId();
             amounts[index] = row.getAmount();
             row.setUpdated(now);
-            plugin.database.update(row, "updated");
+            plugin.getDatabase().update(row, "updated");
         }
         for (int i = 0; i < ids.length; i += 1) {
             if (ids[i] != 0) continue;
-            SQLMassStorage row = new SQLMassStorage(uuid, plugin.index.get(i));
-            if (plugin.database.insert(row) == 0) {
+            SQLMassStorage row = new SQLMassStorage(uuid, plugin.getIndex().get(i));
+            if (plugin.getDatabase().insert(row) == 0) {
                 throw new IllegalStateException("Insert failed: " + row);
             }
             ids[i] = row.getId();
@@ -77,14 +81,14 @@ public final class MassStorageSession {
         final Map<StorableItem, Integer> map = new IdentityHashMap<>();
         for (ItemStack item : items) {
             if (item == null || item.getType().isAir()) continue;
-            StorableItem storable = plugin.index.get(item);
+            StorableItem storable = plugin.getIndex().get(item);
             if (!storable.canStore(item)) continue;
             int value = map.getOrDefault(storable, 0);
             int amount = item.getAmount();
             map.put(storable, value + amount);
             item.subtract(amount);
         }
-        plugin.database.scheduleAsyncTask(() -> {
+        plugin.getDatabase().scheduleAsyncTask(() -> {
                 for (Map.Entry<StorableItem, Integer> entry : map.entrySet()) {
                     insert(entry.getKey(), entry.getValue());
                 }
@@ -100,7 +104,7 @@ public final class MassStorageSession {
      * spam console.
      */
     public boolean insert(StorableItem storable, int amount) {
-        final int result = plugin.database.update(SQLMassStorage.class)
+        final int result = plugin.getDatabase().update(SQLMassStorage.class)
             .add("amount", amount)
             .where(c -> c.eq("id", ids[storable.getIndex()]))
             .sync();
@@ -117,7 +121,7 @@ public final class MassStorageSession {
     }
 
     public void insertAsync(StorableItem storable, int amount, Consumer<Boolean> callback) {
-        plugin.database.scheduleAsyncTask(() -> {
+        plugin.getDatabase().scheduleAsyncTask(() -> {
                 boolean result = insert(storable, amount);
                 Bukkit.getScheduler().runTask(plugin, () -> callback.accept(result));
             });
@@ -130,7 +134,7 @@ public final class MassStorageSession {
      */
     public boolean retrieve(StorableItem storable, int amount) {
         final int index = storable.getIndex();
-        final int result = plugin.database.update(SQLMassStorage.class)
+        final int result = plugin.getDatabase().update(SQLMassStorage.class)
             .subtract("amount", amount)
             .where(c -> c
                    .eq("id", ids[index])
@@ -144,7 +148,7 @@ public final class MassStorageSession {
     }
 
     public void retrieveAsync(StorableItem storable, int amount, Consumer<Boolean> callback) {
-        plugin.database.scheduleAsyncTask(() -> {
+        plugin.getDatabase().scheduleAsyncTask(() -> {
                 boolean result = retrieve(storable, amount);
                 Bukkit.getScheduler().runTask(plugin, () -> callback.accept(result));
             });
@@ -154,11 +158,11 @@ public final class MassStorageSession {
         return amounts[storable.getIndex()];
     }
 
-    protected void complete(List<String> result, String arg) {
+    public void complete(List<String> result, String arg) {
         String lower = arg.toLowerCase();
         for (int i = 0; i < amounts.length; i += 1) {
             if (amounts[i] == 0) continue;
-            StorableItem storable = plugin.index.get(i);
+            StorableItem storable = plugin.getIndex().get(i);
             String lname = storable.getName().toLowerCase();
             if (lname.contains(lower)) {
                 result.add(lname);
@@ -166,22 +170,22 @@ public final class MassStorageSession {
         }
     }
 
-    protected List<StorableItem> allStorables() {
+    public List<StorableItem> allStorables() {
         List<StorableItem> result = new ArrayList<>();
         for (int i = 0; i < amounts.length; i += 1) {
             if (amounts[i] == 0) continue;
-            StorableItem storable = plugin.index.get(i);
+            StorableItem storable = plugin.getIndex().get(i);
             result.add(storable);
         }
         return result;
     }
 
-    protected List<StorableItem> storables(String arg) {
+    public List<StorableItem> storables(String arg) {
         String lower = arg.toLowerCase();
         List<StorableItem> result = new ArrayList<>();
         for (int i = 0; i < amounts.length; i += 1) {
             if (amounts[i] == 0) continue;
-            StorableItem storable = plugin.index.get(i);
+            StorableItem storable = plugin.getIndex().get(i);
             if (storable.getName().toLowerCase().contains(lower)) {
                 result.add(storable);
             }
@@ -189,7 +193,7 @@ public final class MassStorageSession {
         return result;
     }
 
-    protected List<StorableItem> filter(List<StorableItem> in) {
+    public List<StorableItem> filter(List<StorableItem> in) {
         List<StorableItem> result = new ArrayList<>();
         for (StorableItem it : in) {
             if (amounts[it.getIndex()] > 0) {
@@ -199,7 +203,7 @@ public final class MassStorageSession {
         return result;
     }
 
-    protected int count(List<StorableItem> in) {
+    public int count(List<StorableItem> in) {
         int result = 0;
         for (StorableItem it : in) {
             result += amounts[it.getIndex()];

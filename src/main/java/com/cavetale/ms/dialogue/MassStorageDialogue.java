@@ -143,10 +143,11 @@ public final class MassStorageDialogue {
                     }
                 });
         }
-        gui.setItem(2, Mytems.LETTER_I.createIcon(List.of(text(tiny("Hint: Click outside"), GRAY),
-                                                          text(tiny("the window to go"), GRAY),
-                                                          text(tiny("back to the"), GRAY),
-                                                          text(tiny("previous menu."), GRAY))), null);
+        gui.setItem(2, Mytems.LETTER_I
+                    .createIcon(List.of(text(tiny("Hint: Click outside"), GRAY),
+                                        text(tiny("the window to go"), GRAY),
+                                        text(tiny("back to the"), GRAY),
+                                        text(tiny("previous menu."), GRAY))), null);
         ItemStack insertIcon = Mytems.PLUS_BUTTON
             .createIcon(List.of(text("Insert items", LIGHT_PURPLE),
                                 text("/mss", GREEN),
@@ -160,14 +161,15 @@ public final class MassStorageDialogue {
                 openInsert(player);
                 click(player);
             });
-        ItemStack dumpIcon = Mytems.ARROW_UP
-            .createIcon(List.of(text("Dump inventory", LIGHT_PURPLE),
-                                text("/ms dump", GREEN),
-                                text(tiny("Try to store any"), GRAY),
-                                text(tiny("item in your"), GRAY),
-                                text(tiny("inventory except"), GRAY),
-                                text(tiny("for the hotbar"), GRAY),
-                                text(tiny("and armor slots."), GRAY)));
+        ItemStack dumpIcon = Items
+            .text(new ItemStack(Material.HOPPER_MINECART),
+                  List.of(text("Dump inventory", LIGHT_PURPLE),
+                          text("/ms dump", GREEN),
+                          text(tiny("Try to store any"), GRAY),
+                          text(tiny("item in your"), GRAY),
+                          text(tiny("inventory except"), GRAY),
+                          text(tiny("for the hotbar"), GRAY),
+                          text(tiny("and armor slots."), GRAY)));
         gui.setItem(3, dumpIcon, click -> {
                 if (!click.isLeftClick()) return;
                 List<ItemStack> items = new ArrayList<>();
@@ -198,15 +200,16 @@ public final class MassStorageDialogue {
                 open(player);
                 click(player);
             });
-        ItemStack drainIcon = Mytems.MAGNET.createIcon(List.of(text("Drain Container", LIGHT_PURPLE),
-                                                               text("/ms drain", GREEN),
-                                                               text(tiny("Menu will close."), GRAY),
-                                                               text(tiny("Then, click a"), GRAY),
-                                                               text(tiny("container in your"), GRAY),
-                                                               text(tiny("world to try and"), GRAY),
-                                                               text(tiny("remove all items"), GRAY),
-                                                               text(tiny("from and put them"), GRAY),
-                                                               text(tiny("into storage."), GRAY)));
+        ItemStack drainIcon = Mytems.MAGNET
+            .createIcon(List.of(text("Drain Container", LIGHT_PURPLE),
+                                text("/ms drain", GREEN),
+                                text(tiny("Menu will close."), GRAY),
+                                text(tiny("Then, click a"), GRAY),
+                                text(tiny("container in your"), GRAY),
+                                text(tiny("world to try and"), GRAY),
+                                text(tiny("remove all items"), GRAY),
+                                text(tiny("from and put them"), GRAY),
+                                text(tiny("into storage."), GRAY)));
         gui.setItem(5, drainIcon, click -> {
                 if (!click.isLeftClick()) return;
                 // Player session
@@ -436,7 +439,12 @@ public final class MassStorageDialogue {
                     fail(player);
                     return;
                 }
-                int given = storable.fit(player.getInventory(), amount, true);
+                final int given;
+                if (!player.isOnline() || player.isDead()) {
+                    given = 0;
+                } else {
+                    given = storable.fit(player.getInventory(), amount, true);
+                }
                 if (given < amount) {
                     session.insertAsync(storable, amount - given, null);
                 }

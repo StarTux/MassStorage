@@ -149,33 +149,49 @@ public final class MassStorageSessions implements Listener {
                 Inventory inventory = getWorldContainerHelper(player, event.getClickedBlock());
                 if (inventory == null) {
                     player.playSound(player.getLocation(), BLOCK_CHEST_LOCKED, 1.0f, 1.25f);
+                    return;
                 }
                 if (sessionAction instanceof SessionFillWorldContainer fill) {
+                    switch (inventory.getType()) {
+                    case BARREL: case CHEST: case DISPENSER: case DROPPER: case HOPPER: case SHULKER_BOX:
+                        break;
+                    default:
+                        player.sendActionBar(text("This container cannot be filled!", RED));
+                        player.playSound(player.getLocation(), BLOCK_CHEST_LOCKED, 1.0f, 1.25f);
+                        return;
+                    }
                     session.setAction(null);
                     final int has = session.getAmount(fill.storable);
                     StorableItem storable = fill.getStorable();
                     if (has == 0) {
-                        player.sendMessage(join(noSeparators(), text("You are out of ", RED), storable.getDisplayName()));
+                        player.sendActionBar(join(noSeparators(), text("You are out of ", RED), storable.getDisplayName()));
                         return;
                     }
                     final int amount = storable.fit(inventory, has, false);
+                    inventory = null; // Do not use in callback!
                     if (amount == 0) {
-                        player.sendMessage(text("This container is full!", RED));
+                        player.sendActionBar(text("This container is full!", RED));
                         player.playSound(player.getLocation(), BLOCK_CHEST_LOCKED, 1.0f, 1.25f);
                         return;
                     }
                     session.retrieveAsync(storable, amount, success -> {
                             if (!success) {
-                                player.sendMessage(join(noSeparators(), text("You are out of ", RED), storable.getDisplayName()));
+                                player.sendActionBar(join(noSeparators(), text("You are out of ", RED), storable.getDisplayName()));
                                 player.playSound(player.getLocation(), BLOCK_CHEST_LOCKED, 1.0f, 1.25f);
                                 return;
                             }
-                            int stored = storable.fit(inventory, amount, true);
+                            final Inventory inventory2 = getWorldContainerHelper(player, event.getClickedBlock());
+                            final int stored;
+                            if (inventory2 == null) {
+                                stored = 0;
+                            } else {
+                                stored = storable.fit(inventory2, amount, true);
+                                player.sendMessage(join(noSeparators(), text("Filled container with ", GREEN),
+                                                        text(stored, WHITE), TIMES, storable.getDisplayName()));
+                            }
                             if (stored < amount) {
                                 session.insertAsync(storable, amount - stored, null);
                             }
-                            player.sendMessage(join(noSeparators(), text("Filled container with ", GREEN),
-                                                    text(stored, WHITE), TIMES, storable.getDisplayName()));
                             session.getDialogue().open(player);
                             player.playSound(player.getLocation(), BLOCK_ENDER_CHEST_OPEN, 0.5f, 2.0f);
                         });

@@ -13,6 +13,7 @@ import com.cavetale.mytems.Mytems;
 import java.util.ArrayList;
 import java.util.List;
 import org.bukkit.entity.Player;
+import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.ItemStack;
 import static com.cavetale.ms.dialogue.MassStorageDialogue.insertResponse;
 import static net.kyori.adventure.text.Component.join;
@@ -84,6 +85,10 @@ public final class MassStorageCommand extends AbstractCommand<MassStoragePlugin>
     }
 
     private void dump(Player player) {
+        if (player.getOpenInventory().getType() != InventoryType.CRAFTING) {
+            player.sendMessage(text("Not now!", RED));
+            return;
+        }
         MassStorageSession session = plugin.sessions.require(player);
         List<ItemStack> items = new ArrayList<>();
         for (int i = 9; i < 36; i += 1) {

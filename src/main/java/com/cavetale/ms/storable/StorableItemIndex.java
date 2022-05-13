@@ -47,8 +47,7 @@ public final class StorableItemIndex {
             Material.JIGSAW,
             Material.LIGHT,
             Material.SCULK_SENSOR,
-            Material.BUNDLE,
-            Material.BUDDING_AMETHYST);
+            Material.BUNDLE);
 
     /**
      * Initialize this index with all storable items.
@@ -104,6 +103,20 @@ public final class StorableItemIndex {
         }
     }
 
+    public @NonNull StorableItem get(StorageType type, String sqlName) {
+        switch (type) {
+        case BUKKIT:
+            StorableBukkitItem bukkit = bukkitSqlNameMap.get(sqlName);
+            return bukkit != null ? bukkit : unstorableItem;
+        case MYTEMS:
+            StorableMytemsItem mytems = mytemsSqlNameMap.get(sqlName);
+            return mytems != null ? mytems : unstorableItem;
+        case INVALID:
+        default:
+            return unstorableItem;
+        }
+    }
+
     public @NonNull StorableItem get(int index) {
         return all.get(index);
     }
@@ -114,5 +127,21 @@ public final class StorableItemIndex {
 
     public int size() {
         return all.size();
+    }
+
+    public List<String> allNames() {
+        List<String> result = new ArrayList<>(all.size());
+        for (StorableItem it : all) {
+            result.add(it.getName());
+        }
+        return result;
+    }
+
+    public List<String> allSqlNames() {
+        List<String> result = new ArrayList<>(all.size());
+        for (StorableItem it : all) {
+            result.add(it.getSqlName());
+        }
+        return result;
     }
 }

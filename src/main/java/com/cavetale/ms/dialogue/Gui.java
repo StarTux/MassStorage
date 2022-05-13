@@ -37,6 +37,7 @@ public final class Gui implements InventoryHolder {
     @Getter private int size = 3 * 9;
     @Getter private Component title = Component.empty();
     @Setter private boolean locked = false;
+    private Consumer<InventoryClickEvent> bottomClickHandler;
 
     @RequiredArgsConstructor @AllArgsConstructor
     private static final class Slot {
@@ -111,6 +112,10 @@ public final class Gui implements InventoryHolder {
         setItem(column + row * 9, item, responder);
     }
 
+    public void onClickBottom(Consumer<InventoryClickEvent> callback) {
+        this.bottomClickHandler = callback;
+    }
+
     public Gui open(Player player) {
         player.openInventory(getInventory());
         return this;
@@ -160,8 +165,16 @@ public final class Gui implements InventoryHolder {
         if (locked) return;
         if (!(event.getWhoClicked() instanceof Player)) return;
         Player player = (Player) event.getWhoClicked();
-        if (event.getClickedInventory() != null
-            && !inventory.equals(event.getClickedInventory())) {
+        if (event.getClickedInventory() != null && !event.getClickedInventory().equals(inventory)) {
+            if (event.getClickedInventory().equals(event.getView().getBottomInventory())) {
+                if (bottomClickHandler != null) {
+                    locked = true;
+                    Bukkit.getScheduler().runTask(plugin, () -> {
+                            locked = false;
+                            bottomClickHandler.accept(event);
+                        });
+                }
+            }
             return;
         }
         Slot slot = slots.get(event.getSlot());

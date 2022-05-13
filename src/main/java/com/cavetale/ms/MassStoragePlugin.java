@@ -2,6 +2,7 @@ package com.cavetale.ms;
 
 import com.cavetale.ms.session.MassStorageSessions;
 import com.cavetale.ms.sql.SQLMassStorage;
+import com.cavetale.ms.sql.SQLPlayer;
 import com.cavetale.ms.storable.StorableCategory;
 import com.cavetale.ms.storable.StorableItemIndex;
 import com.cavetale.ms.util.Gui;
@@ -22,7 +23,7 @@ public final class MassStoragePlugin extends JavaPlugin {
     @Override
     public void onEnable() {
         instance = this;
-        database.registerTable(SQLMassStorage.class);
+        database.registerTables(SQLMassStorage.class, SQLPlayer.class);
         if (!database.createAllTables()) {
             throw new IllegalStateException("Database creation failed!");
         }

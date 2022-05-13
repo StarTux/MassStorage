@@ -4,7 +4,7 @@ import com.cavetale.core.command.AbstractCommand;
 
 public final class MassStorageInsertCommand extends AbstractCommand<MassStoragePlugin> {
     protected MassStorageInsertCommand(final MassStoragePlugin plugin) {
-        super(plugin, "msi");
+        super(plugin, "mss");
     }
 
     @Override

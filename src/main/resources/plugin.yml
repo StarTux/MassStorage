@@ -8,7 +8,7 @@ api-version: 1.18
 author: StarTux
 website: https://github.com/StarTux/MassStorage
 
-depend: [Core, SQL, Mytems]
+depend: [Core, SQL, Mytems, Sidebar]
 softdepend: []
 
 commands:
@@ -18,8 +18,8 @@ commands:
     description: Access Mass Storage
     permission: massstorage.ms
 
-  msi:
-    aliases: [massstorageinsert]
+  mss:
+    aliases: [msi, massstorageinsert]
     description: Mass Storage Insert
     permission: massstorage.ms
 

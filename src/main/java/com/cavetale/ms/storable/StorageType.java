@@ -1,5 +1,6 @@
 package com.cavetale.ms.storable;
 
+import com.cavetale.core.command.CommandWarn;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
@@ -16,5 +17,13 @@ public enum StorageType {
             if (it.id == ofId) return it;
         }
         return INVALID;
+    }
+
+    public static StorageType require(String arg) {
+        try {
+            return valueOf(arg.toUpperCase());
+        } catch (IllegalArgumentException iae) {
+            throw new CommandWarn("Storage type not found: " + arg);
+        }
     }
 }

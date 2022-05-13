@@ -2,6 +2,7 @@ package com.cavetale.ms.storable;
 
 import com.cavetale.mytems.MytemTag;
 import com.cavetale.mytems.Mytems;
+import com.cavetale.mytems.util.Text;
 import lombok.Getter;
 import net.kyori.adventure.text.Component;
 import org.bukkit.inventory.ItemStack;
@@ -13,12 +14,23 @@ public final class StorableMytemsItem implements StorableItem {
     protected final Mytems mytems;
     protected final int index;
     protected final String sqlName;
+    protected final String category;
 
     protected StorableMytemsItem(final Mytems mytems, final int index) {
         this.mytems = mytems;
         this.index = index;
         this.sqlName = mytems.id;
         this.name = plainText().serialize(mytems.getMytem().getDisplayName());
+        this.category = Text.toCamelCase(mytems.category, " ");
+    }
+
+    @Override
+    public String toString() {
+        return name
+            + " mytems=" + mytems
+            + " index=" + index
+            + " sqlName=" + sqlName
+            + " category=" + category;
     }
 
     @Override
@@ -37,6 +49,11 @@ public final class StorableMytemsItem implements StorableItem {
         if (tag == null) return true;
         tag.setAmount(null);
         return tag.isDismissable();
+    }
+
+    @Override
+    public boolean canStack(ItemStack itemStack) {
+        return mytems.isItem(itemStack) && canStore(itemStack);
     }
 
     @Override

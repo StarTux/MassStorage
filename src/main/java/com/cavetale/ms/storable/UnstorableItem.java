@@ -25,7 +25,17 @@ public final class UnstorableItem implements StorableItem {
     }
 
     @Override
+    public String getCategory() {
+        throw new IllegalStateException("Cannot get category of unstorable item");
+    }
+
+    @Override
     public boolean canStore(ItemStack itemStack) {
+        return false;
+    }
+
+    @Override
+    public boolean canStack(ItemStack itemStack) {
         return false;
     }
 

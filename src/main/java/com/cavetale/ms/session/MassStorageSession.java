@@ -1,8 +1,10 @@
 package com.cavetale.ms.session;
 
 import com.cavetale.ms.MassStoragePlugin;
+import com.cavetale.ms.dialogue.ItemSortOrder;
 import com.cavetale.ms.dialogue.MassStorageDialogue;
 import com.cavetale.ms.sql.SQLMassStorage;
+import com.cavetale.ms.sql.SQLPlayer;
 import com.cavetale.ms.storable.StorableItem;
 import java.util.ArrayList;
 import java.util.Date;
@@ -10,20 +12,30 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import lombok.Getter;
+import lombok.Setter;
 import org.bukkit.Bukkit;
+import org.bukkit.Tag;
+import org.bukkit.block.ShulkerBox;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.PlayerInventory;
+import org.bukkit.inventory.meta.BlockStateMeta;
 
 public final class MassStorageSession {
     private final MassStoragePlugin plugin;
+    private SQLPlayer playerRow;
     private final UUID uuid;
     private final int[] ids;
     private final int[] amounts;
     @Getter private boolean enabled;
     private MassStorageDialogue dialogue;
+    @Getter @Setter private SessionAction action;
+    private boolean stackingHand = false;
 
     protected MassStorageSession(final MassStoragePlugin plugin, final UUID uuid) {
         this.plugin = plugin;
@@ -38,6 +50,13 @@ public final class MassStorageSession {
     }
 
     private void setupAsync() {
+        playerRow = plugin.getDatabase().find(SQLPlayer.class).eq("uuid", uuid).findUnique();
+        if (playerRow == null) {
+            playerRow = new SQLPlayer(uuid);
+            if (plugin.getDatabase().insert(playerRow) == 0) {
+                throw new IllegalStateException("Insert failed: " + playerRow);
+            }
+        }
         Date now = new Date();
         for (SQLMassStorage row : plugin.getDatabase().find(SQLMassStorage.class).eq("owner", uuid).findList()) {
             StorableItem storable = plugin.getIndex().get(row);
@@ -68,32 +87,55 @@ public final class MassStorageSession {
         return Bukkit.getPlayer(uuid);
     }
 
-    public void insertAndSubtract(Inventory inventory, Consumer<Map<StorableItem, Integer>> callback) {
+    public boolean insertAndSubtract(Inventory inventory, BiConsumer<List<ItemStack>, Map<StorableItem, Integer>> callback) {
         List<ItemStack> items = new ArrayList<>(inventory.getSize());
         for (ItemStack item : inventory) {
             if (item == null || item.getType().isAir()) continue;
             items.add(item);
         }
-        insertAndSubtract(items, callback);
+        return insertAndSubtract(items, callback);
     }
 
-    public void insertAndSubtract(List<ItemStack> items, Consumer<Map<StorableItem, Integer>> callback) {
+    private boolean insertAndSubtractHelper(ItemStack item, List<ItemStack> rejects, Map<StorableItem, Integer> map) {
+        if (item == null || item.getType().isAir()) return false;
+        if (Tag.SHULKER_BOXES.isTagged(item.getType())) {
+            item.editMeta(m -> {
+                    if (m instanceof BlockStateMeta meta) {
+                        if (meta.getBlockState() instanceof ShulkerBox shulkerBox) {
+                            Inventory inventory = shulkerBox.getInventory();
+                            for (ItemStack item2 : inventory) {
+                                insertAndSubtractHelper(item2, rejects, map);
+                            }
+                            meta.setBlockState(shulkerBox);
+                        }
+                    }
+                });
+        }
+        StorableItem storable = plugin.getIndex().get(item);
+        if (!storable.canStore(item)) {
+            rejects.add(item);
+            return false;
+        }
+        int value = map.getOrDefault(storable, 0);
+        int amount = item.getAmount();
+        map.put(storable, value + amount);
+        item.subtract(amount);
+        return true;
+    }
+
+    public boolean insertAndSubtract(List<ItemStack> items, BiConsumer<List<ItemStack>, Map<StorableItem, Integer>> callback) {
+        final List<ItemStack> rejects = new ArrayList<>();
         final Map<StorableItem, Integer> map = new IdentityHashMap<>();
         for (ItemStack item : items) {
-            if (item == null || item.getType().isAir()) continue;
-            StorableItem storable = plugin.getIndex().get(item);
-            if (!storable.canStore(item)) continue;
-            int value = map.getOrDefault(storable, 0);
-            int amount = item.getAmount();
-            map.put(storable, value + amount);
-            item.subtract(amount);
+            insertAndSubtractHelper(item, rejects, map);
         }
         plugin.getDatabase().scheduleAsyncTask(() -> {
                 for (Map.Entry<StorableItem, Integer> entry : map.entrySet()) {
                     insert(entry.getKey(), entry.getValue());
                 }
-                callback.accept(map);
+                Bukkit.getScheduler().runTask(plugin, () -> callback.accept(rejects, map));
             });
+        return !map.isEmpty();
     }
 
     /**
@@ -104,13 +146,15 @@ public final class MassStorageSession {
      * spam console.
      */
     public boolean insert(StorableItem storable, int amount) {
+        final int rowId = ids[storable.getIndex()];
         final int result = plugin.getDatabase().update(SQLMassStorage.class)
             .add("amount", amount)
-            .where(c -> c.eq("id", ids[storable.getIndex()]))
+            .where(c -> c.eq("id", rowId))
             .sync();
         final boolean success = result != 0;
         if (!success) {
             plugin.getLogger().severe("Insert failed!"
+                                      + " rowId=" + rowId
                                       + " result=" + result
                                       + " player=" + uuid
                                       + " item=" + amount + "x" + storable);
@@ -123,7 +167,9 @@ public final class MassStorageSession {
     public void insertAsync(StorableItem storable, int amount, Consumer<Boolean> callback) {
         plugin.getDatabase().scheduleAsyncTask(() -> {
                 boolean result = insert(storable, amount);
-                Bukkit.getScheduler().runTask(plugin, () -> callback.accept(result));
+                if (callback != null) {
+                    Bukkit.getScheduler().runTask(plugin, () -> callback.accept(result));
+                }
             });
     }
 
@@ -216,5 +262,74 @@ public final class MassStorageSession {
             dialogue = new MassStorageDialogue(plugin, this);
         }
         return dialogue;
+    }
+
+    public boolean isAssistantEnabled() {
+        return playerRow.isAuto();
+    }
+
+    public void setAssistantEnabled(boolean value) {
+        if (value == playerRow.isAuto()) return;
+        playerRow.setAuto(value);
+        plugin.getDatabase().updateAsync(playerRow, null, "auto");
+    }
+
+    public ItemSortOrder getItemSortOrder() {
+        return ItemSortOrder.values()[playerRow.getSortOrder()];
+    }
+
+    public void setItemSortOrder(ItemSortOrder value) {
+        if (value.ordinal() == playerRow.getSortOrder()) return;
+        playerRow.setSortOrder(value.ordinal());
+        plugin.getDatabase().updateAsync(playerRow, null, "sortOrder");
+    }
+
+    protected void stackHand(Player player, EquipmentSlot hand) {
+        if (stackingHand) return;
+        PlayerInventory inventory = player.getInventory();
+        int index = hand == EquipmentSlot.HAND ? inventory.getHeldItemSlot() : 40;
+        final ItemStack item = inventory.getItem(index);
+        StorableItem storable = plugin.getIndex().get(item);
+        if (storable == null) return;
+        if (getAmount(storable) == 0) return;
+        final int stackSize = storable.getMaxStackSize();
+        if (stackSize <= 1) return;
+        final int oldAmount = item.getAmount();
+        //if (oldAmount > stackSize / 2) return;
+        if (!storable.canStack(item)) return;
+        stackingHand = true;
+        Bukkit.getScheduler().runTask(plugin, () -> {
+                stackingHand = false;
+                final ItemStack item2 = player.getInventory().getItem(index);
+                final int amount;
+                if (item2 == null || item2.getType().isAir()) {
+                    amount = Math.min(getAmount(storable), stackSize);
+                } else {
+                    if (!storable.canStack(item2)) return;
+                    if (item2.getAmount() == oldAmount) return;
+                    amount = Math.min(getAmount(storable), stackSize - item2.getAmount());
+                }
+                if (amount <= 0) return;
+                stackingHand = true;
+                retrieveAsync(storable, amount, success -> {
+                        stackingHand = false;
+                        if (!success) return;
+                        final ItemStack item3 = player.getInventory().getItem(index);
+                        if (item3 == null || item3.getType().isAir()) {
+                            player.getInventory().setItem(index, storable.createItemStack(amount));
+                        } else {
+                            final int given;
+                            if (!storable.canStack(item3)) {
+                                given = 0;
+                            } else {
+                                given = Math.min(amount, stackSize - item3.getAmount());
+                                item3.add(given);
+                            }
+                            if (given < amount) {
+                                insertAsync(storable, amount - given, null);
+                            }
+                        }
+                    });
+            });
     }
 }

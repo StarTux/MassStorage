@@ -17,6 +17,7 @@ import net.kyori.adventure.text.Component;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Tag;
+import org.bukkit.inventory.CreativeCategory;
 import org.bukkit.inventory.ItemStack;
 import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.format.NamedTextColor.*;
@@ -409,6 +410,9 @@ public enum StorableCategory implements StorableSet {
                 Material.POWERED_RAIL,
             };
         }
+        @Override protected CreativeCategory getCreativeCategory() {
+            return CreativeCategory.REDSTONE;
+        }
     },
     TRANSPORTATION(() -> new ItemStack(Material.MINECART)) {
         @Override protected Material[] getMaterials() {
@@ -429,6 +433,9 @@ public enum StorableCategory implements StorableSet {
                 Material.WARPED_FUNGUS_ON_A_STICK,
                 Material.ELYTRA,
             };
+        }
+        @Override protected CreativeCategory getCreativeCategory() {
+            return CreativeCategory.TRANSPORTATION;
         }
     },
     FOOD(() -> new ItemStack(Material.APPLE)) {
@@ -478,6 +485,9 @@ public enum StorableCategory implements StorableSet {
                 Material.TROPICAL_FISH,
                 Material.HONEY_BOTTLE,
             };
+        }
+        @Override public CreativeCategory getCreativeCategory() {
+            return CreativeCategory.FOOD;
         }
     },
     UTILITIES(() -> new ItemStack(Material.CLOCK)) {
@@ -566,7 +576,7 @@ public enum StorableCategory implements StorableSet {
                            MaterialTags.FISH_BUCKETS);
         }
     },
-    INGREDIENTS(Mytems.POTION_FLASK::createIcon) {
+    BREWING(Mytems.POTION_FLASK::createIcon) {
         @Override protected Material[] getMaterials() {
             return new Material[] {
                 Material.NETHER_WART,
@@ -593,6 +603,9 @@ public enum StorableCategory implements StorableSet {
             return new MytemsCategory[] {
                 MytemsCategory.POTIONS,
             };
+        }
+        @Override protected CreativeCategory getCreativeCategory() {
+            return CreativeCategory.BREWING;
         }
     },
     STORAGE(() -> new ItemStack(Material.CHEST)) {
@@ -709,7 +722,7 @@ public enum StorableCategory implements StorableSet {
             };
         }
     },
-    COLLECTIBLES(Mytems.KITTY_COIN::createIcon) {
+    COLLECTIBLES(Mytems.RUBY::createIcon) {
         @Override protected MytemsCategory[] getMytemsCategories() {
             return new MytemsCategory[] {
                 MytemsCategory.COLLECTIBLES,
@@ -720,7 +733,7 @@ public enum StorableCategory implements StorableSet {
             };
         }
     },
-    ITEM_SETS(Mytems.SCARLET_HELMET::createIcon) {
+    ITEM_SETS(Mytems.DR_ACULA_STAFF::createIcon) {
         @Override protected MytemsTag[] getMytemsTags() {
             return new MytemsTag[] {
                 MytemsTag.ITEM_SETS,
@@ -794,6 +807,15 @@ public enum StorableCategory implements StorableSet {
                     if (storable != null) storableSet.put(storable, true);
                 }
             }
+            CreativeCategory creativeCategory = it.getCreativeCategory();
+            if (creativeCategory != null) {
+                for (Material material : Material.values()) {
+                    if (material.isItem() && material.getCreativeCategory() == creativeCategory) {
+                        StorableItem storable = plugin.getIndex().bukkitIndex.get(material);
+                        if (storable != null) storableSet.put(storable, true);
+                    }
+                }
+            }
             it.storables.addAll(storableSet.keySet());
             unusedSet.keySet().removeAll(it.storables);
         }
@@ -826,6 +848,10 @@ public enum StorableCategory implements StorableSet {
 
     protected MytemsTag[] getMytemsTags() {
         return new MytemsTag[0];
+    }
+
+    protected CreativeCategory getCreativeCategory() {
+        return null;
     }
 
     protected boolean isSpecial() {

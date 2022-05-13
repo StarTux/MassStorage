@@ -23,7 +23,7 @@ public enum ItemSortOrder {
     AMOUNT(5, Mytems.NUMBER_1::createIcon, "Sort by amount") {
         @Override public int compare(MassStorageSession session, StorableItem a, StorableItem b) {
             int res = Integer.compare(session.getAmount(b), session.getAmount(a));
-            return res != 0 ? res : NAME.compare(session, a, b);
+            return res != 0 ? res : GROUP.compare(session, a, b);
         }
     };
 

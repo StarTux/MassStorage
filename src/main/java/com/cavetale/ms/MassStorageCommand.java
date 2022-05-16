@@ -15,7 +15,7 @@ import java.util.List;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.ItemStack;
-import static com.cavetale.ms.dialogue.MassStorageDialogue.insertResponse;
+import static com.cavetale.ms.session.ItemInsertionCause.*;
 import static net.kyori.adventure.text.Component.join;
 import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.JoinConfiguration.noSeparators;
@@ -96,7 +96,7 @@ public final class MassStorageCommand extends AbstractCommand<MassStoragePlugin>
             if (item == null || item.getType().isAir()) continue;
             items.add(item);
         }
-        session.insertAndSubtract(items, (rejects, map) -> insertResponse(player, rejects, map));
+        session.insertAndSubtract(items, DUMP, result -> result.feedback(player));
     }
 
     private void drain(Player player) {

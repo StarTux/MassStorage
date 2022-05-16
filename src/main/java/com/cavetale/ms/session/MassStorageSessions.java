@@ -27,13 +27,15 @@ import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.player.PlayerAttemptPickupItemEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerItemConsumeEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import static com.cavetale.core.font.Unicode.tiny;
 import static com.cavetale.ms.dialogue.MassStorageDialogue.TIMES;
-import static com.cavetale.ms.dialogue.MassStorageDialogue.insertResponse;
+import static com.cavetale.ms.session.ItemInsertionCause.*;
 import static net.kyori.adventure.text.Component.join;
 import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.JoinConfiguration.noSeparators;
@@ -70,6 +72,10 @@ public final class MassStorageSessions implements Listener {
         return sessionsMap.get(player.getUniqueId());
     }
 
+    public MassStorageSession get(UUID uuid) {
+        return sessionsMap.get(uuid);
+    }
+
     public boolean ifAssistantEnabled(Player player, Consumer<MassStorageSession> callback) {
         MassStorageSession session = get(player);
         if (session != null && session.isEnabled() && session.isAssistantEnabled()) {
@@ -103,9 +109,7 @@ public final class MassStorageSessions implements Listener {
         if (storable == null || !storable.canStore(item)) return;
         if (storable.canStack(player.getInventory(), item.getAmount())) return;
         ifAssistantEnabled(player, session -> {
-                boolean on = session.insertAndSubtract(List.of(item), (rejects, map) -> {
-                        if (!map.isEmpty()) insertResponse(player, rejects, map);
-                    });
+                boolean on = session.insertAndSubtract(List.of(item), ASSIST_PICKUP, result -> result.feedback(player));
                 if (on) {
                     event.setCancelled(true);
                     event.getItem().remove();
@@ -116,11 +120,10 @@ public final class MassStorageSessions implements Listener {
     @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGH)
     private void onInventoryClick(InventoryClickEvent event) {
         if (!(event.getWhoClicked() instanceof Player player)) return;
-        //event.getWhoClicked().sendMessage(event.getEventName() + " " + event.getClick() + " " + event.getView().getType());
         if (event.getView().getType() == InventoryType.CRAFTING && event.getClick() == ClickType.CONTROL_DROP) {
             ifAssistantEnabled(player, session -> {
                     ItemStack item = event.getCurrentItem();
-                    session.insertAndSubtract(List.of(item), (rejects, map) -> insertResponse(player, rejects, map));
+                    session.insertAndSubtract(List.of(item), ASSIST_CONTROL_DROP, result -> result.feedback(player));
                     event.setCancelled(true);
                 });
         }
@@ -164,7 +167,7 @@ public final class MassStorageSessions implements Listener {
                     final int has = session.getAmount(fill.storable);
                     StorableItem storable = fill.getStorable();
                     if (has == 0) {
-                        player.sendActionBar(join(noSeparators(), text("You are out of ", RED), storable.getDisplayName()));
+                        player.sendActionBar(join(noSeparators(), text("You are out of ", RED), storable.getIconName()));
                         return;
                     }
                     final int amount = storable.fit(inventory, has, false);
@@ -176,7 +179,7 @@ public final class MassStorageSessions implements Listener {
                     }
                     session.retrieveAsync(storable, amount, success -> {
                             if (!success) {
-                                player.sendActionBar(join(noSeparators(), text("You are out of ", RED), storable.getDisplayName()));
+                                player.sendActionBar(join(noSeparators(), text("You are out of ", RED), storable.getIconName()));
                                 player.playSound(player.getLocation(), BLOCK_CHEST_LOCKED, 1.0f, 1.25f);
                                 return;
                             }
@@ -187,7 +190,7 @@ public final class MassStorageSessions implements Listener {
                             } else {
                                 stored = storable.fit(inventory2, amount, true);
                                 player.sendMessage(join(noSeparators(), text("Filled container with ", GREEN),
-                                                        text(stored, WHITE), TIMES, storable.getDisplayName()));
+                                                        text(stored, WHITE), TIMES, storable.getIconName()));
                             }
                             if (stored < amount) {
                                 session.insertAsync(storable, amount - stored, null);
@@ -197,7 +200,7 @@ public final class MassStorageSessions implements Listener {
                         });
                 } else if (sessionAction instanceof SessionDrainWorldContainer drain) {
                     session.setAction(null);
-                    session.insertAndSubtract(inventory, (rejects, map) -> insertResponse(player, rejects, map));
+                    session.insertAndSubtract(inventory, CONTAINER_DRAIN, result -> result.feedback(player));
                 }
             }
         }
@@ -232,6 +235,17 @@ public final class MassStorageSessions implements Listener {
         Player player = event.getPlayer();
         ifAssistantEnabled(player, session -> {
                 session.stackHand(player, event.getHand());
+            });
+    }
+
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
+    private void onPlayerItemConsume(PlayerItemConsumeEvent event) {
+        Player player = event.getPlayer();
+        EquipmentSlot hand = player.getInventory().getItemInMainHand().equals(event.getItem())
+            ? EquipmentSlot.HAND
+            : EquipmentSlot.OFF_HAND;
+        ifAssistantEnabled(player, session -> {
+                session.stackHand(player, hand);
             });
     }
 }

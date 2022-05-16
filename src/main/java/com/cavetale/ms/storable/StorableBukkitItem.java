@@ -1,5 +1,6 @@
 package com.cavetale.ms.storable;
 
+import com.cavetale.core.font.VanillaItems;
 import com.cavetale.mytems.util.BlockColor;
 import com.cavetale.mytems.util.Text;
 import java.util.ArrayList;
@@ -33,14 +34,24 @@ public final class StorableBukkitItem implements StorableItem {
         this.category = categoryOf(material);
         ItemStack prototype = new ItemStack(material);
         prototypes.add(prototype);
-        this.name = prototype.getI18NDisplayName();
+        String i18nDisplayName = prototype.getI18NDisplayName();
+        if (i18nDisplayName.equals("Banner Pattern")) {
+            // Super annoying corner case!
+            this.name = Text.toCamelCase(material, " ");
+        } else {
+            this.name = i18nDisplayName;
+        }
         this.displayName = text(name, material.getItemRarity().getColor());
         if (Tag.SHULKER_BOXES.isTagged(material)) {
-            for (String json : List.of("{\"BlockEntityTag\":{\"x\":0,\"y\":0,\"z\":0,\"id\":\"minecraft:shulker_box\"}}",
-                                       "{\"BlockEntityTag\":{\"Items\":[],\"id\":\"minecraft:shulker_box\"}}")) {
-                prototypes.add(Bukkit.getItemFactory().createItemStack(material.getKey() + json));
-            }
+            addPrototype("{\"BlockEntityTag\":{\"x\":0,\"y\":0,\"z\":0,\"id\":\"minecraft:shulker_box\"}}");
+            addPrototype("{\"BlockEntityTag\":{\"Items\":[],\"id\":\"minecraft:shulker_box\"}}");
+        } else if (material == Material.FIREWORK_ROCKET) {
+            addPrototype("{\"Fireworks\":{\"Flight\":1b}}");
         }
+    }
+
+    private void addPrototype(String tag) {
+        prototypes.add(Bukkit.getItemFactory().createItemStack(material.getKey() + tag));
     }
 
     @Override
@@ -60,6 +71,11 @@ public final class StorableBukkitItem implements StorableItem {
     @Override
     public StorageType getStorageType() {
         return StorageType.BUKKIT;
+    }
+
+    @Override
+    public Component getIcon() {
+        return VanillaItems.componentOf(material);
     }
 
     @Override

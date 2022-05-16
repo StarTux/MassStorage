@@ -15,6 +15,11 @@ public final class UnstorableItem implements StorableItem {
     }
 
     @Override
+    public Component getIcon() {
+        throw new IllegalStateException("Cannot get icon of unstorable item");
+    }
+
+    @Override
     public StorageType getStorageType() {
         return StorageType.INVALID;
     }

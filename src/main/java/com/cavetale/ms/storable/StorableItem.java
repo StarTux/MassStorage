@@ -4,11 +4,19 @@ import net.kyori.adventure.text.Component;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
+import static net.kyori.adventure.text.Component.join;
+import static net.kyori.adventure.text.JoinConfiguration.noSeparators;
 
 public sealed interface StorableItem permits UnstorableItem, StorableBukkitItem, StorableMytemsItem {
     String getName();
 
     Component getDisplayName();
+
+    Component getIcon();
+
+    default Component getIconName() {
+        return join(noSeparators(), getIcon(), getDisplayName());
+    }
 
     StorageType getStorageType();
 

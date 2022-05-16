@@ -8,7 +8,7 @@ api-version: 1.18
 author: StarTux
 website: https://github.com/StarTux/MassStorage
 
-depend: [Core, SQL, Mytems, Sidebar]
+depend: [Core, SQL, PlayerCache, Mytems, Sidebar]
 softdepend: []
 
 commands:

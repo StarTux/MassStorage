@@ -12,7 +12,6 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import lombok.Getter;
 import lombok.Setter;
@@ -87,24 +86,31 @@ public final class MassStorageSession {
         return Bukkit.getPlayer(uuid);
     }
 
-    public boolean insertAndSubtract(Inventory inventory, BiConsumer<List<ItemStack>, Map<StorableItem, Integer>> callback) {
+    public boolean insertAndSubtract(Inventory inventory, ItemInsertionCause cause, ItemInsertionCallback callback) {
         List<ItemStack> items = new ArrayList<>(inventory.getSize());
         for (ItemStack item : inventory) {
             if (item == null || item.getType().isAir()) continue;
             items.add(item);
         }
-        return insertAndSubtract(items, callback);
+        return insertAndSubtract(items, cause, callback);
     }
 
-    private boolean insertAndSubtractHelper(ItemStack item, List<ItemStack> rejects, Map<StorableItem, Integer> map) {
+    private boolean insertAndSubtractHelper(ItemStack item,
+                                            ItemInsertionCause cause,
+                                            List<ItemStack> rejects,
+                                            Map<StorableItem, Integer> storedItems) {
         if (item == null || item.getType().isAir()) return false;
         if (Tag.SHULKER_BOXES.isTagged(item.getType())) {
+            if (!cause.drainShulkerBoxes()) {
+                rejects.add(item);
+                return false;
+            }
             item.editMeta(m -> {
                     if (m instanceof BlockStateMeta meta) {
                         if (meta.getBlockState() instanceof ShulkerBox shulkerBox) {
                             Inventory inventory = shulkerBox.getInventory();
                             for (ItemStack item2 : inventory) {
-                                insertAndSubtractHelper(item2, rejects, map);
+                                insertAndSubtractHelper(item2, cause, rejects, storedItems);
                             }
                             meta.setBlockState(shulkerBox);
                         }
@@ -116,24 +122,27 @@ public final class MassStorageSession {
             rejects.add(item);
             return false;
         }
-        int value = map.getOrDefault(storable, 0);
+        int value = storedItems.getOrDefault(storable, 0);
         int amount = item.getAmount();
-        map.put(storable, value + amount);
+        storedItems.put(storable, value + amount);
         item.subtract(amount);
         return true;
     }
 
-    public boolean insertAndSubtract(List<ItemStack> items, BiConsumer<List<ItemStack>, Map<StorableItem, Integer>> callback) {
+    public boolean insertAndSubtract(List<ItemStack> items, ItemInsertionCause cause, ItemInsertionCallback callback) {
         final List<ItemStack> rejects = new ArrayList<>();
         final Map<StorableItem, Integer> map = new IdentityHashMap<>();
         for (ItemStack item : items) {
-            insertAndSubtractHelper(item, rejects, map);
+            insertAndSubtractHelper(item, cause, rejects, map);
         }
         plugin.getDatabase().scheduleAsyncTask(() -> {
                 for (Map.Entry<StorableItem, Integer> entry : map.entrySet()) {
                     insert(entry.getKey(), entry.getValue());
                 }
-                Bukkit.getScheduler().runTask(plugin, () -> callback.accept(rejects, map));
+                if (callback != null) {
+                    ItemInsertionResult result = new ItemInsertionResult(cause, rejects, map);
+                    Bukkit.getScheduler().runTask(plugin, () -> callback.accept(result));
+                }
             });
         return !map.isEmpty();
     }
@@ -287,27 +296,26 @@ public final class MassStorageSession {
     protected void stackHand(Player player, EquipmentSlot hand) {
         if (stackingHand) return;
         PlayerInventory inventory = player.getInventory();
-        int index = hand == EquipmentSlot.HAND ? inventory.getHeldItemSlot() : 40;
+        int index = hand == EquipmentSlot.HAND ? player.getInventory().getHeldItemSlot() : 40;
         final ItemStack item = inventory.getItem(index);
         StorableItem storable = plugin.getIndex().get(item);
         if (storable == null) return;
-        if (getAmount(storable) == 0) return;
-        final int stackSize = storable.getMaxStackSize();
-        if (stackSize <= 1) return;
-        final int oldAmount = item.getAmount();
-        //if (oldAmount > stackSize / 2) return;
         if (!storable.canStack(item)) return;
+        if (getAmount(storable) == 0) return;
+        final int oldAmount = item.getAmount();
+        if (oldAmount <= 1 || storable.getMaxStackSize() <= 1) return;
         stackingHand = true;
         Bukkit.getScheduler().runTask(plugin, () -> {
+                if (!player.isOnline() || player.isDead()) return;
                 stackingHand = false;
                 final ItemStack item2 = player.getInventory().getItem(index);
                 final int amount;
                 if (item2 == null || item2.getType().isAir()) {
-                    amount = Math.min(getAmount(storable), stackSize);
+                    amount = Math.min(getAmount(storable), oldAmount);
                 } else {
                     if (!storable.canStack(item2)) return;
                     if (item2.getAmount() == oldAmount) return;
-                    amount = Math.min(getAmount(storable), stackSize - item2.getAmount());
+                    amount = Math.min(getAmount(storable), oldAmount - item2.getAmount());
                 }
                 if (amount <= 0) return;
                 stackingHand = true;
@@ -315,14 +323,16 @@ public final class MassStorageSession {
                         stackingHand = false;
                         if (!success) return;
                         final ItemStack item3 = player.getInventory().getItem(index);
-                        if (item3 == null || item3.getType().isAir()) {
+                        if (!player.isOnline() || player.isDead()) {
+                            insertAsync(storable, amount, null);
+                        } else if (item3 == null || item3.getType().isAir()) {
                             player.getInventory().setItem(index, storable.createItemStack(amount));
                         } else {
                             final int given;
                             if (!storable.canStack(item3)) {
                                 given = 0;
                             } else {
-                                given = Math.min(amount, stackSize - item3.getAmount());
+                                given = Math.min(amount, oldAmount - item3.getAmount());
                                 item3.add(given);
                             }
                             if (given < amount) {

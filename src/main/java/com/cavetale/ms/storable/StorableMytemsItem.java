@@ -39,6 +39,11 @@ public final class StorableMytemsItem implements StorableItem {
     }
 
     @Override
+    public Component getIcon() {
+        return mytems.component;
+    }
+
+    @Override
     public StorageType getStorageType() {
         return StorageType.MYTEMS;
     }

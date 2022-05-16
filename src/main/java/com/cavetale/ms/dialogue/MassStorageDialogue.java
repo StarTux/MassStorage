@@ -15,13 +15,11 @@ import com.cavetale.mytems.item.font.Glyph;
 import com.cavetale.mytems.util.Items;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import net.kyori.adventure.text.Component;
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
@@ -29,14 +27,11 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import static com.cavetale.core.font.Unicode.tiny;
+import static com.cavetale.ms.session.ItemInsertionCause.*;
 import static net.kyori.adventure.text.Component.empty;
 import static net.kyori.adventure.text.Component.join;
-import static net.kyori.adventure.text.Component.newline;
 import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.JoinConfiguration.noSeparators;
-import static net.kyori.adventure.text.JoinConfiguration.separator;
-import static net.kyori.adventure.text.event.ClickEvent.runCommand;
-import static net.kyori.adventure.text.event.HoverEvent.showText;
 import static net.kyori.adventure.text.format.NamedTextColor.*;
 import static net.kyori.adventure.text.format.TextDecoration.*;
 import static org.bukkit.Sound.*;
@@ -176,9 +171,9 @@ public final class MassStorageDialogue {
                 for (int i = 9; i < 36; i += 1) {
                     items.add(player.getInventory().getItem(i));
                 }
-                session.insertAndSubtract(items, (rejects, map) -> {
-                        insertResponse(player, rejects, map);
-                        if (!map.isEmpty()) open(player);
+                session.insertAndSubtract(items, DUMP, result -> {
+                        result.feedback(player);
+                        if (result.success()) open(player);
                     });
             });
         final boolean auto = session.isAssistantEnabled();
@@ -268,7 +263,7 @@ public final class MassStorageDialogue {
             icon.editMeta(meta -> {
                     meta.addItemFlags(ItemFlag.values());
                     List<Component> tooltip = new ArrayList<>();
-                    tooltip.add(storable.getDisplayName());
+                    tooltip.add(storable.getIconName());
                     tooltip.add(text(storable.getCategory(), BLUE));
                     tooltip.add(join(noSeparators(), text(tiny("stored "), GRAY), text(amount, WHITE)));
                     if (amount >= 1) {
@@ -396,7 +391,7 @@ public final class MassStorageDialogue {
         gui.setItem(9 * dropLine + 3, fillIcon, click -> {
                 if (!click.isLeftClick()) return;
                 if (session.getAmount(storable) == 0) {
-                    player.sendMessage(join(noSeparators(), text("You are out of ", RED), storable.getDisplayName()));
+                    player.sendMessage(join(noSeparators(), text("You are out of ", RED), storable.getIconName()));
                     fail(player);
                     return;
                 }
@@ -406,7 +401,7 @@ public final class MassStorageDialogue {
                 click(player);
                 player.sendActionBar(join(noSeparators(),
                                           text("Click a container to fill with ", GREEN),
-                                          storable.getDisplayName()));
+                                          storable.getIconName()));
             });
         gui.setItem(Gui.OUTSIDE, null, click -> {
                 if (!click.isLeftClick()) return;
@@ -422,7 +417,7 @@ public final class MassStorageDialogue {
     private void clickRetrieve(Player player, Gui gui, StorableItem storable, int desired) {
         final int has = Math.min(session.getAmount(storable), desired);
         if (has == 0) {
-            player.sendMessage(join(noSeparators(), text("You are out of ", RED), storable.getDisplayName()));
+            player.sendMessage(join(noSeparators(), text("You are out of ", RED), storable.getIconName()));
             return;
         }
         final int amount = storable.fit(player.getInventory(), has, false);
@@ -435,7 +430,7 @@ public final class MassStorageDialogue {
         session.retrieveAsync(storable, amount, success -> {
                 gui.setLocked(false);
                 if (!success) {
-                    player.sendMessage(join(noSeparators(), text("You are out of ", RED), storable.getDisplayName()));
+                    player.sendMessage(join(noSeparators(), text("You are out of ", RED), storable.getIconName()));
                     fail(player);
                     return;
                 }
@@ -448,7 +443,7 @@ public final class MassStorageDialogue {
                 if (given < amount) {
                     session.insertAsync(storable, amount - given, null);
                 }
-                player.sendMessage(join(noSeparators(), text("Retrieved ", GREEN), text(given, WHITE), TIMES, storable.getDisplayName()));
+                player.sendMessage(join(noSeparators(), text("Retrieved ", GREEN), text(given, WHITE), TIMES, storable.getIconName()));
                 open(player);
                 click(player);
             });
@@ -460,9 +455,7 @@ public final class MassStorageDialogue {
         gui.title(text("Insert items into Mass Storage", DARK_PURPLE));
         gui.setEditable(true);
         gui.onClose(evt -> {
-                session.insertAndSubtract(gui.getInventory(), (rejects, map) -> {
-                        if (!rejects.isEmpty() || !map.isEmpty()) insertResponse(player, rejects, map);
-                    });
+                session.insertAndSubtract(gui.getInventory(), INSERT_MENU, result -> result.feedback(player));
                 for (ItemStack item : gui.getInventory()) {
                     if (item == null || item.getType().isAir()) continue;
                     for (ItemStack drop : player.getInventory().addItem(item).values()) {
@@ -485,32 +478,6 @@ public final class MassStorageDialogue {
         player.playSound(player.getLocation(), UI_BUTTON_CLICK, MASTER, 0.5f, 0.5f);
     }
 
-    public static void pickup(Player player, int amount) {
-        int sounds;
-        if (amount == 1) {
-            sounds = 1;
-        } else if (amount == 2) {
-            sounds = 2;
-        } else if (amount <= 4) {
-            sounds = 3;
-        } else if (amount <= 8) {
-            sounds = 4;
-        } else if (amount <= 16) {
-            sounds = 5;
-        } else if (amount <= 32) {
-            sounds = 6;
-        } else if (amount <= 64) {
-            sounds = 7;
-        } else {
-            sounds = 8;
-        }
-        for (int i = 0; i < sounds; i += 1) {
-            Bukkit.getScheduler().runTaskLater(MassStoragePlugin.getInstance(), () -> {
-                    player.playSound(player.getLocation(), ENTITY_ITEM_PICKUP, 0.5f, 2.0f);
-                }, (long) i);
-        }
-    }
-
     private void clickBottom(InventoryClickEvent event) {
         if (event.getClick() == ClickType.DROP) {
             event.setCancelled(false);
@@ -522,73 +489,10 @@ public final class MassStorageDialogue {
             ItemStack item = event.getCurrentItem();
             if (item == null || item.getType().isAir()) return;
             Player player = (Player) event.getWhoClicked();
-            session.insertAndSubtract(List.of(item), (rejects, map) -> {
-                    insertResponse(player, rejects, map);
-                    if (!map.isEmpty()) open(player);
+            session.insertAndSubtract(List.of(item), SHIFT_CLICK_MENU, result -> {
+                    result.feedback(player);
+                    if (result.success()) open(player);
                 });
         }
-    }
-
-    public static void insertResponse(Player player, List<ItemStack> items, Map<StorableItem, Integer> map) {
-        int totalStored = 0;
-        int totalRejected = 0;
-        Map<String, Integer> rejectedAmounts = new HashMap<>();
-        Map<String, Component> rejectedDisplayNames = new HashMap<>();
-        for (ItemStack item : items) {
-            if (item == null || item.getType().isAir()) continue;
-            totalRejected += item.getAmount();
-            String name;
-            Component displayName;
-            Mytems mytems = Mytems.forItem(item);
-            if (mytems != null) {
-                name = mytems.id;
-                displayName = mytems.getMytem().getDisplayName();
-            } else {
-                name = item.getI18NDisplayName();
-                displayName = text(name, item.getType().getItemRarity().getColor());
-            }
-            int amount = rejectedAmounts.getOrDefault(name, 0);
-            rejectedAmounts.put(name, amount + item.getAmount());
-            rejectedDisplayNames.put(name, displayName);
-        }
-        for (Map.Entry<StorableItem, Integer> entry : map.entrySet()) {
-            totalStored += entry.getValue();
-        }
-        Component message;
-        if (totalStored == 0) {
-            if (items.size() == 1) {
-                message = text("Item could not be stored!", RED);
-            } else {
-                message = text("No items could be stored!", RED);
-            }
-            fail(player);
-        } else {
-            message = text("Stored " + totalStored + " item" + (totalStored == 1 ? "" : "s"), GREEN);
-            pickup(player, totalStored);
-        }
-        List<Component> tooltip = new ArrayList<>();
-        if (!map.isEmpty()) {
-            tooltip.add(text(tiny("Stored " + totalStored + " item" + (totalStored == 1 ? "" : "s")), GREEN));
-            List<StorableItem> list = new ArrayList<>(map.keySet());
-            Collections.sort(list, (a, b) -> Integer.compare(map.get(b), map.get(a)));
-            for (StorableItem storable : list) {
-                int amount = map.get(storable);
-                tooltip.add(join(noSeparators(), text(amount, GREEN), TIMES, storable.getDisplayName()));
-            }
-        }
-        if (!rejectedAmounts.isEmpty()) {
-            tooltip.add(text(tiny("Rejected " + totalRejected + " item" + (totalRejected == 1 ? "" : "s")), RED));
-            List<String> list = new ArrayList<>(rejectedAmounts.keySet());
-            Collections.sort(list, (a, b) -> Integer.compare(rejectedAmounts.get(b), rejectedAmounts.get(a)));
-            for (String name : list) {
-                int amount = rejectedAmounts.get(name);
-                Component displayName = rejectedDisplayNames.get(name);
-                tooltip.add(join(noSeparators(), text(amount, RED), TIMES, displayName));
-            }
-        }
-        player.sendMessage((tooltip.isEmpty()
-                            ? message
-                            : message.hoverEvent(showText(join(separator(newline()), tooltip))))
-                           .clickEvent(runCommand("/ms")));
     }
 }

@@ -92,8 +92,13 @@ public final class MassStorageCommand extends AbstractCommand<MassStoragePlugin>
 
     private void drain(Player player) {
         MassStorageSession session = plugin.sessions.require(player);
-        session.setAction(new SessionDrainWorldContainer());
-        player.sendActionBar(text("Click a container to drain into Mass Storage", GREEN));
+        if (session.getAction() instanceof SessionDrainWorldContainer drain) {
+            session.setAction(null);
+            drain.onCancel(player);
+        } else {
+            session.setAction(new SessionDrainWorldContainer());
+            player.sendActionBar(text("Click a container to drain into Mass Storage", GREEN));
+        }
     }
 
     private void auto(Player player) {

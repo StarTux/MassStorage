@@ -42,7 +42,7 @@ public final class MassStorageCommand extends AbstractCommand<MassStoragePlugin>
             .description("Drain a container")
             .playerCaller(this::drain);
         rootNode.addChild("auto").denyTabCompletion()
-            .description("Toggle inventory assistant")
+            .description("Toggle Inventory Assist")
             .playerCaller(this::auto);
     }
 
@@ -103,12 +103,12 @@ public final class MassStorageCommand extends AbstractCommand<MassStoragePlugin>
 
     private void auto(Player player) {
         MassStorageSession session = plugin.sessions.require(player);
-        boolean auto = !session.isAssistantEnabled();
-        session.setAssistantEnabled(auto);
+        boolean auto = !session.isAssistEnabled();
+        session.setAssistEnabled(auto);
         if (auto) {
-            player.sendMessage(join(noSeparators(), Mytems.ON.component, text("Inventory assistant enabled", GREEN)));
+            player.sendMessage(join(noSeparators(), Mytems.ON.component, text("Inventory Assist enabled", GREEN)));
         } else {
-            player.sendMessage(join(noSeparators(), Mytems.OFF.component, text("Inventory assistant disabled", RED)));
+            player.sendMessage(join(noSeparators(), Mytems.OFF.component, text("Inventory Assist disabled", RED)));
         }
     }
 }

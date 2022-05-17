@@ -13,7 +13,7 @@ import lombok.Data;
 import org.bukkit.Material;
 
 @Data
-@Table(name = "ms",
+@Table(name = "storage",
        uniqueConstraints = {
            @UniqueConstraint(columnNames = {
                    "owner",
@@ -21,7 +21,7 @@ import org.bukkit.Material;
                    "name",
                }),
        })
-public final class SQLMassStorage {
+public final class SQLStorable {
     @Id
     private Integer id;
 
@@ -38,25 +38,31 @@ public final class SQLMassStorage {
     private int amount;
 
     @Column(nullable = false)
+    private boolean auto;
+
+    @Column(nullable = false)
+    private int favorite;
+
+    @Column(nullable = false)
     private Date updated;
 
-    public SQLMassStorage() { }
+    public SQLStorable() { }
 
-    public SQLMassStorage(final UUID uuid, final Material material) {
+    public SQLStorable(final UUID uuid, final Material material) {
         this.owner = uuid;
         this.type = StorageType.BUKKIT.id;
         this.name = material.name().toLowerCase();
         this.updated = new Date();
     }
 
-    public SQLMassStorage(final UUID uuid, final Mytems mytems) {
+    public SQLStorable(final UUID uuid, final Mytems mytems) {
         this.owner = uuid;
         this.type = StorageType.MYTEMS.id;
         this.name = mytems.name().toLowerCase();
         this.updated = new Date();
     }
 
-    public SQLMassStorage(final UUID uuid, final StorableItem storable) {
+    public SQLStorable(final UUID uuid, final StorableItem storable) {
         this.owner = uuid;
         this.type = storable.getStorageType().id;
         this.name = storable.getSqlName();

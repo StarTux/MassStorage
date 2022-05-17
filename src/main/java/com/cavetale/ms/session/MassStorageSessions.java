@@ -74,9 +74,9 @@ public final class MassStorageSessions implements Listener {
         return sessionsMap.get(uuid);
     }
 
-    public boolean ifAssistantEnabled(Player player, Consumer<MassStorageSession> callback) {
+    public boolean ifAssistEnabled(Player player, Consumer<MassStorageSession> callback) {
         MassStorageSession session = get(player);
-        if (session != null && session.isEnabled() && session.isAssistantEnabled()) {
+        if (session != null && session.isEnabled() && session.isAssistEnabled()) {
             callback.accept(session);
             return true;
         } else {
@@ -102,34 +102,37 @@ public final class MassStorageSessions implements Listener {
     @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGH)
     private void onPlayerAttemptPickupItem(PlayerAttemptPickupItemEvent event) {
         Player player = event.getPlayer();
-        ifAssistantEnabled(player, session -> {
-                ItemStack item = event.getItem().getItemStack();
-                StorableItem storable = plugin.getIndex().get(item);
-                if (storable == null || !storable.canStore(item)) return;
-                final int amount = item.getAmount();
-                if (amount == 0) return;
-                final int canStack = storable.canStack(player.getInventory(), amount, true);
-                if (canStack >= amount) return;
-                final int insertAmount = amount - canStack;
-                session.insertAsync(storable, insertAmount, null);
-                if (insertAmount >= amount) {
-                    event.setCancelled(true);
-                    event.getItem().remove();
-                } else {
-                    ItemStack itemStack = event.getItem().getItemStack();
-                    itemStack.subtract(insertAmount);
-                    event.getItem().setItemStack(itemStack);
-                }
-                new ItemInsertionResult(ItemInsertionCause.PICKUP, List.of(), Map.of(storable, insertAmount))
-                    .feedback(player);
-            });
+        MassStorageSession session = get(player);
+        if (session == null || !session.isEnabled()) return;
+        final boolean assist = session.isAssistEnabled();
+        ItemStack item = event.getItem().getItemStack();
+        StorableItem storable = plugin.getIndex().get(item);
+        if (storable == null || !storable.canStore(item)) return;
+        boolean auto = session.getAutoPickup(storable);
+        if (!assist && !auto) return;
+        final int amount = item.getAmount();
+        if (amount == 0) return;
+        final int canStack = storable.canStack(player.getInventory(), amount, !auto);
+        if (canStack >= amount) return;
+        final int insertAmount = amount - canStack;
+        session.insertAsync(storable, insertAmount, null);
+        if (insertAmount >= amount) {
+            event.setCancelled(true);
+            event.getItem().remove();
+        } else {
+            ItemStack itemStack = event.getItem().getItemStack();
+            itemStack.subtract(insertAmount);
+            event.getItem().setItemStack(itemStack);
+        }
+        new ItemInsertionResult(ItemInsertionCause.PICKUP, List.of(), Map.of(storable, insertAmount))
+            .feedback(player);
     }
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGH)
     private void onInventoryClick(InventoryClickEvent event) {
         if (!(event.getWhoClicked() instanceof Player player)) return;
         if (event.getView().getType() == InventoryType.CRAFTING && event.getClick() == ClickType.CONTROL_DROP) {
-            ifAssistantEnabled(player, session -> {
+            ifAssistEnabled(player, session -> {
                     ItemStack item = event.getCurrentItem();
                     session.insertAndSubtract(List.of(item), ASSIST_CONTROL_DROP, result -> result.feedback(player));
                     event.setCancelled(true);
@@ -199,7 +202,7 @@ public final class MassStorageSessions implements Listener {
     @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
     private void onBlockPlace(BlockPlaceEvent event) {
         Player player = event.getPlayer();
-        ifAssistantEnabled(player, session -> {
+        ifAssistEnabled(player, session -> {
                 session.stackHand(player, event.getHand());
             });
     }
@@ -207,7 +210,7 @@ public final class MassStorageSessions implements Listener {
     @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
     private void onPlayerInteractEntity(PlayerInteractEntityEvent event) {
         Player player = event.getPlayer();
-        ifAssistantEnabled(player, session -> {
+        ifAssistEnabled(player, session -> {
                 session.stackHand(player, event.getHand());
             });
     }
@@ -218,7 +221,7 @@ public final class MassStorageSessions implements Listener {
         EquipmentSlot hand = player.getInventory().getItemInMainHand().equals(event.getItem())
             ? EquipmentSlot.HAND
             : EquipmentSlot.OFF_HAND;
-        ifAssistantEnabled(player, session -> {
+        ifAssistEnabled(player, session -> {
                 session.stackHand(player, hand);
             });
     }

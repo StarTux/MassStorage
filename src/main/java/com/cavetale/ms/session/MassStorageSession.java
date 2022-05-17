@@ -3,11 +3,12 @@ package com.cavetale.ms.session;
 import com.cavetale.ms.MassStoragePlugin;
 import com.cavetale.ms.dialogue.ItemSortOrder;
 import com.cavetale.ms.dialogue.MassStorageDialogue;
-import com.cavetale.ms.sql.SQLMassStorage;
 import com.cavetale.ms.sql.SQLPlayer;
+import com.cavetale.ms.sql.SQLStorable;
 import com.cavetale.ms.storable.StorableItem;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.EnumMap;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
@@ -42,6 +43,8 @@ public final class MassStorageSession {
     private final UUID uuid;
     private final int[] ids;
     private final int[] amounts;
+    private final boolean[] autos;
+    private final int[] favs;
     @Getter private boolean enabled;
     private MassStorageDialogue dialogue;
     @Getter @Setter private SessionAction action;
@@ -54,6 +57,8 @@ public final class MassStorageSession {
         final int size = plugin.getIndex().size();
         this.ids = new int[size];
         this.amounts = new int[size];
+        this.autos = new boolean[size];
+        this.favs = new int[size];
     }
 
     public void setup() {
@@ -69,7 +74,7 @@ public final class MassStorageSession {
             }
         }
         Date now = new Date();
-        for (SQLMassStorage row : plugin.getDatabase().find(SQLMassStorage.class).eq("owner", uuid).findList()) {
+        for (SQLStorable row : plugin.getDatabase().find(SQLStorable.class).eq("owner", uuid).findList()) {
             StorableItem storable = plugin.getIndex().get(row);
             if (!storable.isValid()) {
                 plugin.getLogger().warning("Invalid row: " + row);
@@ -78,12 +83,14 @@ public final class MassStorageSession {
             int index = storable.getIndex();
             ids[index] = row.getId();
             amounts[index] = row.getAmount();
+            autos[index] = row.isAuto();
+            favs[index] = row.getFavorite();
             row.setUpdated(now);
             plugin.getDatabase().update(row, "updated");
         }
         for (int i = 0; i < ids.length; i += 1) {
             if (ids[i] != 0) continue;
-            SQLMassStorage row = new SQLMassStorage(uuid, plugin.getIndex().get(i));
+            SQLStorable row = new SQLStorable(uuid, plugin.getIndex().get(i));
             if (plugin.getDatabase().insert(row) == 0) {
                 throw new IllegalStateException("Insert failed: " + row);
             }
@@ -96,6 +103,22 @@ public final class MassStorageSession {
 
     public Player getPlayer() {
         return Bukkit.getPlayer(uuid);
+    }
+
+    public List<FavoriteSet> getFavorites() {
+        Map<FavoriteSlot, FavoriteSet> map = new EnumMap<>(FavoriteSlot.class);
+        FavoriteSlot[] values = FavoriteSlot.values();
+        for (int i = 0; i < favs.length; i += 1) {
+            int raw = favs[i];
+            if (raw == 0) continue;
+            FavoriteSlot slot = values[raw - 1];
+            FavoriteSet set = map.computeIfAbsent(slot, FavoriteSet::new);
+            StorableItem storable = plugin.getIndex().get(i);
+            set.storables.add(storable);
+        }
+        List<FavoriteSet> result = new ArrayList<>(map.size());
+        result.addAll(map.values());
+        return result;
     }
 
     public boolean insertAndSubtract(Inventory inventory, ItemInsertionCause cause, ItemInsertionCallback callback) {
@@ -168,7 +191,7 @@ public final class MassStorageSession {
      */
     public boolean insert(StorableItem storable, int amount) {
         final int rowId = ids[storable.getIndex()];
-        final int result = plugin.getDatabase().update(SQLMassStorage.class)
+        final int result = plugin.getDatabase().update(SQLStorable.class)
             .add("amount", amount)
             .where(c -> c.eq("id", rowId))
             .sync();
@@ -259,7 +282,7 @@ public final class MassStorageSession {
      */
     public boolean retrieve(StorableItem storable, int amount) {
         final int index = storable.getIndex();
-        final int result = plugin.getDatabase().update(SQLMassStorage.class)
+        final int result = plugin.getDatabase().update(SQLStorable.class)
             .subtract("amount", amount)
             .where(c -> c
                    .eq("id", ids[index])
@@ -281,6 +304,37 @@ public final class MassStorageSession {
 
     public int getAmount(StorableItem storable) {
         return amounts[storable.getIndex()];
+    }
+
+    public boolean getAutoPickup(StorableItem storable) {
+        return autos[storable.getIndex()];
+    }
+
+    public void setAutoPickup(StorableItem storable, boolean value) {
+        final int index = storable.getIndex();
+        if (autos[index] == value) return;
+        autos[index] = value;
+        plugin.getDatabase().update(SQLStorable.class)
+            .set("auto", value)
+            .where(c -> c.eq("id", ids[index]))
+            .async(null);
+    }
+
+    public FavoriteSlot getFavoriteSlot(StorableItem storable) {
+        int raw = favs[storable.getIndex()];
+        return raw == 0 ? null
+            : FavoriteSlot.values()[raw - 1];
+    }
+
+    public void setFavoriteSlot(StorableItem storable, FavoriteSlot value) {
+        final int index = storable.getIndex();
+        final int raw = value == null ? 0 : value.ordinal() + 1;
+        if (favs[index] == raw) return;
+        favs[index] = raw;
+        plugin.getDatabase().update(SQLStorable.class)
+            .set("favorite", raw)
+            .where(c -> c.eq("id", ids[index]))
+            .async(null);
     }
 
     public void complete(List<String> result, String arg) {
@@ -343,11 +397,11 @@ public final class MassStorageSession {
         return dialogue;
     }
 
-    public boolean isAssistantEnabled() {
+    public boolean isAssistEnabled() {
         return playerRow.isAuto();
     }
 
-    public void setAssistantEnabled(boolean value) {
+    public void setAssistEnabled(boolean value) {
         if (value == playerRow.isAuto()) return;
         playerRow.setAuto(value);
         plugin.getDatabase().updateAsync(playerRow, null, "auto");

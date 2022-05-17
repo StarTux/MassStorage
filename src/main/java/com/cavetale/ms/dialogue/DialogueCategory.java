@@ -18,7 +18,7 @@ public final class DialogueCategory extends DialogueItems {
 
     @Override
     public Component getTitle() {
-        return join(noSeparators(), text("Category ", GRAY), category.getTitle());
+        return join(noSeparators(), text("Group ", GRAY), category.getTitle());
     }
 
     @Override

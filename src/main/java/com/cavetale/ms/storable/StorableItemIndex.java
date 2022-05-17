@@ -1,6 +1,6 @@
 package com.cavetale.ms.storable;
 
-import com.cavetale.ms.sql.SQLMassStorage;
+import com.cavetale.ms.sql.SQLStorable;
 import com.cavetale.mytems.Mytems;
 import com.destroystokyo.paper.MaterialTags;
 import java.util.ArrayList;
@@ -89,7 +89,7 @@ public final class StorableItemIndex {
         return unstorableItem;
     }
 
-    public @NonNull StorableItem get(SQLMassStorage row) {
+    public @NonNull StorableItem get(SQLStorable row) {
         switch (row.getStorageType()) {
         case BUKKIT:
             StorableBukkitItem bukkit = bukkitSqlNameMap.get(row.getName());

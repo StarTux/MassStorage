@@ -2,6 +2,7 @@ package com.cavetale.ms.dialogue;
 
 import com.cavetale.core.font.GuiOverlay;
 import com.cavetale.ms.MassStoragePlugin;
+import com.cavetale.ms.session.FavoriteSlot;
 import com.cavetale.ms.session.MassStorageSession;
 import com.cavetale.ms.session.SessionAction;
 import com.cavetale.ms.session.SessionDrainWorldContainer;
@@ -16,6 +17,7 @@ import com.cavetale.mytems.util.Items;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.IdentityHashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
@@ -95,16 +97,24 @@ public final class MassStorageDialogue {
         Map<StorableSet, Integer> amounts = new IdentityHashMap<>();
         int totalAmount = 0;
         for (StorableCategory it : StorableCategory.values()) {
-            int amount = session.count(it.getStorables());
-            if (amount == 0) continue;
-            totalAmount += 1;
-            amounts.put(it, amount);
             list.add(it);
+        }
+        list.addAll(session.getFavorites());
+        for (Iterator<StorableSet> iter = list.iterator(); iter.hasNext();) {
+            StorableSet it = iter.next();
+            int amount = session.count(it.getStorables());
+            if (amount == 0) {
+                iter.remove();
+                continue;
+            }
+            amounts.put(it, amount);
+            totalAmount += amount;
         }
         if (totalAmount == 0) {
             openInsert(player);
             return;
         }
+        // Player session
         final int size = 6 * 9;
         final int pageSize = 5 * 9;
         final int pageCount = (list.size() - 1) / pageSize + 1;
@@ -126,9 +136,9 @@ public final class MassStorageDialogue {
             icon.editMeta(meta -> {
                     meta.addItemFlags(ItemFlag.values());
                     Items.text(meta, List.of(item.getTitle(),
-                                             text("Category", DARK_GRAY, ITALIC),
+                                             text("Group", DARK_GRAY, ITALIC),
                                              join(noSeparators(), text(tiny("items "), GRAY), text(storables.size(), WHITE)),
-                                             join(noSeparators(), text(tiny("stored "), GRAY), text(amounts.get(item), WHITE))));
+                                             join(noSeparators(), text(tiny("stored "), GRAY), text(amounts.getOrDefault(item, 0), WHITE))));
                 });
             gui.setItem(guiIndex, icon, click -> {
                     if (click.isLeftClick()) {
@@ -176,11 +186,11 @@ public final class MassStorageDialogue {
                         if (result.success()) open(player);
                     });
             });
-        final boolean auto = session.isAssistantEnabled();
+        final boolean auto = session.isAssistEnabled();
         ItemStack autoIcon = (auto ? Mytems.ON : Mytems.OFF)
             .createIcon(List.of((auto
-                                 ? text("Assistant ON", GREEN)
-                                 : text("Assistant OFF", RED)),
+                                 ? text("Inventory Assist ON", GREEN)
+                                 : text("Inventory Assist OFF", RED)),
                                 text("/ms auto", GREEN),
                                 text(tiny("The assistant will"), GRAY),
                                 text(tiny("try to store items"), GRAY),
@@ -191,7 +201,7 @@ public final class MassStorageDialogue {
                                 text(tiny("via control-drop."), GRAY)));
         gui.setItem(6, autoIcon, click -> {
                 if (!click.isLeftClick()) return;
-                session.setAssistantEnabled(!auto);
+                session.setAssistEnabled(!auto);
                 open(player);
                 click(player);
             });
@@ -354,21 +364,68 @@ public final class MassStorageDialogue {
             if (i >= glyphs.size()) break;
             gui.setItem(7 - i, glyphs.get(glyphs.size() - i - 1).mytems.createIcon(List.of(storedLine)));
         }
-        int dropLine = 2;
+        final int autoIndex = 27 + 4;
+        if (session.getAutoPickup(storable)) {
+            List<Component> tooltip = List.of(text("Auto Pickup enabled", GREEN),
+                                              join(noSeparators(), text(tiny("click "), GREEN), text("to toggle off", WHITE)),
+                                              text(tiny("When picked up, any"), GRAY),
+                                              text(tiny("item of this type"), GRAY),
+                                              text(tiny("will go straight"), GRAY),
+                                              text(tiny("into Mass Storage."), GRAY),
+                                              empty(),
+                                              text(tiny("Even if Inventory"), GRAY),
+                                              text(tiny("Assist is disabled"), GRAY));
+            gui.setItem(autoIndex, Mytems.ON.createIcon(tooltip), click -> {
+                    if (!click.isLeftClick()) return;
+                    session.setAutoPickup(storable, false);
+                    open(player);
+                    click(player);
+                });
+        } else {
+            List<Component> tooltip = List.of(text("Auto Pickup disabled", RED),
+                                              join(noSeparators(), text(tiny("click "), GREEN), text("to toggle on", WHITE)),
+                                              text(tiny("You will pick up"), GRAY),
+                                              text(tiny("items as usual."), GRAY),
+                                              empty(),
+                                              text(tiny("If Inventory Assist"), GRAY),
+                                              text(tiny("is enabled, it will"), GRAY),
+                                              text(tiny("let you pick up one"), GRAY),
+                                              text(tiny("stack of this item."), GRAY),
+                                              text(tiny("anything beyond will"), GRAY),
+                                              text(tiny("be stored."), GRAY));
+            gui.setItem(autoIndex, Mytems.OFF.createIcon(tooltip), click -> {
+                    if (!click.isLeftClick()) return;
+                    session.setAutoPickup(storable, true);
+                    open(player);
+                    click(player);
+                });
+        }
+        int dropLine = 1; // The line index where all the item drop buttons go.
+        int getterIndex = 5;
         ItemStack oneIcon = Mytems.ARROW_DOWN
             .createIcon(List.of(text("Get 1 item", GRAY),
                                 storedLine));
-        gui.setItem(9 * dropLine + 5, oneIcon, click -> {
+        gui.setItem(9 * dropLine + getterIndex++, oneIcon, click -> {
                 if (!click.isLeftClick()) return;
                 clickRetrieve(player, gui, storable, 1);
             });
         int stackSize = storable.getMaxStackSize();
+        if (stackSize == 64) {
+            ItemStack stackIcon = Mytems.ARROW_DOWN
+                .createIcon(List.of(text("Get 32 items", GRAY),
+                                    storedLine));
+            stackIcon.setAmount(32);
+            gui.setItem(9 * dropLine + getterIndex++, stackIcon, click -> {
+                    if (!click.isLeftClick()) return;
+                    clickRetrieve(player, gui, storable, 32);
+                });
+        }
         if (stackSize > 1 && amount >= stackSize) {
             ItemStack stackIcon = Mytems.ARROW_DOWN
                 .createIcon(List.of(text("Get " + stackSize + " items", GRAY),
                                     storedLine));
             stackIcon.setAmount(stackSize);
-            gui.setItem(9 * dropLine + 6, stackIcon, click -> {
+            gui.setItem(9 * dropLine + getterIndex++, stackIcon, click -> {
                     if (!click.isLeftClick()) return;
                     clickRetrieve(player, gui, storable, stackSize);
                 });
@@ -403,6 +460,23 @@ public final class MassStorageDialogue {
                                           text("Click a container to fill with ", GREEN),
                                           storable.getIconName()));
             });
+        for (FavoriteSlot fav : FavoriteSlot.values()) {
+            // Player session
+            boolean isFav = session.getFavoriteSlot(storable) == fav;
+            if (isFav) {
+                builder.highlightSlot(fav.guiSlot, fav.blockColor.textColor);
+            }
+            ItemStack icon = isFav ? fav.createIcon() : fav.createDisabledIcon();
+            List<Component> tooltip = List.of(join(noSeparators(),
+                                                   (isFav ? text("Remove from ", RED) : text("Put in ", GREEN)),
+                                                   fav.getDisplayName()));
+            gui.setItem(fav.guiSlot, Items.text(icon, tooltip), click -> {
+                    if (!click.isLeftClick()) return;
+                    session.setFavoriteSlot(storable, isFav ? null : fav);
+                    open(player);
+                    click(player);
+                });
+        }
         gui.setItem(Gui.OUTSIDE, null, click -> {
                 if (!click.isLeftClick()) return;
                 popState();

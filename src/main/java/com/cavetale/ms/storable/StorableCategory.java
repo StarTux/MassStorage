@@ -31,7 +31,6 @@ public enum StorableCategory implements StorableSet {
     BUILDING_BLOCKS(() -> new ItemStack(Material.BRICKS)) {
         @Override protected Material[] getMaterials() {
             return new Material[] {
-                Material.CUT_COPPER,
                 Material.AMETHYST_BLOCK,
                 Material.ANDESITE,
                 Material.BASALT,
@@ -44,6 +43,7 @@ public enum StorableCategory implements StorableSet {
                 Material.BOOKSHELF,
                 Material.BOOKSHELF,
                 Material.BRICKS,
+                Material.BUDDING_AMETHYST,
                 Material.CALCITE,
                 Material.CARTOGRAPHY_TABLE,
                 Material.CARVED_PUMPKIN,
@@ -69,6 +69,7 @@ public enum StorableCategory implements StorableSet {
                 Material.CRIMSON_NYLIUM,
                 Material.CRIMSON_STEM,
                 Material.CRYING_OBSIDIAN,
+                Material.CUT_COPPER,
                 Material.CUT_RED_SANDSTONE,
                 Material.CUT_SANDSTONE,
                 Material.DARK_PRISMARINE,
@@ -722,7 +723,7 @@ public enum StorableCategory implements StorableSet {
             };
         }
     },
-    COLLECTIBLES(Mytems.RUBY::createIcon) {
+    COLLECTIBLES(Mytems.VOTE_CANDY::createIcon) {
         @Override protected MytemsCategory[] getMytemsCategories() {
             return new MytemsCategory[] {
                 MytemsCategory.COLLECTIBLES,
@@ -740,7 +741,7 @@ public enum StorableCategory implements StorableSet {
             };
         }
     },
-    HOLIDAYS(Mytems.CHRISTMAS_TOKEN::createIcon) {
+    HOLIDAYS(Mytems.EASTER_EGG::createIcon) {
         @Override protected MytemsTag[] getMytemsTags() {
             return new MytemsTag[] {
                 MytemsTag.HOLIDAYS,

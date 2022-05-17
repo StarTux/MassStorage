@@ -31,7 +31,7 @@ public sealed interface StorableItem permits UnstorableItem, StorableBukkitItem,
      * This function is called with the exception that the itemStack
      * is valid (not air) and has the same type (material, mytems) as
      * the StorableItem.  It only needs to establish whether this item
-     * can be boiled down to a SQLMassStorage object (true), or it
+     * can be boiled down to a SQLStorable object (true), or it
      * contains extraneous data (false) and has to be rejected.
      * @param itemStack the ItemStack
      * @return true or false
@@ -106,8 +106,8 @@ public sealed interface StorableItem permits UnstorableItem, StorableBukkitItem,
     /**
      * Determine how many of an item can stack with existing items in
      * a player inventory.  We use this to allow picking up items even
-     * while the assistant is on.  Storing items which would usually
-     * stack is irritating.
+     * while Inventory Assist is on.  Storing items which would
+     * usually stack is irritating.
      */
     default int canStack(PlayerInventory inventory, int max, boolean allowEmptySlot) {
         final int maxStackSize = getMaxStackSize();

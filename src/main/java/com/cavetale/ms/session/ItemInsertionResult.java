@@ -91,6 +91,7 @@ public final record ItemInsertionResult(ItemInsertionCause cause,
             StorableItem storable = storedItems.keySet().iterator().next();
             int amount = getStoredAmount(storable);
             message = join(noSeparators(), text("Stored ", GREEN), text(amount, WHITE), TIMES, storable.getIconName());
+            pickup(player, storedItems().size());
         } else {
             message = text("Stored " + totalStored + " item" + (totalStored == 1 ? "" : "s"), GREEN);
             pickup(player, storedItems().size());

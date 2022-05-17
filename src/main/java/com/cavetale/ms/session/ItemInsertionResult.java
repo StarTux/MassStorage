@@ -1,5 +1,6 @@
 package com.cavetale.ms.session;
 
+import com.cavetale.core.font.VanillaItems;
 import com.cavetale.ms.MassStoragePlugin;
 import com.cavetale.ms.storable.StorableItem;
 import com.cavetale.mytems.Mytems;
@@ -58,10 +59,30 @@ public final record ItemInsertionResult(ItemInsertionCause cause,
         final int totalStored = totalStored();
         if (cause().failSilently() && totalStored == 0) return;
         final int totalRejected = totalRejected();
+        Map<String, Integer> rejectedAmounts = new HashMap<>();
+        Map<String, Component> rejectedDisplayNames = new HashMap<>();
+        for (ItemStack item : rejects()) {
+            if (item == null || item.getType().isAir()) continue;
+            String name;
+            Component displayName;
+            Mytems mytems = Mytems.forItem(item);
+            if (mytems != null) {
+                name = mytems.id;
+                displayName = join(noSeparators(), mytems.component, mytems.getMytem().getDisplayName());
+            } else {
+                name = item.getType().getKey().toString();
+                displayName = join(noSeparators(), VanillaItems.componentOf(item.getType()),
+                                   text(item.getI18NDisplayName(), item.getType().getItemRarity().getColor()));
+            }
+            int amount = rejectedAmounts.getOrDefault(name, 0);
+            rejectedAmounts.put(name, amount + item.getAmount());
+            rejectedDisplayNames.put(name, displayName);
+        }
         Component message;
         if (totalStored == 0) {
-            if (rejects().size() == 1) {
-                message = text("Item could not be stored!", RED);
+            if (rejectedDisplayNames.size() == 1) {
+                Component displayName = rejectedDisplayNames.values().iterator().next();
+                message = join(noSeparators(), text("Cannot store ", RED), displayName);
             } else {
                 message = text("No items could be stored!", RED);
             }
@@ -75,24 +96,6 @@ public final record ItemInsertionResult(ItemInsertionCause cause,
             pickup(player, storedItems().size());
         }
         if (cause().sendChatMessage()) {
-            Map<String, Integer> rejectedAmounts = new HashMap<>();
-            Map<String, Component> rejectedDisplayNames = new HashMap<>();
-            for (ItemStack item : rejects()) {
-                if (item == null || item.getType().isAir()) continue;
-                String name;
-                Component displayName;
-                Mytems mytems = Mytems.forItem(item);
-                if (mytems != null) {
-                    name = mytems.id;
-                    displayName = mytems.getMytem().getDisplayName();
-                } else {
-                    name = item.getI18NDisplayName();
-                    displayName = text(name, item.getType().getItemRarity().getColor());
-                }
-                int amount = rejectedAmounts.getOrDefault(name, 0);
-                rejectedAmounts.put(name, amount + item.getAmount());
-                rejectedDisplayNames.put(name, displayName);
-            }
             List<Component> tooltip = new ArrayList<>();
             if (totalStored > 0) {
                 tooltip.add(text(tiny("Stored " + totalStored + " item" + (totalStored == 1 ? "" : "s")), GREEN));
@@ -100,7 +103,8 @@ public final record ItemInsertionResult(ItemInsertionCause cause,
                 Collections.sort(list, (a, b) -> Integer.compare(getStoredAmount(b), getStoredAmount(a)));
                 for (StorableItem storable : list) {
                     int amount = getStoredAmount(storable);
-                    tooltip.add(join(noSeparators(), text(amount, GREEN), TIMES, storable.getIconName()));
+                    tooltip.add(join(noSeparators(), Mytems.CHECKED_CHECKBOX.component,
+                                     text(amount, GREEN), TIMES, storable.getIconName()));
                 }
             }
             if (!rejectedAmounts.isEmpty()) {
@@ -110,7 +114,8 @@ public final record ItemInsertionResult(ItemInsertionCause cause,
                 for (String name : list) {
                     int amount = rejectedAmounts.get(name);
                     Component displayName = rejectedDisplayNames.get(name);
-                    tooltip.add(join(noSeparators(), text(amount, RED), TIMES, displayName));
+                    tooltip.add(join(noSeparators(), Mytems.CROSSED_CHECKBOX.component,
+                                     text(amount, RED), TIMES, displayName));
                 }
             }
             player.sendMessage((tooltip.isEmpty()

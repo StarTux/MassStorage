@@ -7,7 +7,6 @@ import com.cavetale.core.command.CommandWarn;
 import com.cavetale.core.font.Unicode;
 import com.cavetale.ms.session.MassStorageSession;
 import com.cavetale.ms.session.SessionDrainWorldContainer;
-import com.cavetale.ms.storable.StorableCategory;
 import com.cavetale.ms.storable.StorableItem;
 import com.cavetale.mytems.Mytems;
 import java.util.ArrayList;

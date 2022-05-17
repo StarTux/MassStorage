@@ -50,6 +50,7 @@ public final class MassStorageSession {
     @Getter @Setter private SessionAction action;
     private boolean stackingHand = false;
     private boolean fillingContainer = false;
+    @Getter @Setter private boolean informed;
 
     protected MassStorageSession(final MassStoragePlugin plugin, final UUID uuid) {
         this.plugin = plugin;

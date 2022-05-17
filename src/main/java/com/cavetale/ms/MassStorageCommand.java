@@ -27,8 +27,10 @@ public final class MassStorageCommand extends AbstractCommand<MassStoragePlugin>
 
     @Override
     protected void onEnable() {
-        rootNode.playerCaller(this::search);
-        rootNode.addChild("search").arguments("<pattern>")
+        rootNode.arguments("[item]")
+            .description("Search for items")
+            .playerCaller(this::massStorage);
+        rootNode.addChild("search").arguments("<item>")
             .description("Search for items")
             .completers(this::completeSearch)
             .playerCaller(this::search);
@@ -44,14 +46,31 @@ public final class MassStorageCommand extends AbstractCommand<MassStoragePlugin>
         rootNode.addChild("auto").denyTabCompletion()
             .description("Toggle Inventory Assist")
             .playerCaller(this::auto);
+        rootNode.addChild("open").denyTabCompletion()
+            .description("Open previous menu location")
+            .playerCaller(this::open);
+        rootNode.addChild("help").denyTabCompletion()
+            .description("Print help")
+            .caller(this::help);
+    }
+
+    private boolean massStorage(Player player, String[] args) {
+        if (args.length == 0) {
+            MassStorageSession session = plugin.sessions.require(player);
+            session.getDialogue().openOverview(player);
+            if (!session.isInformed()) {
+                session.setInformed(true);
+                return false;
+            } else {
+                return true;
+            }
+        }
+        return search(player, args);
     }
 
     private boolean search(Player player, String[] args) {
         MassStorageSession session = plugin.sessions.require(player);
-        if (args.length == 0) {
-            session.getDialogue().openOverview(player);
-            return true;
-        }
+        if (args.length == 0) return false;
         String term = String.join(" ", args);
         if (term.isEmpty()) return false;
         List<StorableItem> storables = session.storables(term);
@@ -110,5 +129,13 @@ public final class MassStorageCommand extends AbstractCommand<MassStoragePlugin>
         } else {
             player.sendMessage(join(noSeparators(), Mytems.OFF.component, text("Inventory Assist disabled", RED)));
         }
+    }
+
+    private void open(Player player) {
+        plugin.sessions.require(player).getDialogue().open(player);
+    }
+
+    private boolean help(CommandContext context, CommandNode node, String[] args) {
+        return rootNode.sendHelp(context);
     }
 }

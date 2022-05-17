@@ -15,7 +15,7 @@ public enum ItemInsertionCause {
             return true;
         }
     },
-    ASSIST_PICKUP() {
+    PICKUP() {
         @Override public boolean drainShulkerBoxes() {
             return false;
         }

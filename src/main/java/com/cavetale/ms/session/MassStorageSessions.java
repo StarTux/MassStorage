@@ -102,16 +102,26 @@ public final class MassStorageSessions implements Listener {
     @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGH)
     private void onPlayerAttemptPickupItem(PlayerAttemptPickupItemEvent event) {
         Player player = event.getPlayer();
-        ItemStack item = event.getItem().getItemStack();
-        StorableItem storable = plugin.getIndex().get(item);
-        if (storable == null || !storable.canStore(item)) return;
-        if (storable.canStack(player.getInventory(), item.getAmount())) return;
         ifAssistantEnabled(player, session -> {
-                boolean on = session.insertAndSubtract(List.of(item), ASSIST_PICKUP, result -> result.feedback(player));
-                if (on) {
+                ItemStack item = event.getItem().getItemStack();
+                StorableItem storable = plugin.getIndex().get(item);
+                if (storable == null || !storable.canStore(item)) return;
+                final int amount = item.getAmount();
+                if (amount == 0) return;
+                final int canStack = storable.canStack(player.getInventory(), amount, true);
+                if (canStack >= amount) return;
+                final int insertAmount = amount - canStack;
+                session.insertAsync(storable, insertAmount, null);
+                if (insertAmount >= amount) {
                     event.setCancelled(true);
                     event.getItem().remove();
+                } else {
+                    ItemStack itemStack = event.getItem().getItemStack();
+                    itemStack.subtract(insertAmount);
+                    event.getItem().setItemStack(itemStack);
                 }
+                new ItemInsertionResult(ItemInsertionCause.PICKUP, List.of(), Map.of(storable, insertAmount))
+                    .feedback(player);
             });
     }
 

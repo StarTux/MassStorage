@@ -104,21 +104,33 @@ public sealed interface StorableItem permits UnstorableItem, StorableBukkitItem,
     }
 
     /**
-     * Determine if an item can stack with existing items in a player
-     * inventory.  We use this to allow picking up items even while
-     * the assistant is on.  Storing items which would usually stack
-     * is irritating.
+     * Determine how many of an item can stack with existing items in
+     * a player inventory.  We use this to allow picking up items even
+     * while the assistant is on.  Storing items which would usually
+     * stack is irritating.
      */
-    default boolean canStack(PlayerInventory inventory, int max) {
+    default int canStack(PlayerInventory inventory, int max, boolean allowEmptySlot) {
         final int maxStackSize = getMaxStackSize();
         int todo = max;
+        boolean hasAny = false;
+        boolean hasEmpty = false;
         for (int i = 0; i < 40 && todo > 0; i += 1) {
             if (i >= 36 && i <= 39) continue;
             ItemStack slot = inventory.getItem(i);
-            if (slot == null || !canStack(slot)) continue;
+            if (slot == null || slot.getType().isAir()) {
+                hasEmpty = true;
+                continue;
+            }
+            if (!canStack(slot)) continue;
+            hasAny = true;
             int stacking = Math.min(todo, maxStackSize - slot.getAmount());
             todo -= stacking;
         }
-        return todo == 0;
+        int result = max - todo;
+        if (result == 0 && allowEmptySlot && !hasAny && hasEmpty) {
+            return maxStackSize;
+        } else {
+            return result;
+        }
     }
 }

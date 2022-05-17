@@ -17,13 +17,24 @@ import lombok.Getter;
 import lombok.Setter;
 import org.bukkit.Bukkit;
 import org.bukkit.Tag;
+import org.bukkit.block.Block;
 import org.bukkit.block.ShulkerBox;
+import org.bukkit.block.data.BlockData;
 import org.bukkit.entity.Player;
+import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.BlockStateMeta;
+import static com.cavetale.ms.dialogue.MassStorageDialogue.TIMES;
+import static com.cavetale.ms.session.MassStorageSessions.getAccessibleWorldContainer;
+import static com.cavetale.mytems.util.Text.toCamelCase;
+import static net.kyori.adventure.text.Component.join;
+import static net.kyori.adventure.text.Component.text;
+import static net.kyori.adventure.text.JoinConfiguration.noSeparators;
+import static net.kyori.adventure.text.format.NamedTextColor.*;
+import static org.bukkit.Sound.*;
 
 public final class MassStorageSession {
     private final MassStoragePlugin plugin;
@@ -35,6 +46,7 @@ public final class MassStorageSession {
     private MassStorageDialogue dialogue;
     @Getter @Setter private SessionAction action;
     private boolean stackingHand = false;
+    private boolean fillingContainer = false;
 
     protected MassStorageSession(final MassStoragePlugin plugin, final UUID uuid) {
         this.plugin = plugin;
@@ -178,6 +190,64 @@ public final class MassStorageSession {
                 boolean result = insert(storable, amount);
                 if (callback != null) {
                     Bukkit.getScheduler().runTask(plugin, () -> callback.accept(result));
+                }
+            });
+    }
+
+    public void fillContainer(Player player, Block block, Inventory currentInventory, StorableItem storable) {
+        if (fillingContainer) return;
+        final InventoryType inventoryType = currentInventory.getType();
+        switch (inventoryType) {
+        case BARREL: case CHEST: case DISPENSER: case DROPPER: case HOPPER: case SHULKER_BOX:
+            break;
+        default:
+            player.sendActionBar(text("This container cannot be filled!", RED));
+            player.playSound(player.getLocation(), BLOCK_CHEST_LOCKED, 1.0f, 1.25f);
+            return;
+        }
+        final int has = getAmount(storable);
+        if (has == 0) {
+            player.sendActionBar(join(noSeparators(), text("You are out of ", RED), storable.getIconName()));
+            return;
+        }
+        final int amount = storable.fit(currentInventory, has, false);
+        if (amount == 0) {
+            player.sendActionBar(text("This container is full!", RED));
+            player.playSound(player.getLocation(), BLOCK_CHEST_LOCKED, 1.0f, 1.25f);
+            return;
+        }
+        BlockData blockData = block.getBlockData();
+        fillingContainer = true;
+        retrieveAsync(storable, amount, success -> {
+                fillingContainer = false;
+                if (!success) {
+                    player.sendActionBar(join(noSeparators(), text("You are out of ", RED), storable.getIconName()));
+                    player.playSound(player.getLocation(), BLOCK_CHEST_LOCKED, 1.0f, 1.25f);
+                    return;
+                }
+                if (!block.getBlockData().equals(blockData)) {
+                    player.sendActionBar(text("Someting went wrong!", RED));
+                    insertAsync(storable, amount, null);
+                    return;
+                }
+                final Inventory inventory = getAccessibleWorldContainer(player, block);
+                final int stored;
+                if (inventory == null) {
+                    stored = 0;
+                } else {
+                    stored = storable.fit(inventory, amount, true);
+                }
+                if (stored < amount) {
+                    insertAsync(storable, amount - stored, null);
+                }
+                if (stored == 0) {
+                    player.sendActionBar(text("This container is full!", RED));
+                    player.playSound(player.getLocation(), BLOCK_CHEST_LOCKED, 1.0f, 1.25f);
+                } else {
+                    player.sendMessage(join(noSeparators(),
+                                            text("Filled the " + toCamelCase(inventoryType, " ") + " with ", GREEN),
+                                            text(stored, WHITE), TIMES, storable.getIconName()));
+                    player.playSound(player.getLocation(), BLOCK_ENDER_CHEST_OPEN, 0.5f, 2.0f);
                 }
             });
     }

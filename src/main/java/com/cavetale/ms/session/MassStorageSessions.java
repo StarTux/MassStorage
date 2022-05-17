@@ -19,7 +19,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -34,7 +33,6 @@ import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import static com.cavetale.core.font.Unicode.tiny;
-import static com.cavetale.ms.dialogue.MassStorageDialogue.TIMES;
 import static com.cavetale.ms.session.ItemInsertionCause.*;
 import static net.kyori.adventure.text.Component.join;
 import static net.kyori.adventure.text.Component.text;
@@ -129,7 +127,7 @@ public final class MassStorageSessions implements Listener {
         }
     }
 
-    private static Inventory getWorldContainerHelper(Player player, Block block) {
+    protected static Inventory getAccessibleWorldContainer(Player player, Block block) {
         if (!PlayerBlockAbilityQuery.Action.OPEN.query(player, block)) {
             player.sendActionBar(text("You cannot open containers here!", RED));
             return null;
@@ -142,66 +140,32 @@ public final class MassStorageSessions implements Listener {
     }
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGH)
-    private void onPlayerInteract(PlayerInteractEvent event) {
+    private void onPlayerInteractContainerAction(PlayerInteractEvent event) {
         Player player = event.getPlayer();
         MassStorageSession session = get(player);
         if (session == null || !session.isEnabled()) return;
         if (session.getAction() instanceof SessionWorldContainerAction sessionAction) {
-            if ((event.getAction() == Action.RIGHT_CLICK_BLOCK || event.getAction() == Action.LEFT_CLICK_BLOCK) && event.hasBlock()) {
+            switch (event.getAction()) {
+            case RIGHT_CLICK_BLOCK:
+            case LEFT_CLICK_BLOCK:
+                break;
+            default: return;
+            }
+            if (!event.hasBlock()) return;
+            Block block = event.getClickedBlock();
+            Inventory inventory = getAccessibleWorldContainer(player, block);
+            if (inventory == null) {
+                player.playSound(player.getLocation(), BLOCK_CHEST_LOCKED, 1.0f, 1.25f);
+                return;
+            }
+            if (sessionAction instanceof SessionFillWorldContainer fill) {
                 event.setCancelled(true);
-                Inventory inventory = getWorldContainerHelper(player, event.getClickedBlock());
-                if (inventory == null) {
-                    player.playSound(player.getLocation(), BLOCK_CHEST_LOCKED, 1.0f, 1.25f);
-                    return;
-                }
-                if (sessionAction instanceof SessionFillWorldContainer fill) {
-                    switch (inventory.getType()) {
-                    case BARREL: case CHEST: case DISPENSER: case DROPPER: case HOPPER: case SHULKER_BOX:
-                        break;
-                    default:
-                        player.sendActionBar(text("This container cannot be filled!", RED));
-                        player.playSound(player.getLocation(), BLOCK_CHEST_LOCKED, 1.0f, 1.25f);
-                        return;
-                    }
-                    session.setAction(null);
-                    final int has = session.getAmount(fill.storable);
-                    StorableItem storable = fill.getStorable();
-                    if (has == 0) {
-                        player.sendActionBar(join(noSeparators(), text("You are out of ", RED), storable.getIconName()));
-                        return;
-                    }
-                    final int amount = storable.fit(inventory, has, false);
-                    inventory = null; // Do not use in callback!
-                    if (amount == 0) {
-                        player.sendActionBar(text("This container is full!", RED));
-                        player.playSound(player.getLocation(), BLOCK_CHEST_LOCKED, 1.0f, 1.25f);
-                        return;
-                    }
-                    session.retrieveAsync(storable, amount, success -> {
-                            if (!success) {
-                                player.sendActionBar(join(noSeparators(), text("You are out of ", RED), storable.getIconName()));
-                                player.playSound(player.getLocation(), BLOCK_CHEST_LOCKED, 1.0f, 1.25f);
-                                return;
-                            }
-                            final Inventory inventory2 = getWorldContainerHelper(player, event.getClickedBlock());
-                            final int stored;
-                            if (inventory2 == null) {
-                                stored = 0;
-                            } else {
-                                stored = storable.fit(inventory2, amount, true);
-                                player.sendMessage(join(noSeparators(), text("Filled container with ", GREEN),
-                                                        text(stored, WHITE), TIMES, storable.getIconName()));
-                            }
-                            if (stored < amount) {
-                                session.insertAsync(storable, amount - stored, null);
-                            }
-                            session.getDialogue().open(player);
-                            player.playSound(player.getLocation(), BLOCK_ENDER_CHEST_OPEN, 0.5f, 2.0f);
-                        });
-                } else if (sessionAction instanceof SessionDrainWorldContainer drain) {
-                    session.setAction(null);
-                    session.insertAndSubtract(inventory, CONTAINER_DRAIN, result -> result.feedback(player));
-                }
+                session.setAction(null);
+                session.fillContainer(player, block, inventory, fill.getStorable());
+            } else if (sessionAction instanceof SessionDrainWorldContainer drain) {
+                event.setCancelled(true);
+                session.setAction(null);
+                session.insertAndSubtract(inventory, CONTAINER_DRAIN, result -> result.feedback(player));
             }
         }
     }

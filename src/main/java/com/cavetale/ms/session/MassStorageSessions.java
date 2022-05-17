@@ -32,6 +32,7 @@ import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.loot.Lootable;
 import static com.cavetale.core.font.Unicode.tiny;
 import static com.cavetale.ms.session.ItemInsertionCause.*;
 import static net.kyori.adventure.text.Component.join;
@@ -147,6 +148,16 @@ public final class MassStorageSessions implements Listener {
         }
         if (!(block.getState() instanceof Container container)) {
             player.sendActionBar(text("There is no container here!", RED));
+            return null;
+        }
+        if (container.isLocked()) {
+            // Apparently this is cancelled beforehand.
+            player.sendActionBar(text("This container is locked!", RED));
+            return null;
+        }
+        if (container instanceof Lootable lootable && lootable.hasLootTable()) {
+            // Apparently looting happens prior to this.
+            player.sendActionBar(text("This container has yet to be looted!", RED));
             return null;
         }
         return container.getInventory();

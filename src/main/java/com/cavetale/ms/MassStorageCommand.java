@@ -28,11 +28,11 @@ public final class MassStorageCommand extends AbstractCommand<MassStoragePlugin>
 
     @Override
     protected void onEnable() {
-        rootNode.completers(this::complete);
-        rootNode.playerCaller(this::massStorage);
-        rootNode.addChild("list").alias("all").denyTabCompletion()
-            .description("View all items")
-            .playerCaller(this::list);
+        rootNode.playerCaller(this::search);
+        rootNode.addChild("search").arguments("<pattern>")
+            .description("Search for items")
+            .completers(this::completeSearch)
+            .playerCaller(this::search);
         rootNode.addChild("insert").denyTabCompletion()
             .description("Insert items")
             .playerCaller(this::insert);
@@ -47,20 +47,7 @@ public final class MassStorageCommand extends AbstractCommand<MassStoragePlugin>
             .playerCaller(this::auto);
     }
 
-    private List<String> complete(CommandContext context, CommandNode node, String arg) {
-        if (arg.isEmpty() || !context.isPlayer()) {
-            return node.completeChildren(context, arg);
-        }
-        List<String> result = new ArrayList<>();
-        result.addAll(node.completeChildren(context, arg));
-        MassStorageSession session = plugin.sessions.get(context.player);
-        if (session != null && session.isEnabled()) {
-            session.complete(result, arg);
-        }
-        return result;
-    }
-
-    private boolean massStorage(Player player, String[] args) {
+    private boolean search(Player player, String[] args) {
         MassStorageSession session = plugin.sessions.require(player);
         if (args.length == 0) {
             session.getDialogue().openOverview(player);
@@ -76,8 +63,13 @@ public final class MassStorageCommand extends AbstractCommand<MassStoragePlugin>
         return true;
     }
 
-    private void list(Player player) {
-        plugin.sessions.require(player).getDialogue().openCategory(player, StorableCategory.ALL);
+    private List<String> completeSearch(CommandContext context, CommandNode node, String arg) {
+        List<String> result = new ArrayList<>();
+        MassStorageSession session = plugin.sessions.get(context.player);
+        if (session != null && session.isEnabled()) {
+            session.complete(result, arg);
+        }
+        return result;
     }
 
     protected void insert(Player player) {

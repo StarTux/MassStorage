@@ -1,5 +1,6 @@
 package com.cavetale.ms.dialogue;
 
+import com.cavetale.core.event.player.PluginPlayerEvent;
 import com.cavetale.core.font.GuiOverlay;
 import com.cavetale.ms.MassStoragePlugin;
 import com.cavetale.ms.session.FavoriteSlot;
@@ -7,6 +8,7 @@ import com.cavetale.ms.session.MassStorageSession;
 import com.cavetale.ms.session.SessionAction;
 import com.cavetale.ms.session.SessionDrainWorldContainer;
 import com.cavetale.ms.session.SessionFillWorldContainer;
+import com.cavetale.ms.storable.StorableBukkitItem;
 import com.cavetale.ms.storable.StorableCategory;
 import com.cavetale.ms.storable.StorableItem;
 import com.cavetale.ms.storable.StorableSet;
@@ -78,12 +80,24 @@ public final class MassStorageDialogue {
     public void openOverview(Player player) {
         states.clear();
         open(player);
+        PluginPlayerEvent.Name.OPEN_MASS_STORAGE.call(plugin, player);
     }
 
     public void openSearchResult(Player player, String searchTerm, List<StorableItem> storables) {
         states.clear();
         states.add(new DialogueSearchResult(searchTerm, storables));
         open(player);
+        PluginPlayerEvent.Name.SEARCH_MASS_STORAGE.make(plugin, player)
+            .detail(PluginPlayerEvent.Detail.NAME, searchTerm)
+            .callEvent();
+        for (StorableItem storable : storables) {
+            if (storable instanceof StorableBukkitItem bukkit) {
+                PluginPlayerEvent.Name.FIND_MASS_STORAGE.make(plugin, player)
+                    .detail(PluginPlayerEvent.Detail.MATERIAL, bukkit.getMaterial())
+                    .detail(PluginPlayerEvent.Detail.NAME, searchTerm)
+                    .callEvent();
+            }
+        }
     }
 
     public void openCategory(Player player, StorableCategory category) {
@@ -343,6 +357,7 @@ public final class MassStorageDialogue {
                 popState();
                 open(player);
                 click(player);
+                PluginPlayerEvent.Name.MASS_STORAGE_GO_BACK.call(plugin, player);
             });
         gui.onClickBottom(this::clickBottom);
         gui.title(builder.build());
@@ -482,6 +497,7 @@ public final class MassStorageDialogue {
                 popState();
                 open(player);
                 click(player);
+                PluginPlayerEvent.Name.MASS_STORAGE_GO_BACK.call(plugin, player);
             });
         gui.onClickBottom(this::clickBottom);
         gui.title(builder.build());
@@ -540,6 +556,7 @@ public final class MassStorageDialogue {
         gui.setItem(Gui.OUTSIDE, null, click -> {
                 open(player);
                 click(player);
+                PluginPlayerEvent.Name.MASS_STORAGE_GO_BACK.call(plugin, player);
             });
         gui.open(player);
     }

@@ -1,7 +1,9 @@
 package com.cavetale.ms.session;
 
+import com.cavetale.core.event.player.PluginPlayerEvent;
 import com.cavetale.core.font.VanillaItems;
 import com.cavetale.ms.MassStoragePlugin;
+import com.cavetale.ms.storable.StorableBukkitItem;
 import com.cavetale.ms.storable.StorableItem;
 import com.cavetale.mytems.Mytems;
 import java.util.ArrayList;
@@ -126,6 +128,14 @@ public final record ItemInsertionResult(ItemInsertionCause cause,
         }
         if (cause().sendActionBarMessage()) {
             player.sendActionBar(message);
+        }
+        for (Map.Entry<StorableItem, Integer> entry : storedItems().entrySet()) {
+            if (entry.getKey() instanceof StorableBukkitItem bukkit) {
+                PluginPlayerEvent.Name.STORE_MASS_STORAGE.make(MassStoragePlugin.getInstance(), player)
+                    .detail(PluginPlayerEvent.Detail.MATERIAL, bukkit.getMaterial())
+                    .detail(PluginPlayerEvent.Detail.COUNT, entry.getValue())
+                    .callEvent();
+            }
         }
     }
 

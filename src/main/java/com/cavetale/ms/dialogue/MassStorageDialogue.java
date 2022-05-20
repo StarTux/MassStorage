@@ -162,11 +162,6 @@ public final class MassStorageDialogue {
                     }
                 });
         }
-        gui.setItem(2, Mytems.LETTER_I
-                    .createIcon(List.of(text(tiny("Hint: Click outside"), GRAY),
-                                        text(tiny("the window to go"), GRAY),
-                                        text(tiny("back to the"), GRAY),
-                                        text(tiny("previous menu."), GRAY))), null);
         ItemStack insertIcon = Mytems.PLUS_BUTTON
             .createIcon(List.of(text("Insert items", LIGHT_PURPLE),
                                 text("/mss", GREEN),
@@ -229,7 +224,7 @@ public final class MassStorageDialogue {
                                 text(tiny("remove all items"), GRAY),
                                 text(tiny("from and put them"), GRAY),
                                 text(tiny("into storage."), GRAY)));
-        gui.setItem(5, drainIcon, click -> {
+        gui.setItem(2, drainIcon, click -> {
                 if (!click.isLeftClick()) return;
                 // Player session
                 session.setAction(new SessionDrainWorldContainer());

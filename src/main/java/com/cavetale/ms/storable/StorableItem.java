@@ -118,7 +118,7 @@ public sealed interface StorableItem permits UnstorableItem, StorableBukkitItem,
             if (i >= 36 && i <= 39) continue;
             ItemStack slot = inventory.getItem(i);
             if (slot == null || slot.getType().isAir()) {
-                hasEmpty = true;
+                if (i < 9) hasEmpty = true;
                 continue;
             }
             if (!canStack(slot)) continue;

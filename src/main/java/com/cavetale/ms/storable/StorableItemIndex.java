@@ -79,6 +79,7 @@ public final class StorableItemIndex {
      * given ItemStack, or not valid.
      */
     public @NonNull StorableItem get(ItemStack itemStack) {
+        if (itemStack == null || itemStack.getType().isAir()) return unstorableItem;
         Mytems mytems = Mytems.forItem(itemStack);
         if (mytems != null) {
             StorableMytemsItem smi = mytemsIndex.get(mytems);

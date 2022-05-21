@@ -423,6 +423,7 @@ public final class MassStorageSession {
         PlayerInventory inventory = player.getInventory();
         int index = hand == EquipmentSlot.HAND ? player.getInventory().getHeldItemSlot() : 40;
         final ItemStack item = inventory.getItem(index);
+        if (item == null || item.getType().isAir()) return;
         StorableItem storable = plugin.getIndex().get(item);
         if (storable == null) return;
         if (!storable.canStack(item)) return;

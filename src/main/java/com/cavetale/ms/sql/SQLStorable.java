@@ -3,6 +3,7 @@ package com.cavetale.ms.sql;
 import com.cavetale.ms.storable.StorableItem;
 import com.cavetale.ms.storable.StorageType;
 import com.cavetale.mytems.Mytems;
+import com.winthier.sql.SQLRow;
 import java.util.Date;
 import java.util.UUID;
 import javax.persistence.Column;
@@ -21,7 +22,7 @@ import org.bukkit.Material;
                    "name",
                }),
        })
-public final class SQLStorable {
+public final class SQLStorable implements SQLRow {
     @Id
     private Integer id;
 

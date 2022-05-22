@@ -1,10 +1,10 @@
 main: com.cavetale.ms.MassStoragePlugin
-
 name: MassStorage
+
 version: 0.1
-description: Store massive amounts of items in the database
 api-version: 1.18
 
+description: Store massive amounts of items in the database
 author: StarTux
 website: https://github.com/StarTux/MassStorage
 

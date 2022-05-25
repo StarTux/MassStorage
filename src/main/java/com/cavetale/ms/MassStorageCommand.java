@@ -51,7 +51,7 @@ public final class MassStorageCommand extends AbstractCommand<MassStoragePlugin>
             .playerCaller(this::open);
         rootNode.addChild("help").denyTabCompletion()
             .description("Print help")
-            .caller(this::help);
+            .playerCaller(this::help);
     }
 
     private boolean massStorage(Player player, String[] args) {
@@ -135,7 +135,7 @@ public final class MassStorageCommand extends AbstractCommand<MassStoragePlugin>
         plugin.sessions.require(player).getDialogue().open(player);
     }
 
-    private boolean help(CommandContext context, CommandNode node, String[] args) {
-        return rootNode.sendHelp(context);
+    private boolean help(Player player) {
+        return rootNode.sendHelp(player);
     }
 }

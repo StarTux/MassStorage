@@ -23,7 +23,7 @@ public enum ItemInsertionCause {
             return false;
         }
         @Override public boolean sendActionBarMessage() {
-            return true;
+            return false;
         }
         @Override public boolean failSilently() {
             return true;

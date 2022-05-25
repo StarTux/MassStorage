@@ -7,14 +7,7 @@ public enum ItemInsertionCause {
         }
     },
     INSERT_MENU,
-    SHIFT_CLICK_MENU() {
-        @Override public boolean sendChatMessage() {
-            return false;
-        }
-        @Override public boolean sendActionBarMessage() {
-            return true;
-        }
-    },
+    SHIFT_CLICK_MENU(),
     PICKUP() {
         @Override public boolean drainShulkerBoxes() {
             return false;
@@ -29,14 +22,7 @@ public enum ItemInsertionCause {
             return true;
         }
     },
-    ASSIST_CONTROL_DROP() {
-        @Override public boolean sendChatMessage() {
-            return false;
-        }
-        @Override public boolean sendActionBarMessage() {
-            return true;
-        }
-    },
+    ASSIST_CONTROL_DROP(),
     CONTAINER_DRAIN;
 
     public boolean drainShulkerBoxes() {

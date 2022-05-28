@@ -118,6 +118,7 @@ public final class MassStorageSessions implements Listener {
         if (canStack >= amount) return;
         final int insertAmount = amount - canStack;
         session.insertAsync(storable, insertAmount, null);
+        new PlayerAbsorbItemEvent(player, event.getItem(), insertAmount).callEvent();
         if (insertAmount >= amount) {
             event.setCancelled(true);
             event.getItem().remove();
@@ -128,7 +129,6 @@ public final class MassStorageSessions implements Listener {
         }
         new ItemInsertionResult(ItemInsertionCause.PICKUP, List.of(), Map.of(storable, insertAmount))
             .feedback(player);
-        new PlayerAbsorbItemEvent(player, item.asQuantity(insertAmount)).callEvent();
     }
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGH)

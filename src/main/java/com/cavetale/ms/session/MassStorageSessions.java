@@ -2,6 +2,7 @@ package com.cavetale.ms.session;
 
 import com.cavetale.core.command.CommandWarn;
 import com.cavetale.core.event.block.PlayerBlockAbilityQuery;
+import com.cavetale.core.event.item.PlayerAbsorbItemEvent;
 import com.cavetale.ms.MassStoragePlugin;
 import com.cavetale.ms.storable.StorableItem;
 import com.cavetale.sidebar.PlayerSidebarEvent;
@@ -127,6 +128,7 @@ public final class MassStorageSessions implements Listener {
         }
         new ItemInsertionResult(ItemInsertionCause.PICKUP, List.of(), Map.of(storable, insertAmount))
             .feedback(player);
+        new PlayerAbsorbItemEvent(player, item.asQuantity(insertAmount)).callEvent();
     }
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGH)

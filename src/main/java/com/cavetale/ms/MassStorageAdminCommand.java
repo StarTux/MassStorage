@@ -4,6 +4,7 @@ import com.cavetale.core.command.AbstractCommand;
 import com.cavetale.core.command.CommandArgCompleter;
 import com.cavetale.core.command.CommandNode;
 import com.cavetale.core.command.CommandWarn;
+import com.cavetale.ms.session.FavoriteSlot;
 import com.cavetale.ms.session.MassStorageSession;
 import com.cavetale.ms.storable.StorableItem;
 import com.cavetale.ms.storable.StorageType;
@@ -47,6 +48,11 @@ public final class MassStorageAdminCommand extends AbstractCommand<MassStoragePl
             .description("Give one of each storable")
             .completers(PlayerCache.NAME_COMPLETER)
             .senderCaller(this::playerGiveOne);
+        playerNode.addChild("transfer").arguments("<from> <to>")
+            .description("Account transfer")
+            .completers(PlayerCache.NAME_COMPLETER,
+                        PlayerCache.NAME_COMPLETER)
+            .senderCaller(this::playerTransfer);
     }
 
     private boolean storableInfo(CommandSender sender, String[] args) {
@@ -102,6 +108,35 @@ public final class MassStorageAdminCommand extends AbstractCommand<MassStoragePl
             }
         }
         sender.sendMessage(text("Gave " + count + " storable" + (count == 1 ? "s" : "") + " to " + target.name, AQUA));
+        return true;
+    }
+
+    private boolean playerTransfer(CommandSender sender, String[] args) {
+        if (args.length != 2) return false;
+        PlayerCache fromPlayer = PlayerCache.require(args[0]);
+        PlayerCache toPlayer = PlayerCache.require(args[1]);
+        if (fromPlayer.equals(toPlayer)) throw new CommandWarn("Players are identical");
+        MassStorageSession from = MassStorageSession.createAdminOnly(fromPlayer.uuid);
+        MassStorageSession to = MassStorageSession.createAdminOnly(toPlayer.uuid);
+        long total = 0;
+        for (StorableItem storable : plugin.index.all()) {
+            int amount = from.getAmount(storable);
+            if (amount != 0) {
+                from.setAmount(storable, 0);
+                to.insert(storable, amount);
+                total += (long) amount;
+            }
+            FavoriteSlot slot = from.getFavoriteSlot(storable);
+            if (slot != null) {
+                from.setFavoriteSlot(storable, null);
+                to.setFavoriteSlot(storable, slot);
+            }
+            if (from.getAutoPickup(storable)) {
+                from.setAutoPickup(storable, false);
+                to.setAutoPickup(storable, true);
+            }
+        }
+        sender.sendMessage(text(total + " items transferred from " + fromPlayer.name + " to " + toPlayer.name, AQUA));
         return true;
     }
 }

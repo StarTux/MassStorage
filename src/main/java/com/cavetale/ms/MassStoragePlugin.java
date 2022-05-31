@@ -7,6 +7,7 @@ import com.cavetale.ms.storable.StorableCategory;
 import com.cavetale.ms.storable.StorableItemIndex;
 import com.cavetale.ms.util.Gui;
 import com.winthier.sql.SQLDatabase;
+import java.util.List;
 import lombok.Getter;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -23,7 +24,7 @@ public final class MassStoragePlugin extends JavaPlugin {
     @Override
     public void onEnable() {
         instance = this;
-        database.registerTables(SQLStorable.class, SQLPlayer.class);
+        database.registerTables(List.of(SQLStorable.class, SQLPlayer.class));
         if (!database.createAllTables()) {
             throw new IllegalStateException("Database creation failed!");
         }

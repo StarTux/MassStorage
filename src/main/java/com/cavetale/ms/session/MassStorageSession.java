@@ -63,10 +63,16 @@ public final class MassStorageSession {
     }
 
     public void setup() {
-        plugin.getDatabase().scheduleAsyncTask(this::setupAsync);
+        plugin.getDatabase().scheduleAsyncTask(this::setupNow);
     }
 
-    private void setupAsync() {
+    public static MassStorageSession createAdminOnly(UUID uuid) {
+        MassStorageSession result = new MassStorageSession(MassStoragePlugin.getInstance(), uuid);
+        result.setupNow();
+        return result;
+    }
+
+    public void setupNow() {
         playerRow = plugin.getDatabase().find(SQLPlayer.class).eq("uuid", uuid).findUnique();
         if (playerRow == null) {
             playerRow = new SQLPlayer(uuid);
@@ -216,6 +222,15 @@ public final class MassStorageSession {
                     Bukkit.getScheduler().runTask(plugin, () -> callback.accept(result));
                 }
             });
+    }
+
+    public void setAmount(StorableItem storable, int amount) {
+        final int rowId = ids[storable.getIndex()];
+        final int result = plugin.getDatabase().update(SQLStorable.class)
+            .set("amount", amount)
+            .where(c -> c.eq("id", rowId))
+            .sync();
+        amounts[storable.getIndex()] = amount;
     }
 
     public void fillContainer(Player player, Block block, Inventory currentInventory, StorableItem storable) {

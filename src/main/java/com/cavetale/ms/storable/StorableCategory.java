@@ -731,6 +731,7 @@ public enum StorableCategory implements StorableSet {
                 MytemsCategory.CURRENCY,
                 MytemsCategory.COIN,
                 MytemsCategory.ARMOR_PART,
+                MytemsCategory.TROPHY,
             };
         }
     },

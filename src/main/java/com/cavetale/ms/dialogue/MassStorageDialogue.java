@@ -16,6 +16,7 @@ import com.cavetale.ms.util.Gui;
 import com.cavetale.mytems.Mytems;
 import com.cavetale.mytems.item.font.Glyph;
 import com.cavetale.mytems.util.Items;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.IdentityHashMap;
@@ -47,6 +48,7 @@ public final class MassStorageDialogue {
     private final MassStorageSession session;
     private final List<DialogueState> states = new ArrayList<>();
     public static final Component TIMES = text("\u00D7", DARK_GRAY);
+    protected static final DecimalFormat AMOUNT_FORMAT = new DecimalFormat("#,###");
 
     /**
      * All open actions should be funelled through this so we can do
@@ -152,7 +154,7 @@ public final class MassStorageDialogue {
                     Items.text(meta, List.of(item.getTitle(),
                                              text("Group", DARK_GRAY, ITALIC),
                                              join(noSeparators(), text(tiny("items "), GRAY), text(storables.size(), WHITE)),
-                                             join(noSeparators(), text(tiny("stored "), GRAY), text(amounts.getOrDefault(item, 0), WHITE))));
+                                             join(noSeparators(), text(tiny("stored "), GRAY), text(AMOUNT_FORMAT.format(amounts.getOrDefault(item, 0)), WHITE))));
                 });
             gui.setItem(guiIndex, icon, click -> {
                     if (click.isLeftClick()) {
@@ -278,18 +280,23 @@ public final class MassStorageDialogue {
             final int amount = session.getAmount(storable);
             final int guiIndex = 9 + i;
             ItemStack icon = amount > 0 ? storable.createIcon() : Mytems.INVISIBLE_ITEM.createIcon();
-            final int maxStackSize = storable.getMaxStackSize();
-            if (amount > maxStackSize) builder.highlightSlot(guiIndex, GRAY);
-            final int displayedAmount = amount > maxStackSize
-                ? amount / maxStackSize
-                : amount;
+            final int displayedAmount;
+            if (amount > 10000) {
+                builder.highlightSlot(guiIndex, AQUA);
+                displayedAmount = amount / 10000;
+            } else if (amount > 100) {
+                builder.highlightSlot(guiIndex, GRAY);
+                displayedAmount = amount / 100;
+            } else {
+                displayedAmount = amount;
+            }
             icon.setAmount(Math.max(1, Math.min(64, displayedAmount)));
             icon.editMeta(meta -> {
                     meta.addItemFlags(ItemFlag.values());
                     List<Component> tooltip = new ArrayList<>();
                     tooltip.add(storable.getIconName());
                     tooltip.add(text(storable.getCategory(), BLUE));
-                    tooltip.add(join(noSeparators(), text(tiny("stored "), GRAY), text(amount, WHITE)));
+                    tooltip.add(join(noSeparators(), text(tiny("stored "), GRAY), text(AMOUNT_FORMAT.format(amount), WHITE)));
                     if (amount >= 1) {
                         tooltip.add(join(noSeparators(), text(tiny("click "), GREEN), text("Open item menu", GRAY)));
                         final int stackSize = Math.min(amount, storable.getMaxStackSize());
@@ -372,7 +379,7 @@ public final class MassStorageDialogue {
             .title(storable.getDisplayName());
         gui.setItem(8, storable.createItemStack(1));
         final int amount = session.getAmount(storable);
-        Component storedLine = join(noSeparators(), text(tiny("stored "), GRAY), text(amount, WHITE));
+        Component storedLine = join(noSeparators(), text(tiny("stored "), GRAY), text(AMOUNT_FORMAT.format(amount), WHITE));
         List<Glyph> glyphs = Glyph.toGlyphs("" + amount);
         for (int i = 0; i < 7; i += 1) {
             if (i >= glyphs.size()) break;

@@ -278,7 +278,12 @@ public final class MassStorageDialogue {
             final int amount = session.getAmount(storable);
             final int guiIndex = 9 + i;
             ItemStack icon = amount > 0 ? storable.createIcon() : Mytems.INVISIBLE_ITEM.createIcon();
-            icon.setAmount(Math.max(1, Math.min(64, (amount > 64 ? amount / 64 : amount))));
+            final int maxStackSize = storable.getMaxStackSize();
+            if (amount > maxStackSize) builder.highlightSlot(guiIndex, GRAY);
+            final int displayedAmount = amount > maxStackSize
+                ? amount / maxStackSize
+                : amount;
+            icon.setAmount(Math.max(1, Math.min(64, displayedAmount)));
             icon.editMeta(meta -> {
                     meta.addItemFlags(ItemFlag.values());
                     List<Component> tooltip = new ArrayList<>();
@@ -297,7 +302,6 @@ public final class MassStorageDialogue {
                     }
                     Items.text(meta, tooltip);
                 });
-            if (amount > 64) builder.highlightSlot(guiIndex, GRAY);
             gui.setItem(guiIndex, icon, click -> {
                     switch (click.getClick()) {
                     case LEFT:

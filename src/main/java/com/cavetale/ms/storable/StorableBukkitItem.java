@@ -1,6 +1,7 @@
 package com.cavetale.ms.storable;
 
 import com.cavetale.core.font.VanillaItems;
+import com.cavetale.core.item.ItemKind;
 import com.cavetale.mytems.util.BlockColor;
 import com.cavetale.mytems.util.Text;
 import java.util.ArrayList;
@@ -34,14 +35,15 @@ public final class StorableBukkitItem implements StorableItem {
         this.category = categoryOf(material);
         ItemStack prototype = new ItemStack(material);
         prototypes.add(prototype);
-        String i18nDisplayName = prototype.getI18NDisplayName();
-        if (i18nDisplayName.equals("Banner Pattern")) {
+        if (material.name().endsWith("_banner_pattern")) {
             // Super annoying corner case!
             this.name = Text.toCamelCase(material, " ");
+            this.displayName = text(name, material.getItemRarity().getColor());
         } else {
-            this.name = i18nDisplayName;
+            ItemKind kind = ItemKind.of(prototype);
+            this.name = kind.name(prototype);
+            this.displayName = kind.displayName(prototype);
         }
-        this.displayName = text(name, material.getItemRarity().getColor());
         if (Tag.SHULKER_BOXES.isTagged(material)) {
             addPrototype("{\"BlockEntityTag\":{\"x\":0,\"y\":0,\"z\":0,\"id\":\"minecraft:shulker_box\"}}");
             addPrototype("{\"BlockEntityTag\":{\"Items\":[],\"id\":\"minecraft:shulker_box\"}}");

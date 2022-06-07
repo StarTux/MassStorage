@@ -1,7 +1,7 @@
 package com.cavetale.ms.session;
 
 import com.cavetale.core.event.player.PluginPlayerEvent;
-import com.cavetale.core.font.VanillaItems;
+import com.cavetale.core.item.ItemKind;
 import com.cavetale.ms.MassStoragePlugin;
 import com.cavetale.ms.storable.StorableBukkitItem;
 import com.cavetale.ms.storable.StorableItem;
@@ -65,17 +65,11 @@ public final record ItemInsertionResult(ItemInsertionCause cause,
         Map<String, Component> rejectedDisplayNames = new HashMap<>();
         for (ItemStack item : rejects()) {
             if (item == null || item.getType().isAir()) continue;
-            String name;
-            Component displayName;
-            Mytems mytems = Mytems.forItem(item);
-            if (mytems != null) {
-                name = mytems.id;
-                displayName = join(noSeparators(), mytems.component, mytems.getMytem().getDisplayName());
-            } else {
-                name = item.getType().getKey().toString();
-                displayName = join(noSeparators(), VanillaItems.componentOf(item.getType()),
-                                   text(item.getI18NDisplayName(), item.getType().getItemRarity().getColor()));
-            }
+            ItemKind kind = ItemKind.of(item);
+            final String name = kind.name(item);
+            final Component displayName = join(noSeparators(),
+                                               kind.icon(item),
+                                               kind.displayName(item));
             int amount = rejectedAmounts.getOrDefault(name, 0);
             rejectedAmounts.put(name, amount + item.getAmount());
             rejectedDisplayNames.put(name, displayName);

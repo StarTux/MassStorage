@@ -447,8 +447,8 @@ public final class MassStorageSession {
         if (oldAmount <= 1 || storable.getMaxStackSize() <= 1) return;
         stackingHand = true;
         Bukkit.getScheduler().runTask(plugin, () -> {
-                if (!player.isOnline() || player.isDead()) return;
                 stackingHand = false;
+                if (!player.isOnline() || player.isDead()) return;
                 final ItemStack item2 = player.getInventory().getItem(index);
                 final int amount;
                 if (item2 == null || item2.getType().isAir()) {

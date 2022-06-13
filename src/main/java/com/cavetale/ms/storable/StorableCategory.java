@@ -17,8 +17,13 @@ import net.kyori.adventure.text.Component;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Tag;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.CreativeCategory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.EnchantmentStorageMeta;
+import org.bukkit.inventory.meta.PotionMeta;
+import org.bukkit.potion.PotionData;
+import org.bukkit.potion.PotionType;
 import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.format.NamedTextColor.*;
 
@@ -609,6 +614,31 @@ public enum StorableCategory implements StorableSet {
             return CreativeCategory.BREWING;
         }
     },
+    POTIONS(() -> {
+            ItemStack icon = new ItemStack(Material.POTION);
+            icon.editMeta(meta -> {
+                    ((PotionMeta) meta).setBasePotionData(new PotionData(PotionType.FIRE_RESISTANCE));
+                });
+            return icon;
+        }) {
+        @Override protected List<StorageType> getStorageTypes() {
+            return List.of(StorageType.POTION,
+                           StorageType.SPLASH_POTION,
+                           StorageType.LINGERING_POTION,
+                           StorageType.TIPPED_ARROW);
+        }
+    },
+    ENCHANTED_BOOKS(() -> {
+            ItemStack icon = new ItemStack(Material.ENCHANTED_BOOK);
+            icon.editMeta(meta -> {
+                    ((EnchantmentStorageMeta) meta).addStoredEnchant(Enchantment.DURABILITY, 1, false);
+                });
+            return icon;
+        }) {
+        @Override protected List<StorageType> getStorageTypes() {
+            return List.of(StorageType.ENCHANTED_BOOK);
+        }
+    },
     STORAGE(() -> new ItemStack(Material.CHEST)) {
         @Override protected List<Tag<Material>> getTags() {
             return List.of(Tag.SHULKER_BOXES);
@@ -818,6 +848,11 @@ public enum StorableCategory implements StorableSet {
                     }
                 }
             }
+            for (StorageType storageType : it.getStorageTypes()) {
+                for (StorableItem storable : plugin.getIndex().of(storageType)) {
+                    storableSet.put(storable, true);
+                }
+            }
             it.storables.addAll(storableSet.keySet());
             unusedSet.keySet().removeAll(it.storables);
         }
@@ -854,6 +889,10 @@ public enum StorableCategory implements StorableSet {
 
     protected CreativeCategory getCreativeCategory() {
         return null;
+    }
+
+    protected List<StorageType> getStorageTypes() {
+        return List.of();
     }
 
     protected boolean isSpecial() {

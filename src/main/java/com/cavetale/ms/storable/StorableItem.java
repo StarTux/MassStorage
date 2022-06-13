@@ -7,7 +7,12 @@ import org.bukkit.inventory.PlayerInventory;
 import static net.kyori.adventure.text.Component.join;
 import static net.kyori.adventure.text.JoinConfiguration.noSeparators;
 
-public sealed interface StorableItem permits UnstorableItem, StorableBukkitItem, StorableMytemsItem {
+public sealed interface StorableItem permits UnstorableItem, StorableBukkitItem, StorableMytemsItem, StorablePotion, StorableEnchantedBook {
+    /**
+     * The Name is a human readable item display name.  It is used for
+     * the alphabetic sorting and item search.  Usually it will be a
+     * plain version of the DisplayName, see below.
+     */
     String getName();
 
     Component getDisplayName();

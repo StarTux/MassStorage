@@ -101,9 +101,22 @@ public final class MassStorageSessions implements Listener {
         return session;
     }
 
+    private boolean checkGameMode(Player player) {
+        switch (player.getGameMode()) {
+        case SURVIVAL:
+        case ADVENTURE:
+            return player.hasPermission("massstorage.ms");
+        case CREATIVE:
+        case SPECTATOR:
+        default:
+            return false;
+        }
+    }
+
     @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGH)
     private void onPlayerAttemptPickupItem(PlayerAttemptPickupItemEvent event) {
         Player player = event.getPlayer();
+        if (!checkGameMode(player)) return;
         MassStorageSession session = get(player);
         if (session == null || !session.isEnabled()) return;
         final boolean assist = session.isAssistEnabled();
@@ -134,6 +147,7 @@ public final class MassStorageSessions implements Listener {
     @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGH)
     private void onInventoryClick(InventoryClickEvent event) {
         if (!(event.getWhoClicked() instanceof Player player)) return;
+        if (!checkGameMode(player)) return;
         if (event.getView().getType() == InventoryType.CRAFTING && event.getClick() == ClickType.CONTROL_DROP) {
             ifAssistEnabled(player, session -> {
                     ItemStack item = event.getCurrentItem();
@@ -168,6 +182,7 @@ public final class MassStorageSessions implements Listener {
     @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGH)
     private void onPlayerInteractContainerAction(PlayerInteractEvent event) {
         Player player = event.getPlayer();
+        if (!checkGameMode(player)) return;
         MassStorageSession session = get(player);
         if (session == null || !session.isEnabled()) return;
         if (session.getAction() instanceof SessionWorldContainerAction sessionAction) {
@@ -215,6 +230,7 @@ public final class MassStorageSessions implements Listener {
     @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
     private void onBlockPlace(BlockPlaceEvent event) {
         Player player = event.getPlayer();
+        if (!checkGameMode(player)) return;
         ifAssistEnabled(player, session -> {
                 session.stackHand(player, event.getHand());
             });
@@ -223,6 +239,7 @@ public final class MassStorageSessions implements Listener {
     @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
     private void onPlayerInteractEntity(PlayerInteractEntityEvent event) {
         Player player = event.getPlayer();
+        if (!checkGameMode(player)) return;
         ifAssistEnabled(player, session -> {
                 session.stackHand(player, event.getHand());
             });
@@ -231,6 +248,7 @@ public final class MassStorageSessions implements Listener {
     @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
     private void onPlayerItemConsume(PlayerItemConsumeEvent event) {
         Player player = event.getPlayer();
+        if (!checkGameMode(player)) return;
         EquipmentSlot hand = player.getInventory().getItemInMainHand().equals(event.getItem())
             ? EquipmentSlot.HAND
             : EquipmentSlot.OFF_HAND;

@@ -280,7 +280,7 @@ public enum StorableCategory implements StorableSet {
                            MaterialTags.SKULLS,
                            Tag.RAILS,
                            Tag.ANVIL,
-                           Tag.CARPETS,
+                           Tag.WOOL_CARPETS,
                            Tag.BEDS,
                            Tag.BANNERS);
         }

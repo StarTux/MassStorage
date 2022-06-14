@@ -3,49 +3,25 @@ package com.cavetale.ms.sql;
 import com.cavetale.ms.storable.StorableItem;
 import com.cavetale.ms.storable.StorageType;
 import com.cavetale.mytems.Mytems;
+import com.winthier.sql.SQLRow.Name;
+import com.winthier.sql.SQLRow.NotNull;
 import com.winthier.sql.SQLRow;
 import java.util.Date;
 import java.util.UUID;
-import javax.persistence.Column;
-import javax.persistence.Id;
-import javax.persistence.Table;
-import javax.persistence.UniqueConstraint;
 import lombok.Data;
 import org.bukkit.Material;
 
-@Data
-@Table(name = "storage",
-       uniqueConstraints = {
-           @UniqueConstraint(columnNames = {
-                   "owner",
-                   "type",
-                   "name",
-               }),
-       })
+@Data @NotNull @Name("storage")
+@SQLRow.UniqueKey({"owner", "type", "name"})
 public final class SQLStorable implements SQLRow {
-    @Id
-    private Integer id;
-
-    @Column(nullable = false)
+    @Id private Integer id;
     private UUID owner;
-
-    @Column(nullable = false)
     private int type; // StorageType
-
-    @Column(nullable = false, length = 40)
-    private String name;
-
-    @Column(nullable = false)
-    private int amount;
-
-    @Column(nullable = false)
-    private boolean auto;
-
-    @Column(nullable = false)
-    private int favorite;
-
-    @Column(nullable = false)
-    private Date updated;
+    @VarChar(40) private String name;
+    @Default("0") private int amount;
+    @Default("0") private boolean auto;
+    @Default("0") private int favorite;
+    @Default("NOW()") private Date updated;
 
     public SQLStorable() { }
 

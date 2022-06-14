@@ -151,10 +151,12 @@ public final class MassStorageDialogue {
             List<StorableItem> storables = session.filter(item.getStorables());
             icon.editMeta(meta -> {
                     meta.addItemFlags(ItemFlag.values());
+                    String storablesFormat = AMOUNT_FORMAT.format(storables.size());
+                    String amountFormat = AMOUNT_FORMAT.format(amounts.getOrDefault(item, 0));
                     Items.text(meta, List.of(item.getTitle(),
                                              text("Group", DARK_GRAY, ITALIC),
-                                             join(noSeparators(), text(tiny("items "), GRAY), text(storables.size(), WHITE)),
-                                             join(noSeparators(), text(tiny("stored "), GRAY), text(AMOUNT_FORMAT.format(amounts.getOrDefault(item, 0)), WHITE))));
+                                             join(noSeparators(), text(tiny("items "), GRAY), text(storablesFormat, WHITE)),
+                                             join(noSeparators(), text(tiny("stored "), GRAY), text(amountFormat, WHITE))));
                 });
             gui.setItem(guiIndex, icon, click -> {
                     if (click.isLeftClick()) {

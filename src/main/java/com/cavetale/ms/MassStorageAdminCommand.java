@@ -9,12 +9,17 @@ import com.cavetale.ms.session.MassStorageSession;
 import com.cavetale.ms.storable.StorableItem;
 import com.cavetale.ms.storable.StorageType;
 import com.winthier.playercache.PlayerCache;
+import java.util.ArrayList;
+import java.util.List;
+import net.kyori.adventure.text.Component;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import static net.kyori.adventure.text.Component.join;
+import static net.kyori.adventure.text.Component.space;
 import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.JoinConfiguration.noSeparators;
+import static net.kyori.adventure.text.JoinConfiguration.separator;
 import static net.kyori.adventure.text.event.HoverEvent.showText;
 import static net.kyori.adventure.text.format.NamedTextColor.*;
 
@@ -37,6 +42,10 @@ public final class MassStorageAdminCommand extends AbstractCommand<MassStoragePl
             .playerCaller(this::storableSerialize);
         CommandNode playerNode = rootNode.addChild("player")
             .description("Player subcommands");
+        playerNode.addChild("list").arguments("<player>")
+            .completers(PlayerCache.NAME_COMPLETER)
+            .description("List player items")
+            .senderCaller(this::playerList);
         playerNode.addChild("give").arguments("<player> <type> <name> <amount>")
             .description("Add items to player's storage")
             .completers(PlayerCache.NAME_COMPLETER,
@@ -90,6 +99,23 @@ public final class MassStorageAdminCommand extends AbstractCommand<MassStoragePl
                                 text("Gave " + amount + "x", AQUA),
                                 storable.getDisplayName(),
                                 text(" to " + target.name, AQUA)));
+        return true;
+    }
+
+    private boolean playerList(CommandSender sender, String[] args) {
+        if (args.length != 1) return false;
+        PlayerCache target = PlayerCache.require(args[0]);
+        MassStorageSession session = MassStorageSession.createAdminOnly(target.uuid);
+        List<Component> list = new ArrayList<>();
+        int total = 0;
+        for (StorableItem storable : plugin.getIndex().all()) {
+            int amount = session.getAmount(storable);
+            if (amount == 0) continue;
+            total += amount;
+            list.add(join(noSeparators(), text(amount), text("\u00D7", DARK_GRAY), storable.getIconName()));
+        }
+        sender.sendMessage(join(noSeparators(), text("Items(" + total + ") ", GRAY),
+                                join(separator(space()), list)));
         return true;
     }
 

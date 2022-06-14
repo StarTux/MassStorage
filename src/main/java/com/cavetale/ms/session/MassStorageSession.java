@@ -63,7 +63,16 @@ public final class MassStorageSession {
     }
 
     public void setup() {
-        plugin.getDatabase().scheduleAsyncTask(this::setupNow);
+        plugin.getDatabase().scheduleAsyncTask(() -> {
+                setupNow();
+                Bukkit.getScheduler().runTask(plugin, () -> {
+                        enabled = true;
+                        plugin.getDatabase().update(SQLStorable.class)
+                            .set("updated", new Date())
+                            .where(c -> c.eq("owner", uuid))
+                            .async(null);
+                    });
+            });
     }
 
     public static MassStorageSession createAdminOnly(UUID uuid) {
@@ -80,7 +89,6 @@ public final class MassStorageSession {
                 throw new IllegalStateException("Insert failed: " + playerRow);
             }
         }
-        Date now = new Date();
         for (SQLStorable row : plugin.getDatabase().find(SQLStorable.class).eq("owner", uuid).findList()) {
             StorableItem storable = plugin.getIndex().get(row);
             if (!storable.isValid()) {
@@ -92,20 +100,23 @@ public final class MassStorageSession {
             amounts[index] = row.getAmount();
             autos[index] = row.isAuto();
             favs[index] = row.getFavorite();
-            row.setUpdated(now);
-            plugin.getDatabase().update(row, "updated");
         }
-        for (int i = 0; i < ids.length; i += 1) {
-            if (ids[i] != 0) continue;
-            SQLStorable row = new SQLStorable(uuid, plugin.getIndex().get(i));
-            if (plugin.getDatabase().insert(row) == 0) {
-                throw new IllegalStateException("Insert failed: " + row);
+        List<SQLStorable> newRows = new ArrayList<>();
+        for (int index = 0; index < ids.length; index += 1) {
+            if (ids[index] != 0) continue;
+            newRows.add(new SQLStorable(uuid, plugin.getIndex().get(index)));
+        }
+        if (!newRows.isEmpty()) {
+            plugin.getDatabase().insertIgnore(newRows);
+            for (SQLStorable row : newRows) {
+                if (row.getId() == null) {
+                    throw new IllegalStateException("Insert failed: " + row);
+                }
+                StorableItem storable = plugin.getIndex().get(row);
+                int index = storable.getIndex();
+                ids[index] = row.getId();
             }
-            ids[i] = row.getId();
         }
-        Bukkit.getScheduler().runTask(plugin, () -> {
-                enabled = true;
-            });
     }
 
     public Player getPlayer() {

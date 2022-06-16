@@ -6,10 +6,12 @@ import com.cavetale.core.command.CommandNode;
 import com.cavetale.core.command.CommandWarn;
 import com.cavetale.ms.session.FavoriteSlot;
 import com.cavetale.ms.session.MassStorageSession;
+import com.cavetale.ms.storable.StorableCategory;
 import com.cavetale.ms.storable.StorableItem;
 import com.cavetale.ms.storable.StorageType;
 import com.winthier.playercache.PlayerCache;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import net.kyori.adventure.text.Component;
 import org.bukkit.command.CommandSender;
@@ -62,6 +64,10 @@ public final class MassStorageAdminCommand extends AbstractCommand<MassStoragePl
             .completers(PlayerCache.NAME_COMPLETER,
                         PlayerCache.NAME_COMPLETER)
             .senderCaller(this::playerTransfer);
+        rootNode.addChild("category").arguments("<category>")
+            .completers(CommandArgCompleter.enumLowerList(StorableCategory.class))
+            .description("List item category")
+            .senderCaller(this::category);
     }
 
     private boolean storableInfo(CommandSender sender, String[] args) {
@@ -163,6 +169,29 @@ public final class MassStorageAdminCommand extends AbstractCommand<MassStoragePl
             }
         }
         sender.sendMessage(text(total + " items transferred from " + fromPlayer.name + " to " + toPlayer.name, AQUA));
+        return true;
+    }
+
+    private boolean category(CommandSender sender, String[] args) {
+        if (args.length != 1) return false;
+        StorableCategory category;
+        try {
+            category = StorableCategory.valueOf(args[0].toUpperCase());
+        } catch (IllegalArgumentException iae) {
+            throw new CommandWarn("Unknown category: " + args[0]);
+        }
+        HashMap<String, Component> map = new HashMap<>();
+        for (StorableItem storable : category.getStorables()) {
+            map.put(storable.getName(), storable.getIconName());
+        }
+        List<String> names = new ArrayList<>(map.keySet());
+        names.sort(String.CASE_INSENSITIVE_ORDER);
+        List<Component> list = new ArrayList<>(names.size() + 1);
+        list.add(join(noSeparators(), category.getTitle(), text("(" + names.size() + ")")));
+        for (String name : names) {
+            list.add(map.get(name));
+        }
+        sender.sendMessage(join(separator(space()), list));
         return true;
     }
 }

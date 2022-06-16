@@ -130,6 +130,9 @@ public final class StorableBukkitItem implements StorableItem {
         String name = material.name();
         for (String part : List.of("MOSSY_COBBLESTONE",
                                    "COBBLESTONE",
+                                   "SCULK",
+                                   "FROGLIGHT",
+                                   "MANGROVE",
                                    "DIRT",
                                    "ANDESITE",
                                    "DIORITE",
@@ -185,6 +188,7 @@ public final class StorableBukkitItem implements StorableItem {
                                    "MINECART",
                                    "BANNER_PATTERN",
                                    "FIREWORK",
+                                   "MUD",
                                    "STONE")) {
             if (name.contains(part)) {
                 return Stream.of(part.split("_"))

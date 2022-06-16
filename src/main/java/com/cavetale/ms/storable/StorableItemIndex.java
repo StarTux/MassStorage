@@ -50,7 +50,6 @@ public final class StorableItemIndex {
             Material.WRITTEN_BOOK,
             Material.JIGSAW,
             Material.LIGHT,
-            Material.SCULK_SENSOR,
             Material.BUNDLE);
 
     /**

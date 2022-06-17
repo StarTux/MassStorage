@@ -27,10 +27,11 @@ public final class StorableItemIndex {
     protected final Map<Mytems, StorableMytemsItem> mytemsIndex = new EnumMap<>(Mytems.class);
     private final Map<StorablePotion.Type, Map<PotionType, List<StorablePotion>>> potionIndex = new EnumMap<>(StorablePotion.Type.class);
     private final Map<Enchantment, List<StorableEnchantedBook>> enchantedBookIndex = new IdentityHashMap<>();
-    private static final Set<Material> MATERIAL_BLACKLIST = Set
-        .of(Material.AIR,
-            Material.BEDROCK,
+    private static final Set<Material> MATERIAL_BLACKLIST = Set.of(new Material[] {
+            Material.AIR,
             Material.BARRIER,
+            Material.BEDROCK,
+            Material.BUNDLE,
             Material.CHAIN_COMMAND_BLOCK,
             Material.COMMAND_BLOCK,
             Material.COMMAND_BLOCK_MINECART,
@@ -38,7 +39,10 @@ public final class StorableItemIndex {
             Material.ENCHANTED_BOOK,
             Material.END_PORTAL_FRAME,
             Material.FILLED_MAP,
+            Material.GOAT_HORN,
+            Material.JIGSAW,
             Material.KNOWLEDGE_BOOK,
+            Material.LIGHT,
             Material.LINGERING_POTION,
             Material.POTION,
             Material.REPEATING_COMMAND_BLOCK,
@@ -48,9 +52,7 @@ public final class StorableItemIndex {
             Material.STRUCTURE_VOID,
             Material.TIPPED_ARROW,
             Material.WRITTEN_BOOK,
-            Material.JIGSAW,
-            Material.LIGHT,
-            Material.BUNDLE);
+        });
 
     /**
      * Initialize this index with all storable items.

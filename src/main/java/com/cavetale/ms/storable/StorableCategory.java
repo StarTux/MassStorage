@@ -206,8 +206,7 @@ public enum StorableCategory implements StorableSet {
                            MaterialTags.CONCRETES,
                            MaterialTags.CONCRETE_POWDER,
                            MaterialTags.CORAL_BLOCKS,
-                           MaterialTags.FULL_COPPER_BLOCKS,
-                           new MaterialSetTag(keyOf("full_copper")).endsWith("_COPPER"));
+                           MaterialTags.FULL_COPPER_BLOCKS);
         }
     },
     SLABS(() -> new ItemStack(Material.COBBLESTONE_SLAB)) {

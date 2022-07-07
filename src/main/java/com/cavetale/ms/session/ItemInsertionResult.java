@@ -154,7 +154,7 @@ public final record ItemInsertionResult(ItemInsertionCause cause,
         }
         for (int i = 0; i < sounds; i += 1) {
             Bukkit.getScheduler().runTaskLater(MassStoragePlugin.getInstance(), () -> {
-                    player.playSound(player.getLocation(), ENTITY_ITEM_PICKUP, 0.5f, 2.0f);
+                    player.playSound(player.getLocation(), ENTITY_ITEM_PICKUP, 0.1f, 2.0f);
                 }, (long) (i * 2));
         }
     }

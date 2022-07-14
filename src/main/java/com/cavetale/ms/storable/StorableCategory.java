@@ -5,7 +5,6 @@ import com.cavetale.mytems.Mytems;
 import com.cavetale.mytems.MytemsCategory;
 import com.cavetale.mytems.MytemsTag;
 import com.cavetale.mytems.util.Text;
-import com.destroystokyo.paper.MaterialSetTag;
 import com.destroystokyo.paper.MaterialTags;
 import java.util.ArrayList;
 import java.util.IdentityHashMap;

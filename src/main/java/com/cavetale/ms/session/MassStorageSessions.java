@@ -2,11 +2,11 @@ package com.cavetale.ms.session;
 
 import com.cavetale.core.command.CommandWarn;
 import com.cavetale.core.event.block.PlayerBlockAbilityQuery;
+import com.cavetale.core.event.hud.PlayerHudEvent;
+import com.cavetale.core.event.hud.PlayerHudPriority;
 import com.cavetale.core.event.item.PlayerAbsorbItemEvent;
 import com.cavetale.ms.MassStoragePlugin;
 import com.cavetale.ms.storable.StorableItem;
-import com.cavetale.sidebar.PlayerSidebarEvent;
-import com.cavetale.sidebar.Priority;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -212,17 +212,19 @@ public final class MassStorageSessions implements Listener {
     }
 
     @EventHandler
-    private void onPlayerSidebar(PlayerSidebarEvent event) {
+    private void onPlayerHud(PlayerHudEvent event) {
         Player player = event.getPlayer();
         MassStorageSession session = get(player);
         if (session == null || !session.isEnabled()) return;
         if (session.getAction() instanceof SessionWorldContainerAction sessionAction) {
             if (sessionAction instanceof SessionFillWorldContainer fill) {
-                event.add(plugin, Priority.HIGHEST, List.of(join(noSeparators(), text("/ms ", YELLOW), text(tiny("Container fill"), AQUA)),
-                                                            join(noSeparators(), text(tiny("mode: "), AQUA), fill.getStorable().getDisplayName())));
+                event.sidebar(PlayerHudPriority.HIGHEST,
+                              List.of(join(noSeparators(), text("/ms ", YELLOW), text(tiny("Container fill"), AQUA)),
+                                      join(noSeparators(), text(tiny("mode: "), AQUA), fill.getStorable().getDisplayName())));
             } else if (sessionAction instanceof SessionDrainWorldContainer drain) {
-                event.add(plugin, Priority.HIGHEST, List.of(join(noSeparators(), text(tiny("/ms "), YELLOW), text(tiny("Container drain"), AQUA)),
-                                                            text(tiny("mode"), AQUA)));
+                event.sidebar(PlayerHudPriority.HIGHEST,
+                              List.of(join(noSeparators(), text(tiny("/ms "), YELLOW), text(tiny("Container drain"), AQUA)),
+                                      text(tiny("mode"), AQUA)));
             }
         }
     }

@@ -3,7 +3,6 @@ package com.cavetale.ms.session;
 import com.cavetale.core.command.CommandWarn;
 import com.cavetale.core.event.block.PlayerBlockAbilityQuery;
 import com.cavetale.core.event.hud.PlayerHudEvent;
-import com.cavetale.core.event.hud.PlayerHudPriority;
 import com.cavetale.core.event.item.PlayerAbsorbItemEvent;
 import com.cavetale.ms.MassStoragePlugin;
 import com.cavetale.ms.storable.StorableItem;
@@ -34,11 +33,8 @@ import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.loot.Lootable;
-import static com.cavetale.core.font.Unicode.tiny;
 import static com.cavetale.ms.session.ItemInsertionCause.*;
-import static net.kyori.adventure.text.Component.join;
 import static net.kyori.adventure.text.Component.text;
-import static net.kyori.adventure.text.JoinConfiguration.noSeparators;
 import static net.kyori.adventure.text.format.NamedTextColor.*;
 import static org.bukkit.Sound.*;
 
@@ -216,17 +212,7 @@ public final class MassStorageSessions implements Listener {
         Player player = event.getPlayer();
         MassStorageSession session = get(player);
         if (session == null || !session.isEnabled()) return;
-        if (session.getAction() instanceof SessionWorldContainerAction sessionAction) {
-            if (sessionAction instanceof SessionFillWorldContainer fill) {
-                event.sidebar(PlayerHudPriority.HIGHEST,
-                              List.of(join(noSeparators(), text("/ms ", YELLOW), text(tiny("Container fill"), AQUA)),
-                                      join(noSeparators(), text(tiny("mode: "), AQUA), fill.getStorable().getDisplayName())));
-            } else if (sessionAction instanceof SessionDrainWorldContainer drain) {
-                event.sidebar(PlayerHudPriority.HIGHEST,
-                              List.of(join(noSeparators(), text(tiny("/ms "), YELLOW), text(tiny("Container drain"), AQUA)),
-                                      text(tiny("mode"), AQUA)));
-            }
-        }
+        session.onPlayerHud(event);
     }
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)

@@ -36,4 +36,10 @@ public final class MassStoragePlugin extends JavaPlugin {
         adminCommand.enable();
         sessions.enable();
     }
+
+    @Override
+    public void onDisable() {
+        database.waitForAsyncTask();
+        database.close();
+    }
 }

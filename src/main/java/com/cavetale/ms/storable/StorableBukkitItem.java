@@ -2,6 +2,7 @@ package com.cavetale.ms.storable;
 
 import com.cavetale.core.font.VanillaItems;
 import com.cavetale.core.item.ItemKind;
+import com.cavetale.mytems.Mytems;
 import com.cavetale.mytems.util.BlockColor;
 import com.cavetale.mytems.util.Text;
 import java.util.ArrayList;
@@ -15,6 +16,7 @@ import org.bukkit.Tag;
 import org.bukkit.inventory.CreativeCategory;
 import org.bukkit.inventory.ItemStack;
 import static java.util.stream.Collectors.joining;
+import static net.kyori.adventure.text.Component.empty;
 import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.format.NamedTextColor.*;
 
@@ -77,7 +79,10 @@ public final class StorableBukkitItem implements StorableItem {
 
     @Override
     public Component getIcon() {
-        return VanillaItems.componentOf(material);
+        Component result = VanillaItems.componentOf(material);
+        return !empty().equals(result)
+            ? result
+            : Mytems.QUESTION_MARK.asComponent();
     }
 
     @Override

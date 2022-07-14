@@ -1,5 +1,7 @@
 package com.cavetale.ms.session;
 
+import com.cavetale.core.event.hud.PlayerHudEvent;
+import com.cavetale.core.event.hud.PlayerHudPriority;
 import com.cavetale.ms.MassStoragePlugin;
 import com.cavetale.ms.dialogue.ItemSortOrder;
 import com.cavetale.ms.dialogue.MassStorageDialogue;
@@ -10,12 +12,14 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.EnumMap;
 import java.util.IdentityHashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.Consumer;
 import lombok.Getter;
 import lombok.Setter;
+import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.Tag;
 import org.bukkit.block.Block;
@@ -28,12 +32,16 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.BlockStateMeta;
+import static com.cavetale.core.font.Unicode.subscript;
+import static com.cavetale.core.font.Unicode.tiny;
 import static com.cavetale.ms.dialogue.MassStorageDialogue.TIMES;
 import static com.cavetale.ms.session.MassStorageSessions.getAccessibleWorldContainer;
 import static com.cavetale.mytems.util.Text.toCamelCase;
 import static net.kyori.adventure.text.Component.join;
+import static net.kyori.adventure.text.Component.space;
 import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.JoinConfiguration.noSeparators;
+import static net.kyori.adventure.text.JoinConfiguration.separator;
 import static net.kyori.adventure.text.format.NamedTextColor.*;
 import static org.bukkit.Sound.*;
 
@@ -51,6 +59,7 @@ public final class MassStorageSession {
     private boolean stackingHand = false;
     private boolean fillingContainer = false;
     @Getter @Setter private boolean informed;
+    private List<StorableDisplay> storableDisplayList = new ArrayList<>();
 
     protected MassStorageSession(final MassStoragePlugin plugin, final UUID uuid) {
         this.plugin = plugin;
@@ -222,6 +231,7 @@ public final class MassStorageSession {
                                       + " item=" + amount + "x" + storable);
         } else {
             amounts[storable.getIndex()] += amount;
+            Bukkit.getScheduler().runTask(plugin, () -> addStorableDisplay(storable, amount));
         }
         return success;
     }
@@ -318,6 +328,7 @@ public final class MassStorageSession {
         boolean success = result != 0;
         if (success) {
             amounts[index] -= amount;
+            Bukkit.getScheduler().runTask(plugin, () -> addStorableDisplay(storable, -amount));
         }
         return success;
     }
@@ -493,5 +504,77 @@ public final class MassStorageSession {
                         }
                     });
             });
+    }
+
+    protected void onPlayerHud(PlayerHudEvent event) {
+        if (action instanceof SessionWorldContainerAction sessionAction) {
+            if (sessionAction instanceof SessionFillWorldContainer fill) {
+                event.sidebar(PlayerHudPriority.HIGHEST,
+                              List.of(join(noSeparators(), text("/ms ", YELLOW), text(tiny("Container fill"), AQUA)),
+                                      join(noSeparators(), text(tiny("mode: "), AQUA), fill.getStorable().getDisplayName())));
+            } else if (sessionAction instanceof SessionDrainWorldContainer drain) {
+                event.sidebar(PlayerHudPriority.HIGHEST,
+                              List.of(join(noSeparators(), text(tiny("/ms "), YELLOW), text(tiny("Container drain"), AQUA)),
+                                      text(tiny("mode"), AQUA)));
+            }
+        }
+        if (!storableDisplayList.isEmpty()) {
+            final int maxLineLength = 16;
+            List<Component> lines = new ArrayList<>();
+            lines.add(text(tiny("mass storage"), YELLOW));
+            List<Component> components = new ArrayList<>();
+            int lineLength = 0;
+            final long now = System.currentTimeMillis();
+            for (Iterator<StorableDisplay> iter = storableDisplayList.iterator(); iter.hasNext();) {
+                StorableDisplay storableDisplay = iter.next();
+                final int amt = getAmount(storableDisplay.storable);
+                final String amount = amt < 100
+                    ? "" + amt
+                    : "";
+                final String num = storableDisplay.changedAmount >= 0
+                    ? "+" + storableDisplay.changedAmount
+                    : "" + storableDisplay.changedAmount;
+                final Component component = join(noSeparators(),
+                                                 storableDisplay.storable.getIcon(),
+                                                 text(amount),
+                                                 text(subscript(num), GRAY));
+                final int length = 1 + amount.length() + (num.length() * 2) / 3;
+                if (lineLength + (lineLength == 0 ? 0 : 1) + length >= maxLineLength && !components.isEmpty()) {
+                    lines.add(join(separator(space()), components));
+                    components.clear();
+                    lineLength = 0;
+                }
+                components.add(component);
+                lineLength += length;
+                if (storableDisplay.timeout < now) {
+                    iter.remove();
+                }
+            }
+            if (!components.isEmpty()) {
+                lines.add(join(separator(space()), components));
+            }
+            event.sidebar(PlayerHudPriority.LOW, lines);
+        }
+    }
+
+    protected void addStorableDisplay(StorableItem storable, int amount) {
+        final long now = System.currentTimeMillis();
+        StorableDisplay storableDisplay = null;
+        for (Iterator<StorableDisplay> iter = storableDisplayList.iterator(); iter.hasNext();) {
+            StorableDisplay it = iter.next();
+            if (it.storable == storable) {
+                storableDisplay = it;
+                break;
+            }
+            if (it.timeout < now) {
+                iter.remove();
+            }
+        }
+        if (storableDisplay == null) {
+            storableDisplay = new StorableDisplay(storable);
+            storableDisplayList.add(storableDisplay);
+        }
+        storableDisplay.changedAmount += amount;
+        storableDisplay.timeout = now + 10_000L;
     }
 }

@@ -7,7 +7,11 @@ public enum ItemInsertionCause {
         }
     },
     INSERT_MENU,
-    SHIFT_CLICK_MENU(),
+    SHIFT_CLICK_MENU() {
+        @Override public boolean sendChatMessage() {
+            return false;
+        }
+    },
     PICKUP() {
         @Override public boolean drainShulkerBoxes() {
             return false;
@@ -22,7 +26,11 @@ public enum ItemInsertionCause {
             return true;
         }
     },
-    ASSIST_CONTROL_DROP(),
+    ASSIST_CONTROL_DROP() {
+        @Override public boolean sendChatMessage() {
+            return false;
+        }
+    },
     CONTAINER_DRAIN;
 
     public boolean drainShulkerBoxes() {

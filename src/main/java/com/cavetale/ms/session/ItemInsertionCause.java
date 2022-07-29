@@ -26,6 +26,12 @@ public enum ItemInsertionCause {
             return true;
         }
     },
+    /** Triggered by PlayerReceiveItemsEvent. */
+    RECEIVE {
+        public boolean failSilently() {
+            return true;
+        }
+    },
     ASSIST_CONTROL_DROP() {
         @Override public boolean sendChatMessage() {
             return false;

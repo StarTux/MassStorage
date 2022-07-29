@@ -4,6 +4,7 @@ import com.cavetale.core.command.CommandWarn;
 import com.cavetale.core.event.block.PlayerBlockAbilityQuery;
 import com.cavetale.core.event.hud.PlayerHudEvent;
 import com.cavetale.core.event.item.PlayerAbsorbItemEvent;
+import com.cavetale.core.event.item.PlayerReceiveItemsEvent;
 import com.cavetale.ms.MassStoragePlugin;
 import com.cavetale.ms.storable.StorableItem;
 import java.util.HashMap;
@@ -242,6 +243,16 @@ public final class MassStorageSessions implements Listener {
             : EquipmentSlot.OFF_HAND;
         ifAssistEnabled(player, session -> {
                 session.stackHand(player, hand);
+            });
+    }
+
+    @EventHandler(priority = EventPriority.NORMAL)
+    private void onPlayerReceiveItems(PlayerReceiveItemsEvent event) {
+        Player player = event.getPlayer();
+        apply(player, session -> {
+                session.insertAndSubtract(event.getItems(),
+                                          ItemInsertionCause.RECEIVE,
+                                          result -> result.feedback(player));
             });
     }
 }

@@ -455,7 +455,7 @@ public final class MassStorageSession {
         plugin.getDatabase().updateAsync(playerRow, null, "sortOrder");
     }
 
-    protected void stackHand(Player player, EquipmentSlot hand) {
+    protected void stackHand(Player player, EquipmentSlot hand, Runnable callback) {
         if (stackingHand) return;
         PlayerInventory inventory = player.getInventory();
         int index = hand == EquipmentSlot.HAND ? player.getInventory().getHeldItemSlot() : 40;
@@ -501,6 +501,7 @@ public final class MassStorageSession {
                             if (given < amount) {
                                 insertAsync(storable, amount - given, null);
                             }
+                            callback.run();
                         }
                     });
             });

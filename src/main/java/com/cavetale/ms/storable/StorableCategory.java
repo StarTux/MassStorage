@@ -804,6 +804,13 @@ public enum StorableCategory implements StorableSet {
             };
         }
     },
+    COSTUMES(Mytems.KOBOLD_HEAD::createIcon) {
+        @Override protected MytemsTag[] getMytemsTags() {
+            return new MytemsTag[] {
+                MytemsTag.COSTUME,
+            };
+        }
+    },
     MISC(() -> new ItemStack(Material.EXPERIENCE_BOTTLE)) {
         @Override protected boolean isSpecial() {
             return true;

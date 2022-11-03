@@ -205,6 +205,7 @@ public enum StorableCategory implements StorableSet {
                            MaterialTags.CONCRETES,
                            MaterialTags.CONCRETE_POWDER,
                            MaterialTags.CORAL_BLOCKS,
+                           MaterialTags.CUT_COPPER_BLOCKS,
                            MaterialTags.FULL_COPPER_BLOCKS);
         }
     },

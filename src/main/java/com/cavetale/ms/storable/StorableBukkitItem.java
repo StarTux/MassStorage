@@ -46,7 +46,7 @@ public final class StorableBukkitItem implements StorableItem {
             this.name = kind.name(prototype);
             this.displayName = kind.displayName(prototype);
         }
-        if (Tag.SHULKER_BOXES.isTagged(material)) {
+        if (isShulkerBox()) {
             addPrototype("{\"BlockEntityTag\":{\"x\":0,\"y\":0,\"z\":0,\"id\":\"minecraft:shulker_box\"}}");
             addPrototype("{\"BlockEntityTag\":{\"Items\":[],\"id\":\"minecraft:shulker_box\"}}");
         } else if (material == Material.FIREWORK_ROCKET) {
@@ -116,6 +116,11 @@ public final class StorableBukkitItem implements StorableItem {
     @Override
     public int getMaxStackSize() {
         return material.getMaxStackSize();
+    }
+
+    @Override
+    public boolean isShulkerBox() {
+        return Tag.SHULKER_BOXES.isTagged(material);
     }
 
     private static String categoryOf(Material material) {

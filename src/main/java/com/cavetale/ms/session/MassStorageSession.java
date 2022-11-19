@@ -258,7 +258,14 @@ public final class MassStorageSession {
         if (fillingContainer) return;
         final InventoryType inventoryType = currentInventory.getType();
         switch (inventoryType) {
-        case BARREL: case CHEST: case DISPENSER: case DROPPER: case HOPPER: case SHULKER_BOX:
+        case BARREL: case CHEST: case DISPENSER: case DROPPER: case HOPPER:
+            break;
+        case SHULKER_BOX:
+            if (storable.isShulkerBox()) {
+                player.sendActionBar(text("Cannot put a shulker in a shulker!", RED));
+                player.playSound(player.getLocation(), BLOCK_CHEST_LOCKED, 1.0f, 1.25f);
+                return;
+            }
             break;
         default:
             player.sendActionBar(text("This container cannot be filled!", RED));

@@ -138,4 +138,8 @@ public sealed interface StorableItem permits UnstorableItem, StorableBukkitItem,
             return result;
         }
     }
+
+    default boolean isShulkerBox() {
+        return false;
+    }
 }

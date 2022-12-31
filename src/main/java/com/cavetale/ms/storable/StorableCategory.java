@@ -38,6 +38,8 @@ public enum StorableCategory implements StorableSet {
                 Material.AMETHYST_BLOCK,
                 Material.ANDESITE,
                 Material.BASALT,
+                // Material.BAMBOO_MOSAIC,
+                // Material.BAMBOO_PLANKS,
                 Material.BEEHIVE,
                 Material.BEE_NEST,
                 Material.BLACKSTONE,
@@ -296,8 +298,7 @@ public enum StorableCategory implements StorableSet {
             };
         }
         @Override protected List<Tag<Material>> getTags() {
-            return List.of(Tag.SIGNS,
-                           MaterialTags.SKULLS,
+            return List.of(MaterialTags.SKULLS,
                            Tag.RAILS,
                            Tag.ANVIL,
                            Tag.WOOL_CARPETS,
@@ -309,6 +310,13 @@ public enum StorableCategory implements StorableSet {
                 MytemsCategory.TETRIS,
                 MytemsCategory.FURNITURE,
             };
+        }
+    },
+    SIGNS(() -> new ItemStack(Material.OAK_SIGN)) {
+        @Override protected List<Tag<Material>> getTags() {
+            return List.of(Tag.ALL_SIGNS,
+                           // Tag.ALL_HANGING_SIGNS, // Throws exception
+                           Tag.SIGNS);
         }
     },
     VEGETATION(() -> new ItemStack(Material.POPPY)) {
@@ -437,7 +445,7 @@ public enum StorableCategory implements StorableSet {
             return CreativeCategory.REDSTONE;
         }
     },
-    TRANSPORTATION(() -> new ItemStack(Material.MINECART)) {
+    TRANSPORTATION(() -> new ItemStack(Material.OAK_BOAT)) {
         @Override protected Material[] getMaterials() {
             return new Material[] {
                 Material.MINECART,
@@ -456,6 +464,10 @@ public enum StorableCategory implements StorableSet {
                 Material.WARPED_FUNGUS_ON_A_STICK,
                 Material.ELYTRA,
             };
+        }
+        @Override protected List<Tag<Material>> getTags() {
+            return List.of(Tag.ITEMS_BOATS,
+                           Tag.ITEMS_CHEST_BOATS);
         }
         @Override protected CreativeCategory getCreativeCategory() {
             return CreativeCategory.TRANSPORTATION;
@@ -774,15 +786,28 @@ public enum StorableCategory implements StorableSet {
             };
         }
     },
+    GARDENING(Mytems.GOLDEN_SCYTHE::createIcon) {
+        @Override protected MytemsCategory[] getMytemsCategories() {
+            return new MytemsCategory[] {
+                MytemsCategory.GARDENING,
+            };
+        }
+    },
     COLLECTIBLES(Mytems.VOTE_CANDY::createIcon) {
         @Override protected MytemsCategory[] getMytemsCategories() {
             return new MytemsCategory[] {
                 MytemsCategory.COLLECTIBLES,
                 MytemsCategory.VOTE,
-                MytemsCategory.CURRENCY,
-                MytemsCategory.COIN,
-                MytemsCategory.ARMOR_PART,
                 MytemsCategory.TROPHY,
+            };
+        }
+    },
+    CURRENCY(Mytems.RUBY::createIcon) {
+        @Override protected MytemsCategory[] getMytemsCategories() {
+            return new MytemsCategory[] {
+                MytemsCategory.CURRENCY,
+                MytemsCategory.ARMOR_PART,
+                MytemsCategory.COIN,
             };
         }
     },

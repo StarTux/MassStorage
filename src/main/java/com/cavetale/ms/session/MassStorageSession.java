@@ -58,7 +58,6 @@ public final class MassStorageSession {
     @Getter @Setter private SessionAction action;
     private boolean stackingHand = false;
     private boolean fillingContainer = false;
-    @Getter @Setter private boolean informed;
     private List<StorableDisplay> storableDisplayList = new ArrayList<>();
 
     protected MassStorageSession(final MassStoragePlugin plugin, final UUID uuid) {

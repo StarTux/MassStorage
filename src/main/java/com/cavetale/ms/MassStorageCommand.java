@@ -58,12 +58,7 @@ public final class MassStorageCommand extends AbstractCommand<MassStoragePlugin>
         if (args.length == 0) {
             MassStorageSession session = plugin.sessions.require(player);
             session.getDialogue().openOverview(player);
-            if (!session.isInformed()) {
-                session.setInformed(true);
-                return false;
-            } else {
-                return true;
-            }
+            return true;
         }
         return search(player, args);
     }

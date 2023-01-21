@@ -759,6 +759,11 @@ public enum StorableCategory implements StorableSet {
         @Override protected List<Tag<Material>> getTags() {
             return List.of(MaterialTags.ARROWS);
         }
+        @Override protected MytemsCategory[] getMytemsCategories() {
+            return new MytemsCategory[] {
+                MytemsCategory.MOBSLAYERS,
+            };
+        }
     },
     MUSIC(Mytems.ANGELIC_HARP::createIcon) {
         @Override protected Material[] getMaterials() {

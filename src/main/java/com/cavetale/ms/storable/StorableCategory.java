@@ -299,17 +299,30 @@ public enum StorableCategory implements StorableSet {
         }
         @Override protected List<Tag<Material>> getTags() {
             return List.of(MaterialTags.SKULLS,
-                           Tag.RAILS,
-                           Tag.ANVIL,
-                           Tag.WOOL_CARPETS,
-                           Tag.BEDS,
-                           Tag.BANNERS);
+                           Tag.ANVIL);
         }
         @Override protected MytemsCategory[] getMytemsCategories() {
             return new MytemsCategory[] {
-                MytemsCategory.TETRIS,
                 MytemsCategory.FURNITURE,
             };
+        }
+    },
+    MULTICOLOR(() -> new ItemStack(Material.PINK_GLAZED_TERRACOTTA)) {
+        @Override protected List<Tag<Material>> getTags() {
+            return List.of(MaterialTags.CONCRETES,
+                           MaterialTags.CONCRETE_POWDER,
+                           MaterialTags.GLAZED_TERRACOTTA,
+                           MaterialTags.STAINED_GLASS,
+                           MaterialTags.STAINED_GLASS_PANES,
+                           MaterialTags.STAINED_TERRACOTTA,
+                           MaterialTags.TERRACOTTA,
+                           Tag.BANNERS,
+                           Tag.BEDS,
+                           Tag.CANDLES,
+                           Tag.SHULKER_BOXES,
+                           Tag.TERRACOTTA,
+                           Tag.WOOL,
+                           Tag.WOOL_CARPETS);
         }
     },
     SIGNS(() -> new ItemStack(Material.OAK_SIGN)) {
@@ -319,7 +332,7 @@ public enum StorableCategory implements StorableSet {
                            Tag.SIGNS);
         }
     },
-    VEGETATION(() -> new ItemStack(Material.POPPY)) {
+    VEGETATION(() -> new ItemStack(Material.FLOWERING_AZALEA)) {
         @Override protected Material[] getMaterials() {
             return new Material[] {
                 Material.AZALEA,
@@ -364,15 +377,24 @@ public enum StorableCategory implements StorableSet {
             };
         }
         @Override protected List<Tag<Material>> getTags() {
-            return List.of(Tag.SAPLINGS,
-                           Tag.FLOWERS,
-                           MaterialTags.CORAL,
-                           MaterialTags.CORAL_FANS);
+            return List.of(Tag.SAPLINGS);
         }
         @Override protected MytemsCategory[] getMytemsCategories() {
             return new MytemsCategory[] {
                 MytemsCategory.TREE_SEED,
             };
+        }
+    },
+    FLOWERS(() -> new ItemStack(Material.PEONY)) {
+        @Override protected List<Tag<Material>> getTags() {
+            return List.of(Tag.FLOWERS);
+        }
+    },
+    CORALS(() -> new ItemStack(Material.TUBE_CORAL)) {
+        @Override protected List<Tag<Material>> getTags() {
+            return List.of(MaterialTags.CORAL,
+                           MaterialTags.CORAL_FANS,
+                           MaterialTags.CORAL_BLOCKS);
         }
     },
     MINING(() -> new ItemStack(Material.DIAMOND)) {
@@ -467,7 +489,8 @@ public enum StorableCategory implements StorableSet {
         }
         @Override protected List<Tag<Material>> getTags() {
             return List.of(Tag.ITEMS_BOATS,
-                           Tag.ITEMS_CHEST_BOATS);
+                           Tag.ITEMS_CHEST_BOATS,
+                           Tag.RAILS);
         }
         @Override protected CreativeCategory getCreativeCategory() {
             return CreativeCategory.TRANSPORTATION;
@@ -615,7 +638,7 @@ public enum StorableCategory implements StorableSet {
                            MaterialTags.FISH_BUCKETS);
         }
     },
-    BREWING(Mytems.POTION_FLASK::createIcon) {
+    BREWING(() -> new ItemStack(Material.BREWING_STAND)) {
         @Override protected Material[] getMaterials() {
             return new Material[] {
                 Material.NETHER_WART,
@@ -688,56 +711,64 @@ public enum StorableCategory implements StorableSet {
             };
         }
     },
-    EQUIPMENT(() -> new ItemStack(Material.IRON_HELMET)) {
+    ARMOR(() -> new ItemStack(Material.IRON_HELMET)) {
         @Override protected Material[] getMaterials() {
             return new Material[] {
-                Material.BOW,
                 Material.CHAINMAIL_BOOTS,
                 Material.CHAINMAIL_CHESTPLATE,
                 Material.CHAINMAIL_HELMET,
                 Material.CHAINMAIL_LEGGINGS,
-                Material.CROSSBOW,
-                Material.DIAMOND_AXE,
                 Material.DIAMOND_BOOTS,
                 Material.DIAMOND_CHESTPLATE,
                 Material.DIAMOND_HELMET,
-                Material.DIAMOND_HOE,
                 Material.DIAMOND_HORSE_ARMOR,
                 Material.DIAMOND_LEGGINGS,
-                Material.DIAMOND_PICKAXE,
-                Material.DIAMOND_SHOVEL,
-                Material.DIAMOND_SWORD,
-                Material.GOLDEN_AXE,
                 Material.GOLDEN_BOOTS,
                 Material.GOLDEN_CHESTPLATE,
                 Material.GOLDEN_HELMET,
-                Material.GOLDEN_HOE,
                 Material.GOLDEN_HORSE_ARMOR,
                 Material.GOLDEN_LEGGINGS,
-                Material.GOLDEN_PICKAXE,
-                Material.GOLDEN_SHOVEL,
-                Material.GOLDEN_SWORD,
-                Material.IRON_AXE,
                 Material.IRON_BOOTS,
                 Material.IRON_CHESTPLATE,
                 Material.IRON_HELMET,
-                Material.IRON_HOE,
                 Material.IRON_HORSE_ARMOR,
                 Material.IRON_LEGGINGS,
-                Material.IRON_PICKAXE,
-                Material.IRON_SHOVEL,
-                Material.IRON_SWORD,
                 Material.LEATHER_BOOTS,
                 Material.LEATHER_CHESTPLATE,
                 Material.LEATHER_HELMET,
                 Material.LEATHER_HORSE_ARMOR,
                 Material.LEATHER_LEGGINGS,
-                Material.NETHERITE_AXE,
                 Material.NETHERITE_BOOTS,
                 Material.NETHERITE_CHESTPLATE,
                 Material.NETHERITE_HELMET,
-                Material.NETHERITE_HOE,
                 Material.NETHERITE_LEGGINGS,
+                Material.TURTLE_HELMET,
+            };
+        }
+    },
+    HANDHELD(() -> new ItemStack(Material.IRON_PICKAXE)) {
+        @Override protected Material[] getMaterials() {
+            return new Material[] {
+                Material.BOW,
+                Material.CROSSBOW,
+                Material.DIAMOND_AXE,
+                Material.DIAMOND_HOE,
+                Material.DIAMOND_PICKAXE,
+                Material.DIAMOND_SHOVEL,
+                Material.DIAMOND_SWORD,
+                Material.GOLDEN_AXE,
+                Material.GOLDEN_HOE,
+                Material.GOLDEN_PICKAXE,
+                Material.GOLDEN_SHOVEL,
+                Material.GOLDEN_SWORD,
+                Material.IRON_AXE,
+                Material.IRON_BOOTS,
+                Material.IRON_HOE,
+                Material.IRON_PICKAXE,
+                Material.IRON_SHOVEL,
+                Material.IRON_SWORD,
+                Material.NETHERITE_AXE,
+                Material.NETHERITE_HOE,
                 Material.NETHERITE_PICKAXE,
                 Material.NETHERITE_SHOVEL,
                 Material.NETHERITE_SWORD,
@@ -748,7 +779,6 @@ public enum StorableCategory implements StorableSet {
                 Material.STONE_SHOVEL,
                 Material.STONE_SWORD,
                 Material.TRIDENT,
-                Material.TURTLE_HELMET,
                 Material.WOODEN_AXE,
                 Material.WOODEN_HOE,
                 Material.WOODEN_PICKAXE,
@@ -790,6 +820,11 @@ public enum StorableCategory implements StorableSet {
                 MytemsCategory.FRIENDS,
             };
         }
+        @Override protected MytemsTag[] getMytemsTags() {
+            return new MytemsTag[] {
+                MytemsTag.UTILITY,
+            };
+        }
     },
     GARDENING(Mytems.GOLDEN_SCYTHE::createIcon) {
         @Override protected MytemsCategory[] getMytemsCategories() {
@@ -804,6 +839,7 @@ public enum StorableCategory implements StorableSet {
                 MytemsCategory.COLLECTIBLES,
                 MytemsCategory.VOTE,
                 MytemsCategory.TROPHY,
+                MytemsCategory.TETRIS,
             };
         }
     },

@@ -827,6 +827,11 @@ public enum StorableCategory implements StorableSet {
                 MytemsCategory.TETRIS,
             };
         }
+        @Override protected MytemsTag[] getMytemsTags() {
+            return new MytemsTag[] {
+                MytemsTag.COLLECTIBLES,
+            };
+        }
     },
     CURRENCY(Mytems.RUBY::createIcon) {
         @Override protected MytemsCategory[] getMytemsCategories() {

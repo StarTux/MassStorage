@@ -731,52 +731,79 @@ public enum StorableCategory implements StorableSet {
             };
         }
     },
-    HANDHELD(() -> new ItemStack(Material.IRON_PICKAXE)) {
+    TOOLS(() -> new ItemStack(Material.IRON_PICKAXE)) {
+        @Override protected List<Tag<Material>> getTags() {
+            return List.of(MaterialTags.AXES,
+                           MaterialTags.HOES,
+                           MaterialTags.PICKAXES,
+                           MaterialTags.SHOVELS);
+        }
         @Override protected Material[] getMaterials() {
             return new Material[] {
-                Material.BOW,
-                Material.CROSSBOW,
                 Material.DIAMOND_AXE,
                 Material.DIAMOND_HOE,
                 Material.DIAMOND_PICKAXE,
                 Material.DIAMOND_SHOVEL,
-                Material.DIAMOND_SWORD,
                 Material.GOLDEN_AXE,
                 Material.GOLDEN_HOE,
                 Material.GOLDEN_PICKAXE,
                 Material.GOLDEN_SHOVEL,
-                Material.GOLDEN_SWORD,
                 Material.IRON_AXE,
-                Material.IRON_BOOTS,
                 Material.IRON_HOE,
                 Material.IRON_PICKAXE,
                 Material.IRON_SHOVEL,
-                Material.IRON_SWORD,
                 Material.NETHERITE_AXE,
                 Material.NETHERITE_HOE,
                 Material.NETHERITE_PICKAXE,
                 Material.NETHERITE_SHOVEL,
-                Material.NETHERITE_SWORD,
-                Material.SHIELD,
                 Material.STONE_AXE,
                 Material.STONE_HOE,
                 Material.STONE_PICKAXE,
                 Material.STONE_SHOVEL,
-                Material.STONE_SWORD,
-                Material.TRIDENT,
                 Material.WOODEN_AXE,
                 Material.WOODEN_HOE,
                 Material.WOODEN_PICKAXE,
                 Material.WOODEN_SHOVEL,
-                Material.WOODEN_SWORD,
             };
-        }
-        @Override protected List<Tag<Material>> getTags() {
-            return List.of(MaterialTags.ARROWS);
         }
         @Override protected MytemsCategory[] getMytemsCategories() {
             return new MytemsCategory[] {
-                MytemsCategory.MOBSLAYERS,
+                MytemsCategory.UTILITY,
+                MytemsCategory.MOB_CATCHERS,
+                MytemsCategory.DIE,
+                MytemsCategory.PAINTBRUSH,
+                MytemsCategory.FRIENDS,
+            };
+        }
+        @Override protected MytemsTag[] getMytemsTags() {
+            return new MytemsTag[] {
+                MytemsTag.UTILITY,
+            };
+        }
+    },
+    COMBAT(() -> new ItemStack(Material.GOLDEN_SWORD)) {
+        @Override protected List<Tag<Material>> getTags() {
+            return List.of(MaterialTags.SWORDS,
+                           MaterialTags.BOWS,
+                           MaterialTags.ARROWS);
+        }
+        @Override protected Material[] getMaterials() {
+            return new Material[] {
+                Material.BOW,
+                Material.CROSSBOW,
+                Material.DIAMOND_SWORD,
+                Material.GOLDEN_SWORD,
+                Material.IRON_SWORD,
+                Material.NETHERITE_SWORD,
+                Material.SHIELD,
+                Material.STONE_SWORD,
+                Material.TRIDENT,
+                Material.WOODEN_SWORD,
+            };
+        }
+        @Override protected MytemsTag[] getMytemsTags() {
+            return new MytemsTag[] {
+                MytemsTag.COMBAT,
             };
         }
     },
@@ -792,22 +819,6 @@ public enum StorableCategory implements StorableSet {
         @Override protected MytemsTag[] getMytemsTags() {
             return new MytemsTag[] {
                 MytemsTag.MUSIC_ALL,
-            };
-        }
-    },
-    TOOLS(Mytems.ARMOR_STAND_EDITOR::createIcon) {
-        @Override protected MytemsCategory[] getMytemsCategories() {
-            return new MytemsCategory[] {
-                MytemsCategory.UTILITY,
-                MytemsCategory.MOB_CATCHERS,
-                MytemsCategory.DIE,
-                MytemsCategory.PAINTBRUSH,
-                MytemsCategory.FRIENDS,
-            };
-        }
-        @Override protected MytemsTag[] getMytemsTags() {
-            return new MytemsTag[] {
-                MytemsTag.UTILITY,
             };
         }
     },

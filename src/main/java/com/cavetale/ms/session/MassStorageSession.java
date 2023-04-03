@@ -97,10 +97,15 @@ public final class MassStorageSession {
                 throw new IllegalStateException("Insert failed: " + playerRow);
             }
         }
+        List<SQLStorable> invalidRows = new ArrayList<>();
         for (SQLStorable row : plugin.getDatabase().find(SQLStorable.class).eq("owner", uuid).findList()) {
             StorableItem storable = plugin.getIndex().get(row);
             if (!storable.isValid()) {
-                plugin.getLogger().warning("Invalid row: " + row);
+                if (row.getAmount() == 0) {
+                    invalidRows.add(row);
+                } else {
+                    plugin.getLogger().severe("Invalid row: " + row);
+                }
                 continue;
             }
             int index = storable.getIndex();
@@ -108,6 +113,10 @@ public final class MassStorageSession {
             amounts[index] = row.getAmount();
             autos[index] = row.isAuto();
             favs[index] = row.getFavorite();
+        }
+        if (!invalidRows.isEmpty()) {
+            int count = plugin.getDatabase().delete(invalidRows);
+            plugin.getLogger().info("Deleted " + count + " invalid rows: " + uuid);
         }
         List<SQLStorable> newRows = new ArrayList<>();
         for (int index = 0; index < ids.length; index += 1) {

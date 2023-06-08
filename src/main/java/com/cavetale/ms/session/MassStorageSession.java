@@ -21,6 +21,8 @@ import lombok.Getter;
 import lombok.Setter;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
+import org.bukkit.GameMode;
+import org.bukkit.Material;
 import org.bukkit.Tag;
 import org.bukkit.block.Block;
 import org.bukkit.block.ShulkerBox;
@@ -472,28 +474,43 @@ public final class MassStorageSession {
 
     protected void stackHand(Player player, EquipmentSlot hand, Runnable callback) {
         if (stackingHand) return;
+        final GameMode gameMode = player.getGameMode();
+        if (gameMode != GameMode.SURVIVAL && gameMode != GameMode.ADVENTURE) return;
         PlayerInventory inventory = player.getInventory();
         int index = hand == EquipmentSlot.HAND ? player.getInventory().getHeldItemSlot() : 40;
         final ItemStack item = inventory.getItem(index);
         if (item == null || item.getType().isAir()) return;
-        StorableItem storable = plugin.getIndex().get(item);
+        final StorableItem storable = plugin.getIndex().get(item);
         if (storable == null) return;
         if (!storable.canStack(item)) return;
         if (getAmount(storable) == 0) return;
         final int oldAmount = item.getAmount();
-        if (oldAmount <= 1 || storable.getMaxStackSize() <= 1) return;
+        final Material itemMaterial = item.getType();
+        final Material insertMaterial = switch (itemMaterial) {
+        case POTION -> Material.GLASS_BOTTLE;
+        case MILK_BUCKET -> Material.BUCKET;
+        case MUSHROOM_STEW, RABBIT_STEW, SUSPICIOUS_STEW, BEETROOT_SOUP -> Material.BOWL;
+        default -> null;
+        };
         stackingHand = true;
         Bukkit.getScheduler().runTask(plugin, () -> {
                 stackingHand = false;
-                if (!player.isOnline() || player.isDead()) return;
+                if (!player.isOnline() || player.isDead() || player.getGameMode() != gameMode) return;
                 final ItemStack item2 = player.getInventory().getItem(index);
                 final int amount;
                 if (item2 == null || item2.getType().isAir()) {
-                    amount = Math.min(getAmount(storable), oldAmount);
+                    amount = Math.min(getAmount(storable), itemMaterial.getMaxStackSize());
+                } else if (insertMaterial != null && item2.getType() == insertMaterial) {
+                    // Remove empty bowl, bucket, or bottle
+                    final StorableItem storable2 = plugin.getIndex().get(item2);
+                    if (storable2 == null || !storable2.canStack(item2)) return;
+                    insert(storable2, item2.getAmount());
+                    player.getInventory().setItem(index, null);
+                    amount = Math.min(getAmount(storable), itemMaterial.getMaxStackSize());
                 } else {
                     if (!storable.canStack(item2)) return;
                     if (item2.getAmount() == oldAmount) return;
-                    amount = Math.min(getAmount(storable), oldAmount - item2.getAmount());
+                    amount = Math.min(getAmount(storable), item.getMaxStackSize() - item2.getAmount());
                 }
                 if (amount <= 0) return;
                 stackingHand = true;
@@ -501,7 +518,7 @@ public final class MassStorageSession {
                         stackingHand = false;
                         if (!success) return;
                         final ItemStack item3 = player.getInventory().getItem(index);
-                        if (!player.isOnline() || player.isDead()) {
+                        if (!player.isOnline() || player.isDead() || player.getGameMode() != gameMode) {
                             insertAsync(storable, amount, null);
                         } else if (item3 == null || item3.getType().isAir()) {
                             player.getInventory().setItem(index, storable.createItemStack(amount));
@@ -510,7 +527,7 @@ public final class MassStorageSession {
                             if (!storable.canStack(item3)) {
                                 given = 0;
                             } else {
-                                given = Math.min(amount, oldAmount - item3.getAmount());
+                                given = Math.min(amount, itemMaterial.getMaxStackSize() - item3.getAmount());
                                 item3.add(given);
                             }
                             if (given < amount) {

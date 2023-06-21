@@ -31,6 +31,7 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerItemConsumeEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.inventory.CraftingInventory;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -148,6 +149,9 @@ public final class MassStorageSessions implements Listener {
         if (!checkGameMode(player)) return;
         if (event.getView().getType() == InventoryType.CRAFTING && event.getClick() == ClickType.CONTROL_DROP && event.getSlotType() != SlotType.RESULT) {
             ifAssistEnabled(player, session -> {
+                    if (event.getSlotType() == SlotType.CRAFTING && event.getInventory() instanceof CraftingInventory inventory) {
+                        inventory.setResult(null);
+                    }
                     ItemStack item = event.getCurrentItem();
                     session.insertAndSubtract(List.of(item), ASSIST_CONTROL_DROP, result -> result.feedback(player));
                     event.setCancelled(true);

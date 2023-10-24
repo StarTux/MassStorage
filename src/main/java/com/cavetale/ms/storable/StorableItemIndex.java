@@ -82,6 +82,8 @@ public final class StorableItemIndex {
         }
         for (StorablePotion.Type type : StorablePotion.Type.values()) {
             for (PotionType potionType : PotionType.values()) {
+                if (potionType.name().startsWith("LONG_")) continue;
+                if (potionType.name().startsWith("STRONG_")) continue;
                 List<StorablePotion> potionList = new ArrayList<>(3);
                 potionList.add(null);
                 potionList.add(null);

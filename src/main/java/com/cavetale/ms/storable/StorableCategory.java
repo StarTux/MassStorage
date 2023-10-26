@@ -21,7 +21,6 @@ import org.bukkit.inventory.CreativeCategory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.EnchantmentStorageMeta;
 import org.bukkit.inventory.meta.PotionMeta;
-import org.bukkit.potion.PotionData;
 import org.bukkit.potion.PotionType;
 import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.format.NamedTextColor.*;
@@ -658,7 +657,7 @@ public enum StorableCategory implements StorableSet {
     POTIONS(() -> {
             ItemStack icon = new ItemStack(Material.POTION);
             icon.editMeta(meta -> {
-                    ((PotionMeta) meta).setBasePotionData(new PotionData(PotionType.FIRE_RESISTANCE));
+                    ((PotionMeta) meta).setBasePotionType(PotionType.FIRE_RESISTANCE);
                 });
             return icon;
         }) {

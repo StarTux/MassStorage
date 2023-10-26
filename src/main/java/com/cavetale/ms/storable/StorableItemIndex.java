@@ -16,7 +16,6 @@ import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.EnchantmentStorageMeta;
 import org.bukkit.inventory.meta.PotionMeta;
-import org.bukkit.potion.PotionData;
 import org.bukkit.potion.PotionType;
 
 public final class StorableItemIndex {
@@ -25,7 +24,7 @@ public final class StorableItemIndex {
     private final Map<StorageType, Map<String, StorableItem>> sqlNameMap = new EnumMap<>(StorageType.class);
     protected final Map<Material, StorableBukkitItem> bukkitIndex = new EnumMap<>(Material.class);
     protected final Map<Mytems, StorableMytemsItem> mytemsIndex = new EnumMap<>(Mytems.class);
-    private final Map<StorablePotion.Type, Map<PotionType, List<StorablePotion>>> potionIndex = new EnumMap<>(StorablePotion.Type.class);
+    private final Map<StorablePotion.Type, Map<PotionType, StorablePotion>> potionIndex = new EnumMap<>(StorablePotion.Type.class);
     private final Map<Enchantment, List<StorableEnchantedBook>> enchantedBookIndex = new IdentityHashMap<>();
     private static final Set<Material> MATERIAL_BLACKLIST = Set.of(new Material[] {
             Material.AIR,
@@ -82,31 +81,10 @@ public final class StorableItemIndex {
         }
         for (StorablePotion.Type type : StorablePotion.Type.values()) {
             for (PotionType potionType : PotionType.values()) {
-                if (potionType.name().startsWith("LONG_")) continue;
-                if (potionType.name().startsWith("STRONG_")) continue;
-                List<StorablePotion> potionList = new ArrayList<>(3);
-                potionList.add(null);
-                potionList.add(null);
-                potionList.add(null);
-                potionIndex.computeIfAbsent(type, t -> new EnumMap<>(PotionType.class)).put(potionType, potionList);
-                for (int i = 0; i < 3; i += 1) {
-                    final PotionData potionData;
-                    switch (i) {
-                    case 1:
-                        if (!potionType.isExtendable()) continue;
-                        potionData = new PotionData(potionType, true, false);
-                        break;
-                    case 2:
-                        if (!potionType.isUpgradeable()) continue;
-                        potionData = new PotionData(potionType, false, true);
-                        break;
-                    default: potionData = new PotionData(potionType, false, false);
-                    }
-                    StorablePotion value = new StorablePotion(type, potionData, all.size());
-                    potionList.set(i, value);
-                    sqlNameMap.get(value.getStorageType()).put(value.getSqlName(), value);
-                    all.add(value);
-                }
+                StorablePotion storablePotion = new StorablePotion(type, potionType, all.size());
+                potionIndex.computeIfAbsent(type, t -> new EnumMap<>(PotionType.class)).put(potionType, storablePotion);
+                sqlNameMap.get(storablePotion.getStorageType()).put(storablePotion.getSqlName(), storablePotion);
+                all.add(storablePotion);
             }
         }
         for (Enchantment enchantment : Enchantment.values()) {
@@ -143,9 +121,7 @@ public final class StorableItemIndex {
         // Potion
         StorablePotion.Type storablePotionType = StorablePotion.Type.get(itemStack.getType());
         if (storablePotionType != null && itemStack.hasItemMeta() && itemStack.getItemMeta() instanceof PotionMeta potionMeta) {
-            PotionData potionData = potionMeta.getBasePotionData();
-            List<StorablePotion> list = potionIndex.get(storablePotionType).get(potionData.getType());
-            StorablePotion storablePotion = list.get(potionData.isExtended() ? 1 : potionData.isUpgraded() ? 2 : 0);
+            StorablePotion storablePotion = potionIndex.get(storablePotionType).get(potionMeta.getBasePotionType());
             if (storablePotion != null && storablePotion.canStore(itemStack)) return storablePotion;
         }
         // Enchanted Book

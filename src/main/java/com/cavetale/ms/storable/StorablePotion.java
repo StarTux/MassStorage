@@ -1,15 +1,13 @@
 package com.cavetale.ms.storable;
 
 import com.cavetale.core.item.ItemKinds;
-import com.cavetale.core.util.Json;
-import java.util.Map;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.PotionMeta;
-import org.bukkit.potion.PotionData;
+import org.bukkit.potion.PotionType;
 import static com.cavetale.core.util.CamelCase.toCamelCase;
 import static net.kyori.adventure.text.Component.empty;
 import static net.kyori.adventure.text.Component.join;
@@ -35,9 +33,7 @@ import static net.kyori.adventure.text.serializer.plain.PlainTextComponentSerial
  * - Extended ("long_")
  *
  * Uniqueness is provided because each material has its own
- * StorageType.  Thus the sqlName must contain the PotionData.  Bukkit
- * does not provide the key for each PotionType, so we have to get it
- * from the serialized item.
+ * StorageType.
  */
 public final class StorablePotion implements StorableItem {
     @Getter private final Type type;
@@ -67,25 +63,25 @@ public final class StorablePotion implements StorableItem {
         }
     }
 
-    protected StorablePotion(final Type type, final PotionData potionData, final int index) {
+    protected StorablePotion(final Type type, final PotionType potionType, final int index) {
         this.type = type;
         this.prototype = new ItemStack(type.material);
         prototype.editMeta(meta -> {
                 if (!(meta instanceof PotionMeta potionMeta)) {
                     throw new IllegalStateException(meta.getClass().getName());
                 }
-                potionMeta.setBasePotionData(potionData);
+                potionMeta.setBasePotionType(potionType);
             });
         this.icon = ItemKinds.icon(prototype);
-        String serialized = prototype.getItemMeta().getAsString();
-        Map<?, ?> map = Json.deserialize(serialized, Map.class);
-        String potionName = map.get("Potion").toString();
-        this.sqlName = potionName.substring(potionName.indexOf(":") + 1);
+        this.sqlName = potionType.getKey().getKey();
+        com.cavetale.ms.MassStoragePlugin.getInstance().getLogger().info("POTION " + sqlName);
         this.index = index;
+        final boolean isLong = potionType.name().startsWith("LONG_");
+        final boolean strong = potionType.name().startsWith("STRONG_");
         this.displayName = join(noSeparators(),
                                 translatable(prototype),
-                                (potionData.isUpgraded() ? text(" II") : empty()),
-                                (potionData.isExtended() ? text(" +") : empty()));
+                                (strong ? text(" II") : empty()),
+                                (isLong ? text(" +") : empty()));
         this.name = plainText().serialize(displayName);
         this.category = toCamelCase(" ", type);
     }

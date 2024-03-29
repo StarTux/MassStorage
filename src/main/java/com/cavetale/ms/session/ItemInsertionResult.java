@@ -29,9 +29,9 @@ import static net.kyori.adventure.text.format.TextDecoration.*;
 import static org.bukkit.Sound.*;
 import static org.bukkit.SoundCategory.*;
 
-public final record ItemInsertionResult(ItemInsertionCause cause,
-                                        List<ItemStack> rejects,
-                                        Map<StorableItem, Integer> storedItems) {
+public record ItemInsertionResult(ItemInsertionCause cause,
+                                  List<ItemStack> rejects,
+                                  Map<StorableItem, Integer> storedItems) {
     public int getStoredAmount(StorableItem item) {
         return storedItems().getOrDefault(item, 0);
     }

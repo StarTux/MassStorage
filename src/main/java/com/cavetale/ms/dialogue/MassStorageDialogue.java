@@ -15,7 +15,6 @@ import com.cavetale.ms.storable.StorableSet;
 import com.cavetale.ms.util.Gui;
 import com.cavetale.mytems.Mytems;
 import com.cavetale.mytems.item.font.Glyph;
-import com.cavetale.mytems.util.Items;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -33,6 +32,7 @@ import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import static com.cavetale.core.font.Unicode.tiny;
 import static com.cavetale.ms.session.ItemInsertionCause.*;
+import static com.cavetale.mytems.util.Items.tooltip;
 import static net.kyori.adventure.text.Component.empty;
 import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.Component.textOfChildren;
@@ -151,12 +151,12 @@ public final class MassStorageDialogue {
                     meta.addItemFlags(ItemFlag.values());
                     String storablesFormat = AMOUNT_FORMAT.format(storables.size());
                     String amountFormat = AMOUNT_FORMAT.format(amounts.getOrDefault(item, 0));
-                    Items.text(meta, List.of(item.getTitle(),
-                                             text("Group", DARK_GRAY, ITALIC),
-                                             textOfChildren(text(tiny("items "), GRAY), text(storablesFormat, WHITE)),
-                                             textOfChildren(text(tiny("stored "), GRAY), text(amountFormat, WHITE)),
-                                             empty(),
-                                             textOfChildren(Mytems.MOUSE_LEFT, text(" Open Group Menu", GRAY))));
+                    tooltip(meta, List.of(item.getTitle(),
+                                          text("Group", DARK_GRAY, ITALIC),
+                                          textOfChildren(text(tiny("items "), GRAY), text(storablesFormat, WHITE)),
+                                          textOfChildren(text(tiny("stored "), GRAY), text(amountFormat, WHITE)),
+                                          empty(),
+                                          textOfChildren(Mytems.MOUSE_LEFT, text(" Open Group Menu", GRAY))));
                 });
             gui.setItem(guiIndex, icon, click -> {
                     if (click.isLeftClick()) {
@@ -181,17 +181,16 @@ public final class MassStorageDialogue {
                 openInsert(player);
                 click(player);
             });
-        ItemStack dumpIcon = Items
-            .text(new ItemStack(Material.HOPPER_MINECART),
-                  List.of(text("Dump inventory", LIGHT_PURPLE),
-                          text("/ms dump", GREEN),
-                          text(tiny("Try to store any"), GRAY),
-                          text(tiny("item in your"), GRAY),
-                          text(tiny("inventory except"), GRAY),
-                          text(tiny("for the hotbar"), GRAY),
-                          text(tiny("and armor slots."), GRAY),
-                          empty(),
-                          textOfChildren(Mytems.MOUSE_LEFT, text(" Dump now", GRAY))));
+        ItemStack dumpIcon = tooltip(new ItemStack(Material.HOPPER_MINECART),
+                                     List.of(text("Dump inventory", LIGHT_PURPLE),
+                                             text("/ms dump", GREEN),
+                                             text(tiny("Try to store any"), GRAY),
+                                             text(tiny("item in your"), GRAY),
+                                             text(tiny("inventory except"), GRAY),
+                                             text(tiny("for the hotbar"), GRAY),
+                                             text(tiny("and armor slots."), GRAY),
+                                             empty(),
+                                             textOfChildren(Mytems.MOUSE_LEFT, text(" Dump now", GRAY))));
         gui.setItem(3, dumpIcon, click -> {
                 if (!click.isLeftClick()) return;
                 List<ItemStack> items = new ArrayList<>();
@@ -245,7 +244,7 @@ public final class MassStorageDialogue {
                 click(player);
             });
         if (state.pageIndex > 0) {
-            gui.setItem(0, Items.text(Mytems.ARROW_LEFT.createIcon(), List.of(text("Page " + state.pageIndex, GRAY))), click -> {
+            gui.setItem(0, tooltip(Mytems.ARROW_LEFT.createIcon(), List.of(text("Page " + state.pageIndex, GRAY))), click -> {
                     if (!click.isLeftClick()) return;
                     state.pageIndex -= 1;
                     open(player);
@@ -253,7 +252,7 @@ public final class MassStorageDialogue {
                 });
         }
         if (state.pageIndex < pageCount - 1) {
-            gui.setItem(8, Items.text(Mytems.ARROW_RIGHT.createIcon(), List.of(text("Page " + (state.pageIndex + 2), GRAY))), click -> {
+            gui.setItem(8, tooltip(Mytems.ARROW_RIGHT.createIcon(), List.of(text("Page " + (state.pageIndex + 2), GRAY))), click -> {
                     if (!click.isLeftClick()) return;
                     state.pageIndex += 1;
                     open(player);
@@ -317,7 +316,7 @@ public final class MassStorageDialogue {
                             tooltip.add(textOfChildren(Mytems.SHIFT_KEY, Mytems.MOUSE_RIGHT, text(" Fill inventory", GRAY)));
                         }
                     }
-                    Items.text(meta, tooltip);
+                    tooltip(meta, tooltip);
                 });
             gui.setItem(guiIndex, icon, click -> {
                     switch (click.getClick()) {
@@ -343,7 +342,7 @@ public final class MassStorageDialogue {
             if (it == itemSortOrder) {
                 builder.highlightSlot(it.slot, GRAY);
             }
-            gui.setItem(it.slot, Items.text(it.createIcon(), List.of(text(it.description, GRAY))), click -> {
+            gui.setItem(it.slot, tooltip(it.createIcon(), List.of(text(it.description, GRAY))), click -> {
                     if (!click.isLeftClick()) return;
                     if (it == itemSortOrder) {
                         fail(player);
@@ -356,7 +355,7 @@ public final class MassStorageDialogue {
                 });
         }
         if (state.pageIndex > 0) {
-            gui.setItem(0, Items.text(Mytems.ARROW_LEFT.createIcon(), List.of(text("Page " + state.pageIndex, GRAY))), click -> {
+            gui.setItem(0, tooltip(Mytems.ARROW_LEFT.createIcon(), List.of(text("Page " + state.pageIndex, GRAY))), click -> {
                     if (!click.isLeftClick()) return;
                     state.pageIndex -= 1;
                     open(player);
@@ -364,7 +363,7 @@ public final class MassStorageDialogue {
                 });
         }
         if (state.pageIndex < pageCount - 1) {
-            gui.setItem(8, Items.text(Mytems.ARROW_RIGHT.createIcon(), List.of(text("Page " + (state.pageIndex + 2), GRAY))), click -> {
+            gui.setItem(8, tooltip(Mytems.ARROW_RIGHT.createIcon(), List.of(text("Page " + (state.pageIndex + 2), GRAY))), click -> {
                     if (!click.isLeftClick()) return;
                     state.pageIndex += 1;
                     open(player);
@@ -470,14 +469,14 @@ public final class MassStorageDialogue {
                 if (!click.isLeftClick()) return;
                 clickRetrieve(player, gui, storable, stackSize * 4 * 9);
             });
-        ItemStack fillIcon = Items.text(new ItemStack(Material.CHEST),
-                                        List.of(textOfChildren(Mytems.MOUSE_LEFT, text(" Fill container", GRAY)),
-                                                storedLine,
-                                                text(tiny("Menu will close."), GRAY),
-                                                text(tiny("Then, click a"), GRAY),
-                                                text(tiny("container in your"), GRAY),
-                                                text(tiny("world to fill it"), GRAY),
-                                                text(tiny("with this item."), GRAY)));
+        ItemStack fillIcon = tooltip(new ItemStack(Material.CHEST),
+                                     List.of(textOfChildren(Mytems.MOUSE_LEFT, text(" Fill container", GRAY)),
+                                             storedLine,
+                                             text(tiny("Menu will close."), GRAY),
+                                             text(tiny("Then, click a"), GRAY),
+                                             text(tiny("container in your"), GRAY),
+                                             text(tiny("world to fill it"), GRAY),
+                                             text(tiny("with this item."), GRAY)));
         gui.setItem(9 * dropLine + 3, fillIcon, click -> {
                 if (!click.isLeftClick()) return;
                 if (session.getAmount(storable) == 0) {
@@ -501,7 +500,7 @@ public final class MassStorageDialogue {
             ItemStack icon = isFav ? fav.createIcon() : fav.createDisabledIcon();
             List<Component> tooltip = List.of(textOfChildren((isFav ? text("Remove from ", RED) : text("Put in ", GREEN)),
                                                              fav.getDisplayName()));
-            gui.setItem(fav.guiSlot, Items.text(icon, tooltip), click -> {
+            gui.setItem(fav.guiSlot, tooltip(icon, tooltip), click -> {
                     if (!click.isLeftClick()) return;
                     session.setFavoriteSlot(storable, isFav ? null : fav);
                     open(player);

@@ -20,7 +20,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryType.SlotType;
@@ -221,12 +220,18 @@ public final class MassStorageSessions implements Listener {
         session.onPlayerHud(event);
     }
 
-    @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
-    private void onBlockPlace(BlockPlaceEvent event) {
+    @EventHandler(ignoreCancelled = false, priority = EventPriority.MONITOR)
+    private void onPlayerInteract(PlayerInteractEvent event) {
+        switch (event.getAction()) {
+        case RIGHT_CLICK_BLOCK:
+        case RIGHT_CLICK_AIR:
+            break;
+        default: return;
+        }
         Player player = event.getPlayer();
         if (!checkGameMode(player)) return;
         ifAssistEnabled(player, session -> {
-                session.stackHand(player, event.getHand(), () -> player.updateInventory());
+                session.stackHand(player, event.getHand(), () -> { });
             });
     }
 

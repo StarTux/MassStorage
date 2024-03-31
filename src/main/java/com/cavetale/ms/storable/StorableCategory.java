@@ -36,9 +36,10 @@ public enum StorableCategory implements StorableSet {
             return new Material[] {
                 Material.AMETHYST_BLOCK,
                 Material.ANDESITE,
+                Material.BAMBOO_BLOCK,
+                Material.BAMBOO_MOSAIC,
+                Material.BAMBOO_PLANKS,
                 Material.BASALT,
-                // Material.BAMBOO_MOSAIC,
-                // Material.BAMBOO_PLANKS,
                 Material.BEEHIVE,
                 Material.BEE_NEST,
                 Material.BLACKSTONE,
@@ -52,6 +53,7 @@ public enum StorableCategory implements StorableSet {
                 Material.CALCITE,
                 Material.CARTOGRAPHY_TABLE,
                 Material.CARVED_PUMPKIN,
+                Material.CHISELED_BOOKSHELF,
                 Material.CHISELED_DEEPSLATE,
                 Material.CHISELED_NETHER_BRICKS,
                 Material.CHISELED_POLISHED_BLACKSTONE,
@@ -179,10 +181,13 @@ public enum StorableCategory implements StorableSet {
                 Material.SPONGE,
                 Material.STONE,
                 Material.STONE_BRICKS,
+                Material.STRIPPED_BAMBOO_BLOCK,
                 Material.STRIPPED_CRIMSON_HYPHAE,
                 Material.STRIPPED_CRIMSON_STEM,
                 Material.STRIPPED_WARPED_HYPHAE,
                 Material.STRIPPED_WARPED_STEM,
+                Material.SUSPICIOUS_GRAVEL,
+                Material.SUSPICIOUS_SAND,
                 Material.TERRACOTTA,
                 Material.TINTED_GLASS,
                 Material.TUFF,
@@ -208,6 +213,11 @@ public enum StorableCategory implements StorableSet {
                            MaterialTags.CORAL_BLOCKS,
                            MaterialTags.CUT_COPPER_BLOCKS,
                            MaterialTags.FULL_COPPER_BLOCKS);
+        }
+        @Override protected Mytems[] getMytems() {
+            return new Mytems[] {
+                Mytems.NETHERITE_PARITY_TABLE,
+            };
         }
     },
     SLABS(() -> new ItemStack(Material.COBBLESTONE_SLAB)) {
@@ -275,6 +285,7 @@ public enum StorableCategory implements StorableSet {
                 Material.CHAIN,
                 Material.COBWEB,
                 Material.COMPOSTER,
+                Material.DECORATED_POT,
                 Material.DRAGON_EGG,
                 Material.DRAGON_HEAD,
                 Material.ENCHANTING_TABLE,
@@ -291,6 +302,7 @@ public enum StorableCategory implements StorableSet {
                 Material.PAINTING,
                 Material.POINTED_DRIPSTONE,
                 Material.SCULK_VEIN,
+                Material.SNIFFER_EGG,
                 Material.SNOW,
                 Material.STONECUTTER,
                 Material.TURTLE_EGG,
@@ -358,6 +370,7 @@ public enum StorableCategory implements StorableSet {
                 Material.MOSS_CARPET,
                 Material.NETHER_SPROUTS,
                 Material.NETHER_WART,
+                Material.PITCHER_POD,
                 Material.PUMPKIN_SEEDS,
                 Material.RED_MUSHROOM,
                 Material.RED_MUSHROOM_BLOCK,
@@ -368,6 +381,7 @@ public enum StorableCategory implements StorableSet {
                 Material.SPORE_BLOSSOM,
                 Material.SUGAR_CANE,
                 Material.TALL_GRASS,
+                Material.TORCHFLOWER_SEEDS,
                 Material.TWISTING_VINES,
                 Material.VINE,
                 Material.WARPED_FUNGUS,
@@ -439,6 +453,7 @@ public enum StorableCategory implements StorableSet {
         @Override protected Material[] getMaterials() {
             return new Material[] {
                 Material.ACTIVATOR_RAIL,
+                Material.CALIBRATED_SCULK_SENSOR,
                 Material.COMPARATOR,
                 Material.DAYLIGHT_DETECTOR,
                 Material.DETECTOR_RAIL,
@@ -561,7 +576,6 @@ public enum StorableCategory implements StorableSet {
                 Material.CLAY_BALL,
                 Material.CLOCK,
                 Material.COMPASS,
-                Material.CREEPER_BANNER_PATTERN,
                 Material.DISC_FRAGMENT_5,
                 Material.ECHO_SHARD,
                 Material.EGG,
@@ -575,9 +589,7 @@ public enum StorableCategory implements StorableSet {
                 Material.FISHING_ROD,
                 Material.FLINT,
                 Material.FLINT_AND_STEEL,
-                Material.FLOWER_BANNER_PATTERN,
                 Material.GLASS_BOTTLE,
-                Material.GLOBE_BANNER_PATTERN,
                 Material.GLOWSTONE_DUST,
                 Material.GOAT_HORN,
                 Material.GUNPOWDER,
@@ -589,14 +601,12 @@ public enum StorableCategory implements StorableSet {
                 Material.LEATHER,
                 Material.MAP,
                 Material.MEDIUM_AMETHYST_BUD,
-                Material.MOJANG_BANNER_PATTERN,
                 Material.NAME_TAG,
                 Material.NAUTILUS_SHELL,
                 Material.NETHER_BRICK,
                 Material.NETHER_STAR,
                 Material.PAPER,
                 Material.PHANTOM_MEMBRANE,
-                Material.PIGLIN_BANNER_PATTERN,
                 Material.POPPED_CHORUS_FRUIT,
                 Material.PRISMARINE_CRYSTALS,
                 Material.PRISMARINE_SHARD,
@@ -605,7 +615,6 @@ public enum StorableCategory implements StorableSet {
                 Material.SCUTE,
                 Material.SHEARS,
                 Material.SHULKER_SHELL,
-                Material.SKULL_BANNER_PATTERN,
                 Material.SLIME_BALL,
                 Material.SMALL_AMETHYST_BUD,
                 Material.SNOWBALL,
@@ -763,6 +772,7 @@ public enum StorableCategory implements StorableSet {
                 Material.WOODEN_HOE,
                 Material.WOODEN_PICKAXE,
                 Material.WOODEN_SHOVEL,
+                Material.BRUSH,
             };
         }
         @Override protected MytemsCategory[] getMytemsCategories() {
@@ -835,6 +845,7 @@ public enum StorableCategory implements StorableSet {
                 MytemsCategory.VOTE,
                 MytemsCategory.TROPHY,
                 MytemsCategory.TETRIS,
+                MytemsCategory.CHESS,
             };
         }
         @Override protected MytemsTag[] getMytemsTags() {
@@ -875,6 +886,58 @@ public enum StorableCategory implements StorableSet {
         @Override protected MytemsTag[] getMytemsTags() {
             return new MytemsTag[] {
                 MytemsTag.COSTUME,
+            };
+        }
+    },
+    COMPONENTS(() -> new ItemStack(Material.COAST_ARMOR_TRIM_SMITHING_TEMPLATE)) {
+        @Override protected Material[] getMaterials() {
+            return new Material[] {
+                // Banner Patterns
+                Material.CREEPER_BANNER_PATTERN,
+                Material.GLOBE_BANNER_PATTERN,
+                Material.FLOWER_BANNER_PATTERN,
+                Material.SKULL_BANNER_PATTERN,
+                Material.PIGLIN_BANNER_PATTERN,
+                Material.MOJANG_BANNER_PATTERN,
+                // Pottery Sherds
+                Material.ANGLER_POTTERY_SHERD,
+                Material.ARCHER_POTTERY_SHERD,
+                Material.ARMS_UP_POTTERY_SHERD,
+                Material.BLADE_POTTERY_SHERD,
+                Material.BREWER_POTTERY_SHERD,
+                Material.BURN_POTTERY_SHERD,
+                Material.DANGER_POTTERY_SHERD,
+                Material.EXPLORER_POTTERY_SHERD,
+                Material.FRIEND_POTTERY_SHERD,
+                Material.HEART_POTTERY_SHERD,
+                Material.HEARTBREAK_POTTERY_SHERD,
+                Material.HOWL_POTTERY_SHERD,
+                Material.MINER_POTTERY_SHERD,
+                Material.MOURNER_POTTERY_SHERD,
+                Material.PLENTY_POTTERY_SHERD,
+                Material.PRIZE_POTTERY_SHERD,
+                Material.SHEAF_POTTERY_SHERD,
+                Material.SHELTER_POTTERY_SHERD,
+                Material.SKULL_POTTERY_SHERD,
+                Material.SNORT_POTTERY_SHERD,
+                // Smithing Templates
+                Material.COAST_ARMOR_TRIM_SMITHING_TEMPLATE,
+                Material.DUNE_ARMOR_TRIM_SMITHING_TEMPLATE,
+                Material.EYE_ARMOR_TRIM_SMITHING_TEMPLATE,
+                Material.HOST_ARMOR_TRIM_SMITHING_TEMPLATE,
+                Material.NETHERITE_UPGRADE_SMITHING_TEMPLATE,
+                Material.RAISER_ARMOR_TRIM_SMITHING_TEMPLATE,
+                Material.RIB_ARMOR_TRIM_SMITHING_TEMPLATE,
+                Material.SENTRY_ARMOR_TRIM_SMITHING_TEMPLATE,
+                Material.SHAPER_ARMOR_TRIM_SMITHING_TEMPLATE,
+                Material.SILENCE_ARMOR_TRIM_SMITHING_TEMPLATE,
+                Material.SNOUT_ARMOR_TRIM_SMITHING_TEMPLATE,
+                Material.SPIRE_ARMOR_TRIM_SMITHING_TEMPLATE,
+                Material.TIDE_ARMOR_TRIM_SMITHING_TEMPLATE,
+                Material.VEX_ARMOR_TRIM_SMITHING_TEMPLATE,
+                Material.WARD_ARMOR_TRIM_SMITHING_TEMPLATE,
+                Material.WAYFINDER_ARMOR_TRIM_SMITHING_TEMPLATE,
+                Material.WILD_ARMOR_TRIM_SMITHING_TEMPLATE,
             };
         }
     },

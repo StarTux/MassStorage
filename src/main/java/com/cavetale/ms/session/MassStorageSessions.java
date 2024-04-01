@@ -231,7 +231,7 @@ public final class MassStorageSessions implements Listener {
         Player player = event.getPlayer();
         if (!checkGameMode(player)) return;
         ifAssistEnabled(player, session -> {
-                session.stackHand(player, event.getHand(), () -> { });
+                session.stackHand(player, event.getHand(), () -> player.updateInventory());
             });
     }
 

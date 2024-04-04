@@ -74,7 +74,6 @@ public final class StorablePotion implements StorableItem {
             });
         this.icon = ItemKinds.icon(prototype);
         this.sqlName = potionType.getKey().getKey();
-        com.cavetale.ms.MassStoragePlugin.getInstance().getLogger().info("POTION " + sqlName);
         this.index = index;
         final boolean isLong = potionType.name().startsWith("LONG_");
         final boolean strong = potionType.name().startsWith("STRONG_");

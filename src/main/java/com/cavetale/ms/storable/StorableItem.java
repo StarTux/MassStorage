@@ -129,9 +129,10 @@ public sealed interface StorableItem permits UnstorableItem, StorableBukkitItem,
             if (!canStack(slot)) continue;
             hasAny = true;
             int stacking = Math.min(todo, maxStackSize - slot.getAmount());
+            if (stacking <= 0) continue;
             todo -= stacking;
         }
-        int result = max - todo;
+        final int result = max - todo;
         if (result == 0 && allowEmptySlot && !hasAny && hasEmpty) {
             return maxStackSize;
         } else {

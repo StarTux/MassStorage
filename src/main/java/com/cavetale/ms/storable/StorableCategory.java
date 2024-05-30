@@ -612,7 +612,6 @@ public enum StorableCategory implements StorableSet {
                 Material.PRISMARINE_SHARD,
                 Material.RABBIT_HIDE,
                 Material.RECOVERY_COMPASS,
-                Material.SCUTE,
                 Material.SHEARS,
                 Material.SHULKER_SHELL,
                 Material.SLIME_BALL,
@@ -622,6 +621,7 @@ public enum StorableCategory implements StorableSet {
                 Material.STICK,
                 Material.STRING,
                 Material.TOTEM_OF_UNDYING,
+                Material.TURTLE_SCUTE,
                 Material.WHEAT,
                 Material.WRITABLE_BOOK,
             };
@@ -680,7 +680,7 @@ public enum StorableCategory implements StorableSet {
     ENCHANTED_BOOKS(() -> {
             ItemStack icon = new ItemStack(Material.ENCHANTED_BOOK);
             icon.editMeta(meta -> {
-                    ((EnchantmentStorageMeta) meta).addStoredEnchant(Enchantment.DURABILITY, 1, false);
+                    ((EnchantmentStorageMeta) meta).addStoredEnchant(Enchantment.UNBREAKING, 1, false);
                 });
             return icon;
         }) {

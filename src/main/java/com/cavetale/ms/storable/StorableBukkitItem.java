@@ -40,7 +40,7 @@ public final class StorableBukkitItem implements StorableItem {
         if (material.name().endsWith("_banner_pattern")) {
             // Super annoying corner case!
             this.name = Text.toCamelCase(material, " ");
-            this.displayName = text(name, material.getItemRarity().getColor());
+            this.displayName = text(name);
         } else {
             ItemKind kind = ItemKind.of(prototype);
             this.name = kind.name(prototype);

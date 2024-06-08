@@ -38,6 +38,7 @@ import static net.kyori.adventure.text.serializer.plain.PlainTextComponentSerial
 public final class StorablePotion implements StorableItem {
     @Getter private final Type type;
     private final ItemStack prototype;
+    private final String prototypeComponentString;
     @Getter private final String name;
     @Getter private final Component displayName;
     @Getter private final String category;
@@ -66,12 +67,8 @@ public final class StorablePotion implements StorableItem {
     protected StorablePotion(final Type type, final PotionType potionType, final int index) {
         this.type = type;
         this.prototype = new ItemStack(type.material);
-        prototype.editMeta(meta -> {
-                if (!(meta instanceof PotionMeta potionMeta)) {
-                    throw new IllegalStateException(meta.getClass().getName());
-                }
-                potionMeta.setBasePotionType(potionType);
-            });
+        prototype.editMeta(PotionMeta.class, meta -> meta.setBasePotionType(potionType));
+        this.prototypeComponentString = prototype.getItemMeta().getAsComponentString();
         this.icon = ItemKinds.icon(prototype);
         this.sqlName = potionType.getKey().getKey();
         this.index = index;
@@ -92,12 +89,18 @@ public final class StorablePotion implements StorableItem {
 
     @Override
     public boolean canStore(ItemStack itemStack) {
-        return prototype.isSimilar(itemStack);
+        // We double check the type even though the specification says
+        // it has already been checked, just to be on the safe side.
+        return prototype.getType() == itemStack.getType()
+            && prototypeComponentString.equals(itemStack.getItemMeta().getAsComponentString());
     }
 
     @Override
     public boolean canStack(ItemStack itemStack) {
-        return prototype.isSimilar(itemStack);
+        // We double check the type even though the specification says
+        // it has already been checked, just to be on the safe side.
+        return prototype.getType() == itemStack.getType()
+            && prototypeComponentString.equals(itemStack.getItemMeta().getAsComponentString());
     }
 
     @Override

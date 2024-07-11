@@ -568,6 +568,7 @@ public enum StorableCategory implements StorableSet {
             return new Material[] {
                 Material.AMETHYST_CLUSTER,
                 Material.AMETHYST_SHARD,
+                Material.ARMADILLO_SCUTE,
                 Material.BLAZE_ROD,
                 Material.BONE,
                 Material.BONE_MEAL,
@@ -736,6 +737,7 @@ public enum StorableCategory implements StorableSet {
                 Material.NETHERITE_HELMET,
                 Material.NETHERITE_LEGGINGS,
                 Material.TURTLE_HELMET,
+                Material.WOLF_ARMOR,
             };
         }
     },

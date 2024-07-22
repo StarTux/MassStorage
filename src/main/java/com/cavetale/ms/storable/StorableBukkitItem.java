@@ -199,7 +199,8 @@ public final class StorableBukkitItem implements StorableItem {
                                    "BANNER_PATTERN",
                                    "FIREWORK",
                                    "MUD",
-                                   "STONE")) {
+                                   "STONE",
+                                   "TUFF")) {
             if (name.contains(part)) {
                 return Stream.of(part.split("_"))
                     .map(Text::toCamelCase)

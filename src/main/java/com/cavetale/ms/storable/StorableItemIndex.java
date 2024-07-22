@@ -3,6 +3,7 @@ package com.cavetale.ms.storable;
 import com.cavetale.ms.sql.SQLStorable;
 import com.cavetale.mytems.Mytems;
 import com.destroystokyo.paper.MaterialTags;
+import io.papermc.paper.registry.RegistryKey;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.HashMap;
@@ -17,6 +18,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.EnchantmentStorageMeta;
 import org.bukkit.inventory.meta.PotionMeta;
 import org.bukkit.potion.PotionType;
+import static io.papermc.paper.registry.RegistryAccess.registryAccess;
 
 public final class StorableItemIndex {
     private final UnstorableItem unstorableItem = new UnstorableItem();
@@ -50,6 +52,8 @@ public final class StorableItemIndex {
             Material.STRUCTURE_BLOCK,
             Material.STRUCTURE_VOID,
             Material.TIPPED_ARROW,
+            Material.TRIAL_SPAWNER,
+            Material.VAULT,
             Material.WRITTEN_BOOK,
         });
 
@@ -87,7 +91,7 @@ public final class StorableItemIndex {
                 all.add(storablePotion);
             }
         }
-        for (Enchantment enchantment : Enchantment.values()) {
+        for (Enchantment enchantment : registryAccess().getRegistry(RegistryKey.ENCHANTMENT).stream().toList()) {
             if (enchantment.isCursed()) {
                 enchantedBookIndex.put(enchantment, List.of());
                 continue;

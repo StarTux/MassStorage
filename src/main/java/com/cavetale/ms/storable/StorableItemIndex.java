@@ -91,7 +91,7 @@ public final class StorableItemIndex {
                 all.add(storablePotion);
             }
         }
-        for (Enchantment enchantment : registryAccess().getRegistry(RegistryKey.ENCHANTMENT).stream().toList()) {
+        for (Enchantment enchantment : registryAccess().getRegistry(RegistryKey.ENCHANTMENT)) {
             if (enchantment.isCursed()) {
                 enchantedBookIndex.put(enchantment, List.of());
                 continue;

@@ -38,7 +38,6 @@ public final class StorableItemIndex {
             Material.COMMAND_BLOCK_MINECART,
             Material.DEBUG_STICK,
             Material.ENCHANTED_BOOK,
-            Material.END_PORTAL_FRAME,
             Material.FILLED_MAP,
             Material.GOAT_HORN,
             Material.JIGSAW,

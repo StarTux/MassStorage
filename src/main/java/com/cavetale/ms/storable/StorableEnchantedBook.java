@@ -1,12 +1,14 @@
 package com.cavetale.ms.storable;
 
 import com.cavetale.core.font.VanillaItems;
+import java.util.Map;
 import lombok.Getter;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.EnchantmentStorageMeta;
+import static com.cavetale.mytems.util.Text.roman;
 import static net.kyori.adventure.text.Component.join;
 import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.Component.translatable;
@@ -20,12 +22,12 @@ public final class StorableEnchantedBook implements StorableItem {
     @Getter private final String sqlName;
     @Getter private final String category;
     @Getter private final int index;
+    private final Enchantment enchantment;
+    private final int enchantmentLevel;
 
     protected StorableEnchantedBook(final Enchantment enchantment, final int level, final int index) {
         this.prototype = new ItemStack(Material.ENCHANTED_BOOK);
-        prototype.editMeta(meta -> {
-                ((EnchantmentStorageMeta) meta).addStoredEnchant(enchantment, level, false);
-            });
+        prototype.editMeta(EnchantmentStorageMeta.class, meta -> meta.addStoredEnchant(enchantment, level, false));
         this.sqlName = enchantment.getKey().getKey() + "_" + level;
         this.displayName = join(noSeparators(),
                                 translatable(enchantment),
@@ -33,17 +35,8 @@ public final class StorableEnchantedBook implements StorableItem {
         this.name = plainText().serialize(displayName);
         this.category = plainText().serialize(translatable(enchantment));
         this.index = index;
-    }
-
-    private static String roman(int value) {
-        switch (value) {
-        case 1: return "I";
-        case 2: return "II";
-        case 3: return "III";
-        case 4: return "IV";
-        case 5: return "V";
-        default: return "" + value;
-        }
+        this.enchantment = enchantment;
+        this.enchantmentLevel = level;
     }
 
     @Override
@@ -58,12 +51,36 @@ public final class StorableEnchantedBook implements StorableItem {
 
     @Override
     public boolean canStore(ItemStack itemStack) {
-        return prototype.isSimilar(itemStack);
+        return prototype.isSimilar(itemStack) || isStorableEnchantedBook(itemStack);
     }
 
     @Override
     public boolean canStack(ItemStack itemStack) {
-        return prototype.isSimilar(itemStack);
+        return prototype.isSimilar(itemStack) || isStorableEnchantedBook(itemStack);
+    }
+
+    public boolean isStorableEnchantedBook(ItemStack itemStack) {
+        if (itemStack == null) {
+            return false;
+        }
+        if (itemStack.getType() != Material.ENCHANTED_BOOK) {
+            return false;
+        }
+        if (!(itemStack.getItemMeta() instanceof EnchantmentStorageMeta meta)) {
+            return false;
+        }
+        final Map<Enchantment, Integer> enchants = meta.getStoredEnchants();
+        if (enchants.size() != 1) {
+            return false;
+        }
+        final Map.Entry<Enchantment, Integer> storedEnchantment = enchants.entrySet().iterator().next();
+        if (storedEnchantment.getKey() != this.enchantment) {
+            return false;
+        }
+        if (storedEnchantment.getValue() != this.enchantmentLevel) {
+            return false;
+        }
+        return true;
     }
 
     @Override

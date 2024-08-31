@@ -420,7 +420,8 @@ public final class MassStorageSession {
         for (int i = 0; i < amounts.length; i += 1) {
             if (amounts[i] == 0) continue;
             StorableItem storable = plugin.getIndex().get(i);
-            if (storable.getName().toLowerCase().contains(lower)) {
+            if (storable.getName().toLowerCase().contains(lower) ||
+                    storable.getCategory().toLowerCase().contains(lower)) {
                 result.add(storable);
             }
         }

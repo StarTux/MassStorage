@@ -7,6 +7,7 @@ import com.cavetale.ms.dialogue.ItemSortOrder;
 import com.cavetale.ms.dialogue.MassStorageDialogue;
 import com.cavetale.ms.sql.SQLPlayer;
 import com.cavetale.ms.sql.SQLStorable;
+import com.cavetale.ms.storable.StorableCategory;
 import com.cavetale.ms.storable.StorableItem;
 import java.util.ArrayList;
 import java.util.Date;
@@ -393,14 +394,17 @@ public final class MassStorageSession {
     }
 
     public void complete(List<String> result, String arg) {
-        String lower = arg.toLowerCase();
+        String lArg = arg.toLowerCase();
+        String lName;
         for (int i = 0; i < amounts.length; i += 1) {
             if (amounts[i] == 0) continue;
             StorableItem storable = plugin.getIndex().get(i);
-            String lname = storable.getName().toLowerCase();
-            if (lname.contains(lower)) {
-                result.add(lname);
-            }
+            lName = storable.getName().toLowerCase();
+            if (lName.contains(lArg)) result.add(lName);
+        }
+        for (StorableCategory cat : StorableCategory.values()) {
+            lName = cat.name().toLowerCase();
+            if (lName.contains(lArg)) result.add(lName);
         }
     }
 

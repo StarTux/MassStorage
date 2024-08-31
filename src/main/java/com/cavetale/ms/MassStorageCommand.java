@@ -30,8 +30,8 @@ public final class MassStorageCommand extends AbstractCommand<MassStoragePlugin>
         rootNode.arguments("[item]")
             .description("Search for items")
             .playerCaller(this::massStorage);
-        rootNode.addChild("search").arguments("<item>")
-            .description("Search for items")
+        rootNode.addChild("search").arguments("<item|category>")
+            .description("Search for items or categories")
             .completers(this::completeSearch)
             .playerCaller(this::search);
         rootNode.addChild("insert").denyTabCompletion()

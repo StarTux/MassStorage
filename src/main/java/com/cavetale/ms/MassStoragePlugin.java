@@ -5,7 +5,6 @@ import com.cavetale.ms.sql.SQLPlayer;
 import com.cavetale.ms.sql.SQLStorable;
 import com.cavetale.ms.storable.StorableCategory;
 import com.cavetale.ms.storable.StorableItemIndex;
-import com.cavetale.ms.util.Gui;
 import com.winthier.sql.SQLDatabase;
 import java.util.List;
 import lombok.Getter;
@@ -30,7 +29,6 @@ public final class MassStoragePlugin extends JavaPlugin {
         }
         index.populate();
         StorableCategory.initialize(this);
-        Gui.enable(this);
         command.enable();
         insertCommand.enable();
         adminCommand.enable();

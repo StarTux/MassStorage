@@ -12,9 +12,9 @@ import com.cavetale.ms.storable.StorableBukkitItem;
 import com.cavetale.ms.storable.StorableCategory;
 import com.cavetale.ms.storable.StorableItem;
 import com.cavetale.ms.storable.StorableSet;
-import com.cavetale.ms.util.Gui;
 import com.cavetale.mytems.Mytems;
 import com.cavetale.mytems.item.font.Glyph;
+import com.cavetale.mytems.util.Gui;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -133,8 +133,9 @@ public final class MassStorageDialogue {
         final int size = 6 * 9;
         final int pageSize = 5 * 9;
         final int pageCount = (list.size() - 1) / pageSize + 1;
-        Gui gui = new Gui(plugin).size(size);
-        GuiOverlay.Builder builder = GuiOverlay.BLANK.builder(size, LIGHT_PURPLE)
+        final Gui gui = new Gui(plugin)
+            .size(size)
+            .layer(GuiOverlay.BLANK, LIGHT_PURPLE)
             .layer(GuiOverlay.TOP_BAR, DARK_PURPLE)
             .title(textOfChildren((pageCount > 1
                                    ? text((state.pageIndex + 1) + "/" + pageCount + " ", BLACK)
@@ -265,8 +266,7 @@ public final class MassStorageDialogue {
                 open(player);
                 click(player);
             });
-        gui.onClickBottom(this::clickBottom);
-        gui.title(builder.build());
+        gui.onClick(this::clickBottom);
         gui.open(player);
     }
 
@@ -278,8 +278,9 @@ public final class MassStorageDialogue {
         final int size = 6 * 9;
         final int pageSize = 5 * 9;
         final int pageCount = (list.size() - 1) / pageSize + 1;
-        Gui gui = new Gui(plugin).size(size);
-        GuiOverlay.Builder builder = GuiOverlay.BLANK.builder(size, GRAY)
+        final Gui gui = new Gui(plugin)
+            .size(size)
+            .layer(GuiOverlay.BLANK, GRAY)
             .layer(GuiOverlay.TOP_BAR, DARK_GRAY)
             .title(textOfChildren(text((state.pageIndex + 1) + "/" + pageCount + " ", BLACK), state.getTitle()));
         for (int i = 0; i < pageSize; i += 1) {
@@ -289,17 +290,10 @@ public final class MassStorageDialogue {
             final int amount = session.getAmount(storable);
             final int guiIndex = 9 + i;
             ItemStack icon = amount > 0 ? storable.createIcon() : Mytems.INVISIBLE_ITEM.createIcon();
-            final int displayedAmount;
-            if (amount > 10000) {
-                builder.highlightSlot(guiIndex, AQUA);
-                displayedAmount = amount / 10000;
-            } else if (amount > 100) {
-                builder.highlightSlot(guiIndex, GRAY);
-                displayedAmount = amount / 100;
-            } else {
-                displayedAmount = amount;
+            final Denomination denomination = Denomination.ofAmount(amount);
+            if (denomination.getColor() != null) {
+                gui.highlight(guiIndex, denomination.getColor());
             }
-            icon.setAmount(Math.max(1, Math.min(64, displayedAmount)));
             icon.editMeta(meta -> {
                     meta.addItemFlags(ItemFlag.values());
                     List<Component> tooltip = new ArrayList<>();
@@ -317,7 +311,9 @@ public final class MassStorageDialogue {
                         }
                     }
                     tooltip(meta, tooltip);
+                    meta.setMaxStackSize(99);
                 });
+            icon.setAmount(Math.max(1, Math.min(99, amount / (denomination.getValue()))));
             gui.setItem(guiIndex, icon, click -> {
                     switch (click.getClick()) {
                     case LEFT:
@@ -340,7 +336,7 @@ public final class MassStorageDialogue {
         }
         for (ItemSortOrder it : ItemSortOrder.values()) {
             if (it == itemSortOrder) {
-                builder.highlightSlot(it.slot, GRAY);
+                gui.highlight(it.slot, GRAY);
             }
             gui.setItem(it.slot, tooltip(it.createIcon(), List.of(text(it.description, GRAY))), click -> {
                     if (!click.isLeftClick()) return;
@@ -377,8 +373,7 @@ public final class MassStorageDialogue {
                 click(player);
                 PluginPlayerEvent.Name.MASS_STORAGE_GO_BACK.call(plugin, player);
             });
-        gui.onClickBottom(this::clickBottom);
-        gui.title(builder.build());
+        gui.onClick(this::clickBottom);
         gui.open(player);
     }
 
@@ -514,7 +509,7 @@ public final class MassStorageDialogue {
                 click(player);
                 PluginPlayerEvent.Name.MASS_STORAGE_GO_BACK.call(plugin, player);
             });
-        gui.onClickBottom(this::clickBottom);
+        gui.onClick(this::clickBottom);
         gui.title(builder.build());
         gui.open(player);
     }
@@ -585,6 +580,9 @@ public final class MassStorageDialogue {
     }
 
     private void clickBottom(InventoryClickEvent event) {
+        if (!event.getView().getBottomInventory().equals(event.getClickedInventory())) {
+            return;
+        }
         if (event.getClick() == ClickType.DROP) {
             event.setCancelled(false);
         }

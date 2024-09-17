@@ -7,15 +7,10 @@ import com.cavetale.ms.dialogue.ItemSortOrder;
 import com.cavetale.ms.dialogue.MassStorageDialogue;
 import com.cavetale.ms.sql.SQLPlayer;
 import com.cavetale.ms.sql.SQLStorable;
+import com.cavetale.ms.storable.StorableCategory;
 import com.cavetale.ms.storable.StorableItem;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.EnumMap;
-import java.util.IdentityHashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+
+import java.util.*;
 import java.util.function.Consumer;
 import lombok.Getter;
 import lombok.Setter;
@@ -393,14 +388,17 @@ public final class MassStorageSession {
     }
 
     public void complete(List<String> result, String arg) {
-        String lower = arg.toLowerCase();
+        String lArg = arg.toLowerCase();
+        String lName;
         for (int i = 0; i < amounts.length; i += 1) {
             if (amounts[i] == 0) continue;
             StorableItem storable = plugin.getIndex().get(i);
-            String lname = storable.getName().toLowerCase();
-            if (lname.contains(lower)) {
-                result.add(lname);
-            }
+            lName = storable.getName().toLowerCase();
+            if (lName.contains(lArg)) result.add(lName);
+        }
+        for (StorableCategory cat : StorableCategory.values()) {
+            lName = cat.name().toLowerCase();
+            if (lName.contains(lArg)) result.add(lName);
         }
     }
 
@@ -422,6 +420,13 @@ public final class MassStorageSession {
             StorableItem storable = plugin.getIndex().get(i);
             if (storable.getName().toLowerCase().contains(lower)) {
                 result.add(storable);
+                continue;
+            }
+            for (StorableCategory cat : StorableCategory.values()) {
+                if (cat.name().toLowerCase().contains(lower) && cat.getStorables().contains(storable)) {
+                    result.add(storable);
+                    break;
+                }
             }
         }
         return result;

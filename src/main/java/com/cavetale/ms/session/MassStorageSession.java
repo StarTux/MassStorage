@@ -388,17 +388,19 @@ public final class MassStorageSession {
     }
 
     public void complete(List<String> result, String arg) {
-        String lArg = arg.toLowerCase();
-        String lName;
+        String lower = arg.toLowerCase();
         for (int i = 0; i < amounts.length; i += 1) {
             if (amounts[i] == 0) continue;
             StorableItem storable = plugin.getIndex().get(i);
-            lName = storable.getName().toLowerCase();
-            if (lName.contains(lArg)) result.add(lName);
+            String lname = storable.getName().toLowerCase();
+            if (lname.contains(lower)) {
+                result.add(lname);
+            }
         }
+        // Autocomplete categories
         for (StorableCategory cat : StorableCategory.values()) {
-            lName = cat.name().toLowerCase();
-            if (lName.contains(lArg)) result.add(lName);
+            name = cat.name().toLowerCase();
+            if (name.contains(lower)) result.add(name);
         }
     }
 
@@ -422,6 +424,7 @@ public final class MassStorageSession {
                 result.add(storable);
                 continue;
             }
+            // Return category members if arg is (part of) a category
             for (StorableCategory cat : StorableCategory.values()) {
                 if (cat.name().toLowerCase().contains(lower) && cat.getStorables().contains(storable)) {
                     result.add(storable);

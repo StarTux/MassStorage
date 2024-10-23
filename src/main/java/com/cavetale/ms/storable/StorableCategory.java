@@ -258,7 +258,7 @@ public enum StorableCategory implements StorableSet {
             };
         }
     },
-    LIGHTING(() -> new ItemStack(Material.LANTERN)) {
+    LIGHTING(() -> new ItemStack(Material.CAMPFIRE)) {
         @Override protected Material[] getMaterials() {
             return new Material[] {
                 Material.BEACON,

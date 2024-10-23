@@ -7,15 +7,10 @@ import com.cavetale.ms.dialogue.ItemSortOrder;
 import com.cavetale.ms.dialogue.MassStorageDialogue;
 import com.cavetale.ms.sql.SQLPlayer;
 import com.cavetale.ms.sql.SQLStorable;
+import com.cavetale.ms.storable.StorableCategory;
 import com.cavetale.ms.storable.StorableItem;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.EnumMap;
-import java.util.IdentityHashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+
+import java.util.*;
 import java.util.function.Consumer;
 import lombok.Getter;
 import lombok.Setter;
@@ -402,6 +397,11 @@ public final class MassStorageSession {
                 result.add(lname);
             }
         }
+        // Autocomplete categories
+        for (StorableCategory cat : StorableCategory.values()) {
+            name = cat.name().toLowerCase();
+            if (name.contains(lower)) result.add(name);
+        }
     }
 
     public List<StorableItem> allStorables() {
@@ -422,6 +422,14 @@ public final class MassStorageSession {
             StorableItem storable = plugin.getIndex().get(i);
             if (storable.getName().toLowerCase().contains(lower)) {
                 result.add(storable);
+                continue;
+            }
+            // Return category members if arg is (part of) a category
+            for (StorableCategory cat : StorableCategory.values()) {
+                if (cat.name().toLowerCase().contains(lower) && cat.getStorables().contains(storable)) {
+                    result.add(storable);
+                    break;
+                }
             }
         }
         return result;

@@ -432,35 +432,38 @@ public final class MassStorageSession {
         String lower = arg.toLowerCase();
 
         // Gather result items by category
-        Set<StorableItem> result = new HashSet<>();
+        Set<StorableItem> resCatItems = new HashSet<>();
         for (StorableCategory cat : StorableCategory.values()) {
             if (cat.getName().toLowerCase().replace('_', ' ').contains(lower)) {
-                result.addAll(cat.getStorables());
+                resCatItems.addAll(cat.getStorables());
             }
         }
 
         // Gather result materials
-        Set<Material> resultMats = new HashSet<>();
+        Set<Material> resMats = new HashSet<>();
         for (Tag<Material> tag : Bukkit.getTags(Tag.REGISTRY_BLOCKS, Material.class)) {
             if (tag.getKey().getKey().toLowerCase().replace('_', ' ').contains(lower)) {
-                resultMats.addAll(tag.getValues());
+                resMats.addAll(tag.getValues());
             }
         }
         for (Tag<Material> tag : Bukkit.getTags(Tag.REGISTRY_ITEMS, Material.class)) {
             if (tag.getKey().getKey().toLowerCase().replace('_', ' ').contains(lower)) {
-                resultMats.addAll(tag.getValues());
+                resMats.addAll(tag.getValues());
             }
         }
 
+        List<StorableItem> result = new ArrayList<>();
         for (int i = 0; i < amounts.length; i += 1) {
+            if (amounts[i] == 0) continue; // Filter by amount
+
             StorableItem storable = plugin.getIndex().get(i);
 
-            if (amounts[i] == 0) { // Filter by amount
-                result.remove(storable);
+            if (storable.getName().toLowerCase().contains(lower)) { // Filter by name
+                result.add(storable);
                 continue;
             }
 
-            if (storable.getName().toLowerCase().contains(lower)) { // Filter by name
+            if (resCatItems.contains(storable)) { // Filter by category
                 result.add(storable);
                 continue;
             }
@@ -472,9 +475,8 @@ public final class MassStorageSession {
                 case StorablePotion s -> m = s.getMaterial();
                 default -> { continue; }
             }
-            if (resultMats.contains(m)) result.add(storable);
+            if (resMats.contains(m)) result.add(storable);
         }
-
         return new ArrayList<>(result);
     }
 

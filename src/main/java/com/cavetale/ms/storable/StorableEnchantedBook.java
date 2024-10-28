@@ -19,6 +19,7 @@ public final class StorableEnchantedBook implements StorableItem {
     private ItemStack prototype;
     @Getter private final String name;
     @Getter private final Component displayName;
+    @Getter private final Material material;
     @Getter private final String sqlName;
     @Getter private final String category;
     @Getter private final int index;
@@ -26,7 +27,8 @@ public final class StorableEnchantedBook implements StorableItem {
     private final int enchantmentLevel;
 
     protected StorableEnchantedBook(final Enchantment enchantment, final int level, final int index) {
-        this.prototype = new ItemStack(Material.ENCHANTED_BOOK);
+        this.material = Material.ENCHANTED_BOOK;
+        this.prototype = new ItemStack(this.material);
         prototype.editMeta(EnchantmentStorageMeta.class, meta -> meta.addStoredEnchant(enchantment, level, false));
         this.sqlName = enchantment.getKey().getKey() + "_" + level;
         this.displayName = join(noSeparators(),

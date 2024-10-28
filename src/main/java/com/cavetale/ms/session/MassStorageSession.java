@@ -7,8 +7,7 @@ import com.cavetale.ms.dialogue.ItemSortOrder;
 import com.cavetale.ms.dialogue.MassStorageDialogue;
 import com.cavetale.ms.sql.SQLPlayer;
 import com.cavetale.ms.sql.SQLStorable;
-import com.cavetale.ms.storable.StorableCategory;
-import com.cavetale.ms.storable.StorableItem;
+import com.cavetale.ms.storable.*;
 
 import java.util.*;
 import java.util.function.Consumer;
@@ -397,6 +396,23 @@ public final class MassStorageSession {
                 result.add(lname);
             }
         }
+
+        // Autocomplete material tags
+        // For block material tags
+        for (Tag<Material> tag : Bukkit.getTags(Tag.REGISTRY_BLOCKS, Material.class)) {
+            String name = tag.getKey().getKey().toLowerCase().replace('_', ' ');
+            if (name.contains(lower)) {
+                result.add(name);
+            }
+        }
+        // For item material tags
+        for (Tag<Material> tag : Bukkit.getTags(Tag.REGISTRY_ITEMS, Material.class)) {
+            String name = tag.getKey().getKey().toLowerCase().replace('_', ' ');
+            if (name.contains(lower)) {
+                result.add(name);
+            }
+        }
+
         // Autocomplete categories
         for (StorableCategory cat : StorableCategory.values()) {
             String name = cat.getName().toLowerCase();
@@ -424,9 +440,30 @@ public final class MassStorageSession {
                 result.add(storable);
                 continue;
             }
+
+            // Return material tag if arg is (part of) a material tag
+            Material m = null;
+            if (storable instanceof StorableBukkitItem s) m = s.getMaterial();
+            if (storable instanceof StorableEnchantedBook s) m = s.getMaterial();
+            if (storable instanceof StorablePotion s) m = s.getMaterial();
+            if (m != null) {
+                // For block material tags
+                for (Tag<Material> tag : Bukkit.getTags(Tag.REGISTRY_BLOCKS, Material.class)) {
+                    if (tag.getKey().getKey().toLowerCase().contains(lower) && tag.isTagged(m)) {
+                        result.add(storable);
+                    }
+                }
+                // For item material tags
+                for (Tag<Material> tag : Bukkit.getTags(Tag.REGISTRY_ITEMS, Material.class)) {
+                    if (tag.getKey().getKey().toLowerCase().contains(lower) && tag.isTagged(m)) {
+                        result.add(storable);
+                    }
+                }
+            }
+
             // Return category members if arg is (part of) a category
             for (StorableCategory cat : StorableCategory.values()) {
-                if (cat.name().toLowerCase().contains(lower) && cat.getStorables().contains(storable)) {
+                if (cat.getName().toLowerCase().contains(lower) && cat.getStorables().contains(storable)) {
                     result.add(storable);
                     break;
                 }

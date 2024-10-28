@@ -399,7 +399,7 @@ public final class MassStorageSession {
         }
         // Autocomplete categories
         for (StorableCategory cat : StorableCategory.values()) {
-            name = cat.name().toLowerCase();
+            String name = cat.getName().toLowerCase();
             if (name.contains(lower)) result.add(name);
         }
     }

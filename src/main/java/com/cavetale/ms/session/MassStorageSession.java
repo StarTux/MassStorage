@@ -398,14 +398,12 @@ public final class MassStorageSession {
         }
 
         // Autocomplete material tags
-        // For block material tags
         for (Tag<Material> tag : Bukkit.getTags(Tag.REGISTRY_BLOCKS, Material.class)) {
             String name = tag.getKey().getKey().toLowerCase().replace('_', ' ');
             if (name.contains(lower)) {
                 result.add(name);
             }
         }
-        // For item material tags
         for (Tag<Material> tag : Bukkit.getTags(Tag.REGISTRY_ITEMS, Material.class)) {
             String name = tag.getKey().getKey().toLowerCase().replace('_', ' ');
             if (name.contains(lower)) {
@@ -432,44 +430,52 @@ public final class MassStorageSession {
 
     public List<StorableItem> storables(String arg) {
         String lower = arg.toLowerCase();
-        List<StorableItem> result = new ArrayList<>();
+
+        // Gather result items by category
+        Set<StorableItem> result = new HashSet<>();
+        for (StorableCategory cat : StorableCategory.values()) {
+            if (cat.getName().toLowerCase().replace('_', ' ').contains(lower)) {
+                result.addAll(cat.getStorables());
+            }
+        }
+
+        // Gather result materials
+        Set<Material> resultMats = new HashSet<>();
+        for (Tag<Material> tag : Bukkit.getTags(Tag.REGISTRY_BLOCKS, Material.class)) {
+            if (tag.getKey().getKey().toLowerCase().replace('_', ' ').contains(lower)) {
+                resultMats.addAll(tag.getValues());
+            }
+        }
+        for (Tag<Material> tag : Bukkit.getTags(Tag.REGISTRY_ITEMS, Material.class)) {
+            if (tag.getKey().getKey().toLowerCase().replace('_', ' ').contains(lower)) {
+                resultMats.addAll(tag.getValues());
+            }
+        }
+
         for (int i = 0; i < amounts.length; i += 1) {
-            if (amounts[i] == 0) continue;
             StorableItem storable = plugin.getIndex().get(i);
-            if (storable.getName().toLowerCase().contains(lower)) {
+
+            if (amounts[i] == 0) { // Filter by amount
+                result.remove(storable);
+                continue;
+            }
+
+            if (storable.getName().toLowerCase().contains(lower)) { // Filter by name
                 result.add(storable);
                 continue;
             }
 
-            // Return material tag if arg is (part of) a material tag
-            Material m = null;
-            if (storable instanceof StorableBukkitItem s) m = s.getMaterial();
-            if (storable instanceof StorableEnchantedBook s) m = s.getMaterial();
-            if (storable instanceof StorablePotion s) m = s.getMaterial();
-            if (m != null) {
-                // For block material tags
-                for (Tag<Material> tag : Bukkit.getTags(Tag.REGISTRY_BLOCKS, Material.class)) {
-                    if (tag.getKey().getKey().toLowerCase().contains(lower) && tag.isTagged(m)) {
-                        result.add(storable);
-                    }
-                }
-                // For item material tags
-                for (Tag<Material> tag : Bukkit.getTags(Tag.REGISTRY_ITEMS, Material.class)) {
-                    if (tag.getKey().getKey().toLowerCase().contains(lower) && tag.isTagged(m)) {
-                        result.add(storable);
-                    }
-                }
+            Material m; // Filter by tag
+            switch (storable) {
+                case StorableBukkitItem s -> m = s.getMaterial();
+                case StorableEnchantedBook s -> m = s.getMaterial();
+                case StorablePotion s -> m = s.getMaterial();
+                default -> { continue; }
             }
-
-            // Return category members if arg is (part of) a category
-            for (StorableCategory cat : StorableCategory.values()) {
-                if (cat.getName().toLowerCase().contains(lower) && cat.getStorables().contains(storable)) {
-                    result.add(storable);
-                    break;
-                }
-            }
+            if (resultMats.contains(m)) result.add(storable);
         }
-        return result;
+
+        return new ArrayList<>(result);
     }
 
     public List<StorableItem> filter(List<StorableItem> in) {

@@ -5,12 +5,10 @@ import com.cavetale.core.item.ItemKind;
 import com.cavetale.mytems.Mytems;
 import com.cavetale.mytems.util.BlockColor;
 import com.cavetale.mytems.util.Text;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 import lombok.Value;
 import net.kyori.adventure.text.Component;
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.Tag;
 import org.bukkit.inventory.CreativeCategory;
@@ -28,15 +26,14 @@ public final class StorableBukkitItem implements StorableItem {
     protected final int index;
     protected final String sqlName;
     protected final String category;
-    protected final List<ItemStack> prototypes = new ArrayList<>();
+    protected final ItemStack prototype;
 
     protected StorableBukkitItem(final Material material, final int index) {
         this.material = material;
         this.index = index;
         this.sqlName = material.name().toLowerCase();
         this.category = categoryOf(material);
-        ItemStack prototype = new ItemStack(material);
-        prototypes.add(prototype);
+        prototype = new ItemStack(material);
         if (material.name().endsWith("_banner_pattern")) {
             // Super annoying corner case!
             this.name = Text.toCamelCase(material, " ");
@@ -46,30 +43,18 @@ public final class StorableBukkitItem implements StorableItem {
             this.name = kind.name(prototype);
             this.displayName = kind.displayName(prototype);
         }
-        if (isShulkerBox()) {
-            addPrototype("{\"BlockEntityTag\":{\"x\":0,\"y\":0,\"z\":0,\"id\":\"minecraft:shulker_box\"}}");
-            addPrototype("{\"BlockEntityTag\":{\"Items\":[],\"id\":\"minecraft:shulker_box\"}}");
-        } else if (material == Material.FIREWORK_ROCKET) {
-            addPrototype("{\"Fireworks\":{\"Flight\":1b}}");
-        }
-    }
-
-    private void addPrototype(String tag) {
-        prototypes.add(Bukkit.getItemFactory().createItemStack(material.getKey() + tag));
     }
 
     @Override
     public String toString() {
-        List<String> protos = new ArrayList<>(prototypes.size());
-        for (ItemStack proto : prototypes) {
-            protos.add(proto.getType().getKey() + (proto.hasItemMeta() ? proto.getItemMeta().getAsString() : ""));
-        }
         return "name=" + name
             + "\nmaterial=" + material
             + "\nindex=" + index
             + "\nsqlName=" + sqlName
             + "\ncategory=" + category
-            + "\nproto=[" + String.join(",\n", protos) + "]";
+            + "\nproto=" + prototype.getType().getKey() + (prototype.hasItemMeta()
+                                                           ? prototype.getItemMeta().getAsString()
+                                                           : "");
     }
 
     @Override
@@ -87,10 +72,7 @@ public final class StorableBukkitItem implements StorableItem {
 
     @Override
     public boolean canStore(ItemStack itemStack) {
-        for (ItemStack prototype : prototypes) {
-            if (prototype.isSimilar(itemStack)) return true;
-        }
-        return false;
+        return prototype.isSimilar(itemStack);
     }
 
     @Override

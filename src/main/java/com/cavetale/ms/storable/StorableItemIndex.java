@@ -32,7 +32,6 @@ public final class StorableItemIndex {
             Material.AIR,
             Material.BARRIER,
             Material.BEDROCK,
-            Material.BUNDLE,
             Material.CHAIN_COMMAND_BLOCK,
             Material.COMMAND_BLOCK,
             Material.COMMAND_BLOCK_MINECART,

@@ -158,6 +158,17 @@ public final class MassStorageSession {
         return result;
     }
 
+    public FavoriteSet getFavorite(FavoriteSlot slot) {
+        final FavoriteSet result = new FavoriteSet(slot);
+        final int raw = slot.ordinal() + 1;
+        for (int i = 0; i < favs.length; i += 1) {
+            if (favs[i] != raw) continue;
+            StorableItem storable = plugin.getIndex().get(i);
+            result.storables.add(storable);
+        }
+        return result;
+    }
+
     public boolean insertAndSubtract(Inventory inventory, ItemInsertionCause cause, ItemInsertionCallback callback) {
         List<ItemStack> items = new ArrayList<>(inventory.getSize());
         for (ItemStack item : inventory) {

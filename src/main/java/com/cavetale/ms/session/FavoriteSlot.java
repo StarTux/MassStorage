@@ -28,10 +28,6 @@ public enum FavoriteSlot {
     public final int guiSlot;
     public final BlockColor blockColor;
 
-    public ItemStack createIcon() {
-        return new ItemStack(blockColor.getMaterial(BlockColor.Suffix.SHULKER_BOX));
-    }
-
     public ItemStack createDisabledIcon() {
         return new ItemStack(blockColor.getMaterial(BlockColor.Suffix.STAINED_GLASS));
     }

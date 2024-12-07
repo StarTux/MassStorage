@@ -33,6 +33,7 @@ public final class MassStoragePlugin extends JavaPlugin {
         insertCommand.enable();
         adminCommand.enable();
         sessions.enable();
+        new MenuListener(this).enable();
     }
 
     @Override

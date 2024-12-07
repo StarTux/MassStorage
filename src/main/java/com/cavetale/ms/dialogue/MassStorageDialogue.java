@@ -2,6 +2,7 @@ package com.cavetale.ms.dialogue;
 
 import com.cavetale.core.event.player.PluginPlayerEvent;
 import com.cavetale.core.font.GuiOverlay;
+import com.cavetale.core.menu.MenuItemEvent;
 import com.cavetale.ms.MassStoragePlugin;
 import com.cavetale.ms.session.FavoriteSet;
 import com.cavetale.ms.session.FavoriteSlot;
@@ -266,7 +267,11 @@ public final class MassStorageDialogue {
         gui.setItem(Gui.OUTSIDE, null, click -> {
                 if (!click.isLeftClick()) return;
                 popState();
-                open(player);
+                if (states.isEmpty()) {
+                    MenuItemEvent.openMenu(player);
+                } else {
+                    open(player);
+                }
                 click(player);
             });
         gui.onClick(this::clickBottom);

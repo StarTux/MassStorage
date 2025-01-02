@@ -2,7 +2,9 @@ package com.cavetale.ms.dialogue;
 
 import com.cavetale.core.event.player.PluginPlayerEvent;
 import com.cavetale.core.font.GuiOverlay;
+import com.cavetale.core.menu.MenuItemEvent;
 import com.cavetale.ms.MassStoragePlugin;
+import com.cavetale.ms.session.FavoriteSet;
 import com.cavetale.ms.session.FavoriteSlot;
 import com.cavetale.ms.session.MassStorageSession;
 import com.cavetale.ms.session.SessionAction;
@@ -149,7 +151,9 @@ public final class MassStorageDialogue {
             ItemStack icon = item.getIcon();
             List<StorableItem> storables = session.filter(item.getStorables());
             icon.editMeta(meta -> {
-                    meta.addItemFlags(ItemFlag.values());
+                    if (!(item instanceof FavoriteSet)) {
+                        meta.addItemFlags(ItemFlag.values());
+                    }
                     String storablesFormat = AMOUNT_FORMAT.format(storables.size());
                     String amountFormat = AMOUNT_FORMAT.format(amounts.getOrDefault(item, 0));
                     tooltip(meta, List.of(item.getTitle(),
@@ -263,7 +267,11 @@ public final class MassStorageDialogue {
         gui.setItem(Gui.OUTSIDE, null, click -> {
                 if (!click.isLeftClick()) return;
                 popState();
-                open(player);
+                if (states.isEmpty()) {
+                    MenuItemEvent.openMenu(player);
+                } else {
+                    open(player);
+                }
                 click(player);
             });
         gui.onClick(this::clickBottom);
@@ -492,7 +500,9 @@ public final class MassStorageDialogue {
             if (isFav) {
                 builder.highlightSlot(fav.guiSlot, fav.blockColor.textColor);
             }
-            ItemStack icon = isFav ? fav.createIcon() : fav.createDisabledIcon();
+            ItemStack icon = isFav
+                ? session.getFavorite(fav).getIcon()
+                : fav.createDisabledIcon();
             List<Component> tooltip = List.of(textOfChildren((isFav ? text("Remove from ", RED) : text("Put in ", GREEN)),
                                                              fav.getDisplayName()));
             gui.setItem(fav.guiSlot, tooltip(icon, tooltip), click -> {

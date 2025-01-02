@@ -7,15 +7,8 @@ import com.cavetale.ms.dialogue.ItemSortOrder;
 import com.cavetale.ms.dialogue.MassStorageDialogue;
 import com.cavetale.ms.sql.SQLPlayer;
 import com.cavetale.ms.sql.SQLStorable;
-import com.cavetale.ms.storable.StorableItem;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.EnumMap;
-import java.util.IdentityHashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import com.cavetale.ms.storable.*;
+import java.util.*;
 import java.util.function.Consumer;
 import lombok.Getter;
 import lombok.Setter;
@@ -413,6 +406,26 @@ public final class MassStorageSession {
                 result.add(lname);
             }
         }
+
+        // Autocomplete material tags
+        for (Tag<Material> tag : Bukkit.getTags(Tag.REGISTRY_BLOCKS, Material.class)) {
+            String name = tag.getKey().getKey().toLowerCase().replace('_', ' ');
+            if (name.contains(lower)) {
+                result.add(name);
+            }
+        }
+        for (Tag<Material> tag : Bukkit.getTags(Tag.REGISTRY_ITEMS, Material.class)) {
+            String name = tag.getKey().getKey().toLowerCase().replace('_', ' ');
+            if (name.contains(lower)) {
+                result.add(name);
+            }
+        }
+
+        // Autocomplete categories
+        for (StorableCategory cat : StorableCategory.values()) {
+            String name = cat.getName().toLowerCase();
+            if (name.contains(lower)) result.add(name);
+        }
     }
 
     public List<StorableItem> allStorables() {
@@ -427,15 +440,55 @@ public final class MassStorageSession {
 
     public List<StorableItem> storables(String arg) {
         String lower = arg.toLowerCase();
+
+        // Gather result items by category
+        Set<StorableItem> resCatItems = new HashSet<>();
+        for (StorableCategory cat : StorableCategory.values()) {
+            if (cat.getName().toLowerCase().replace('_', ' ').equals(lower)) {
+                resCatItems.addAll(cat.getStorables());
+            }
+        }
+
+        // Gather result materials
+        Set<Material> resMats = new HashSet<>();
+        for (Tag<Material> tag : Bukkit.getTags(Tag.REGISTRY_BLOCKS, Material.class)) {
+            if (tag.getKey().getKey().toLowerCase().replace('_', ' ').equals(lower)) {
+                resMats.addAll(tag.getValues());
+            }
+        }
+        for (Tag<Material> tag : Bukkit.getTags(Tag.REGISTRY_ITEMS, Material.class)) {
+            if (tag.getKey().getKey().toLowerCase().replace('_', ' ').equals(lower)) {
+                resMats.addAll(tag.getValues());
+            }
+        }
+
         List<StorableItem> result = new ArrayList<>();
         for (int i = 0; i < amounts.length; i += 1) {
-            if (amounts[i] == 0) continue;
+            if (amounts[i] == 0) continue; // Filter by amount
+
             StorableItem storable = plugin.getIndex().get(i);
-            if (storable.getName().toLowerCase().contains(lower)) {
+
+            if (storable.getName().toLowerCase().contains(lower)) { // Filter by name
+                result.add(storable);
+                continue;
+            }
+
+            if (resCatItems.contains(storable)) { // Filter by category
+                result.add(storable);
+                continue;
+            }
+
+            final Material m = switch (storable) {
+            case StorableBukkitItem s -> s.getMaterial();
+            case StorableEnchantedBook s -> s.getMaterial();
+            case StorablePotion s -> s.getMaterial();
+            default -> null;
+            };
+            if (m != null && resMats.contains(m)) {
                 result.add(storable);
             }
         }
-        return result;
+        return new ArrayList<>(result);
     }
 
     public List<StorableItem> filter(List<StorableItem> in) {

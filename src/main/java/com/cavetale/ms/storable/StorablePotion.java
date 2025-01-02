@@ -41,6 +41,7 @@ public final class StorablePotion implements StorableItem {
     private final String prototypeComponentString;
     @Getter private final String name;
     @Getter private final Component displayName;
+    @Getter private final Material material;
     @Getter private final String category;
     @Getter private final Component icon;
     @Getter private final String sqlName;
@@ -66,6 +67,7 @@ public final class StorablePotion implements StorableItem {
 
     protected StorablePotion(final Type type, final PotionType potionType, final int index) {
         this.type = type;
+        this.material = type.material;
         this.prototype = new ItemStack(type.material);
         prototype.editMeta(PotionMeta.class, meta -> meta.setBasePotionType(potionType));
         this.prototypeComponentString = prototype.getItemMeta().getAsComponentString();

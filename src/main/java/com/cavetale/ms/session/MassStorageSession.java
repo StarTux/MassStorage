@@ -8,7 +8,6 @@ import com.cavetale.ms.dialogue.MassStorageDialogue;
 import com.cavetale.ms.sql.SQLPlayer;
 import com.cavetale.ms.sql.SQLStorable;
 import com.cavetale.ms.storable.*;
-
 import java.util.*;
 import java.util.function.Consumer;
 import lombok.Getter;
@@ -445,7 +444,7 @@ public final class MassStorageSession {
         // Gather result items by category
         Set<StorableItem> resCatItems = new HashSet<>();
         for (StorableCategory cat : StorableCategory.values()) {
-            if (cat.getName().toLowerCase().replace('_', ' ').contains(lower)) {
+            if (cat.getName().toLowerCase().replace('_', ' ').equals(lower)) {
                 resCatItems.addAll(cat.getStorables());
             }
         }
@@ -453,12 +452,12 @@ public final class MassStorageSession {
         // Gather result materials
         Set<Material> resMats = new HashSet<>();
         for (Tag<Material> tag : Bukkit.getTags(Tag.REGISTRY_BLOCKS, Material.class)) {
-            if (tag.getKey().getKey().toLowerCase().replace('_', ' ').contains(lower)) {
+            if (tag.getKey().getKey().toLowerCase().replace('_', ' ').equals(lower)) {
                 resMats.addAll(tag.getValues());
             }
         }
         for (Tag<Material> tag : Bukkit.getTags(Tag.REGISTRY_ITEMS, Material.class)) {
-            if (tag.getKey().getKey().toLowerCase().replace('_', ' ').contains(lower)) {
+            if (tag.getKey().getKey().toLowerCase().replace('_', ' ').equals(lower)) {
                 resMats.addAll(tag.getValues());
             }
         }
@@ -479,14 +478,15 @@ public final class MassStorageSession {
                 continue;
             }
 
-            Material m; // Filter by tag
-            switch (storable) {
-                case StorableBukkitItem s -> m = s.getMaterial();
-                case StorableEnchantedBook s -> m = s.getMaterial();
-                case StorablePotion s -> m = s.getMaterial();
-                default -> { continue; }
+            final Material m = switch (storable) {
+            case StorableBukkitItem s -> s.getMaterial();
+            case StorableEnchantedBook s -> s.getMaterial();
+            case StorablePotion s -> s.getMaterial();
+            default -> null;
+            };
+            if (m != null && resMats.contains(m)) {
+                result.add(storable);
             }
-            if (resMats.contains(m)) result.add(storable);
         }
         return new ArrayList<>(result);
     }

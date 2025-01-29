@@ -325,9 +325,9 @@ public enum StorableCategory implements StorableSet {
             return List.of(MaterialTags.SKULLS,
                            Tag.ANVIL);
         }
-        @Override protected MytemsCategory[] getMytemsCategories() {
-            return new MytemsCategory[] {
-                MytemsCategory.FURNITURE,
+        @Override protected MytemsTag[] getMytemsTags() {
+            return new MytemsTag[] {
+                MytemsTag.FURNITURE,
             };
         }
     },

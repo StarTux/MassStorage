@@ -280,6 +280,16 @@ public enum StorableCategory implements StorableSet {
                 Material.SOUL_TORCH,
                 Material.TORCH,
                 Material.VERDANT_FROGLIGHT,
+
+                // Copper Bulbs
+                Material.COPPER_BULB,
+                Material.EXPOSED_COPPER_BULB,
+                Material.OXIDIZED_COPPER_BULB,
+                Material.WAXED_COPPER_BULB,
+                Material.WAXED_EXPOSED_COPPER_BULB,
+                Material.WAXED_OXIDIZED_COPPER_BULB,
+                Material.WAXED_WEATHERED_COPPER_BULB,
+                Material.WEATHERED_COPPER_BULB,
             };
         }
         @Override protected List<Tag<Material>> getTags() {
@@ -490,6 +500,16 @@ public enum StorableCategory implements StorableSet {
                 Material.TNT,
                 Material.TRAPPED_CHEST,
                 Material.TRIPWIRE_HOOK,
+
+                // Copper Bulbs
+                Material.COPPER_BULB,
+                Material.EXPOSED_COPPER_BULB,
+                Material.OXIDIZED_COPPER_BULB,
+                Material.WAXED_COPPER_BULB,
+                Material.WAXED_EXPOSED_COPPER_BULB,
+                Material.WAXED_OXIDIZED_COPPER_BULB,
+                Material.WAXED_WEATHERED_COPPER_BULB,
+                Material.WEATHERED_COPPER_BULB,
             };
         }
         @Override protected CreativeCategory getCreativeCategory() {

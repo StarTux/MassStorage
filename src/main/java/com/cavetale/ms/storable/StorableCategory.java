@@ -59,6 +59,7 @@ public enum StorableCategory implements StorableSet {
                 Material.CHISELED_POLISHED_BLACKSTONE,
                 Material.CHISELED_QUARTZ_BLOCK,
                 Material.CHISELED_RED_SANDSTONE,
+                Material.CHISELED_RESIN_BRICKS,
                 Material.CHISELED_SANDSTONE,
                 Material.CHISELED_STONE_BRICKS,
                 Material.CHISELED_TUFF,
@@ -75,6 +76,7 @@ public enum StorableCategory implements StorableSet {
                 Material.CRACKED_STONE_BRICKS,
                 Material.CRAFTER,
                 Material.CRAFTING_TABLE,
+                Material.CREAKING_HEART,
                 Material.CRIMSON_HYPHAE,
                 Material.CRIMSON_NYLIUM,
                 Material.CRIMSON_STEM,
@@ -139,6 +141,7 @@ public enum StorableCategory implements StorableSet {
                 Material.OCHRE_FROGLIGHT,
                 Material.PACKED_ICE,
                 Material.PACKED_MUD,
+                Material.PALE_MOSS_BLOCK,
                 Material.PEARLESCENT_FROGLIGHT,
                 Material.PODZOL,
                 Material.POLISHED_ANDESITE,
@@ -165,6 +168,8 @@ public enum StorableCategory implements StorableSet {
                 Material.RED_SAND,
                 Material.RED_SANDSTONE,
                 Material.REINFORCED_DEEPSLATE,
+                Material.RESIN_BLOCK,
+                Material.RESIN_BRICKS,
                 Material.RESPAWN_ANCHOR,
                 Material.ROOTED_DIRT,
                 Material.SAND,
@@ -393,6 +398,8 @@ public enum StorableCategory implements StorableSet {
                 Material.MOSS_CARPET,
                 Material.NETHER_SPROUTS,
                 Material.NETHER_WART,
+                Material.PALE_HANGING_MOSS,
+                Material.PALE_MOSS_CARPET,
                 Material.PITCHER_POD,
                 Material.PUMPKIN_SEEDS,
                 Material.RED_MUSHROOM,
@@ -593,6 +600,12 @@ public enum StorableCategory implements StorableSet {
                 Material.HONEY_BOTTLE,
             };
         }
+        @Override protected MytemsCategory[] getMytemsCategories() {
+            return new MytemsCategory[] {
+                MytemsCategory.FOOD,
+                MytemsCategory.DRINK,
+            };
+        }
         @Override public CreativeCategory getCreativeCategory() {
             return CreativeCategory.FOOD;
         }
@@ -650,6 +663,8 @@ public enum StorableCategory implements StorableSet {
                 Material.PRISMARINE_SHARD,
                 Material.RABBIT_HIDE,
                 Material.RECOVERY_COMPASS,
+                Material.RESIN_BRICK,
+                Material.RESIN_CLUMP,
                 Material.SHEARS,
                 Material.SHULKER_SHELL,
                 Material.SLIME_BALL,
@@ -730,7 +745,8 @@ public enum StorableCategory implements StorableSet {
     },
     STORAGE(() -> new ItemStack(Material.CHEST)) {
         @Override protected List<Tag<Material>> getTags() {
-            return List.of(Tag.SHULKER_BOXES);
+            return List.of(Tag.SHULKER_BOXES,
+                           Tag.ITEMS_BUNDLES);
         }
         @Override protected Material[] getMaterials() {
             return new Material[] {
@@ -741,6 +757,11 @@ public enum StorableCategory implements StorableSet {
                 Material.ENDER_CHEST,
                 Material.HOPPER,
                 Material.TRAPPED_CHEST,
+            };
+        }
+        @Override protected Mytems[] getMytems() {
+            return new Mytems[] {
+                Mytems.BOSS_CHEST,
             };
         }
     },
@@ -777,6 +798,11 @@ public enum StorableCategory implements StorableSet {
                 Material.NETHERITE_LEGGINGS,
                 Material.TURTLE_HELMET,
                 Material.WOLF_ARMOR,
+            };
+        }
+        @Override protected MytemsCategory[] getMytemsCategories() {
+            return new MytemsCategory[] {
+                MytemsCategory.SNEAKERS,
             };
         }
     },
@@ -823,6 +849,7 @@ public enum StorableCategory implements StorableSet {
                 MytemsCategory.DIE,
                 MytemsCategory.PAINTBRUSH,
                 MytemsCategory.FRIENDS,
+                MytemsCategory.HOOKSHOT,
             };
         }
         @Override protected MytemsTag[] getMytemsTags() {
@@ -959,6 +986,8 @@ public enum StorableCategory implements StorableSet {
                 Material.MOJANG_BANNER_PATTERN,
                 Material.GUSTER_BANNER_PATTERN,
                 Material.FLOW_BANNER_PATTERN,
+                Material.BORDURE_INDENTED_BANNER_PATTERN,
+                Material.FIELD_MASONED_BANNER_PATTERN,
                 // Pottery Sherds
                 Material.ANGLER_POTTERY_SHERD,
                 Material.ARCHER_POTTERY_SHERD,

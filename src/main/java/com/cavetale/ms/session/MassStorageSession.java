@@ -625,9 +625,14 @@ public final class MassStorageSession {
             for (Iterator<StorableDisplay> iter = storableDisplayList.iterator(); iter.hasNext();) {
                 StorableDisplay storableDisplay = iter.next();
                 final int amt = getAmount(storableDisplay.storable);
-                final String amount = amt < 100
-                    ? "" + amt
-                    : "";
+                final String amount;
+                if (amt >= 1_000_000) {
+                    amount = (amt / 1_000_000) + "M";
+                } else if (amt >= 1_000) {
+                    amount = (amt / 1_000) + "K";
+                } else {
+                    amount = amt + "";
+                }
                 final String num = storableDisplay.changedAmount >= 0
                     ? "+" + storableDisplay.changedAmount
                     : "" + storableDisplay.changedAmount;

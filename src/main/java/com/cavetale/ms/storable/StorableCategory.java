@@ -316,6 +316,7 @@ public enum StorableCategory implements StorableSet {
                 Material.DECORATED_POT,
                 Material.DRAGON_EGG,
                 Material.DRAGON_HEAD,
+                Material.DRIED_GHAST,
                 Material.ENCHANTING_TABLE,
                 Material.END_CRYSTAL,
                 Material.END_PORTAL_FRAME,
@@ -381,6 +382,7 @@ public enum StorableCategory implements StorableSet {
                 Material.BIG_DRIPLEAF,
                 Material.BROWN_MUSHROOM,
                 Material.BROWN_MUSHROOM_BLOCK,
+                Material.BUSH,
                 Material.CACTUS,
                 Material.CHORUS_FLOWER,
                 Material.CHORUS_FRUIT,
@@ -390,9 +392,11 @@ public enum StorableCategory implements StorableSet {
                 Material.CRIMSON_ROOTS,
                 Material.DEAD_BUSH,
                 Material.FERN,
+                Material.FIREFLY_BUSH,
                 Material.FLOWERING_AZALEA,
                 Material.HANGING_ROOTS,
                 Material.LARGE_FERN,
+                Material.LEAF_LITTER,
                 Material.LILY_PAD,
                 Material.MELON_SEEDS,
                 Material.MOSS_CARPET,
@@ -406,10 +410,12 @@ public enum StorableCategory implements StorableSet {
                 Material.RED_MUSHROOM_BLOCK,
                 Material.SEAGRASS,
                 Material.SEA_PICKLE,
+                Material.SHORT_DRY_GRASS,
                 Material.SHORT_GRASS,
                 Material.SMALL_DRIPLEAF,
                 Material.SPORE_BLOSSOM,
                 Material.SUGAR_CANE,
+                Material.TALL_DRY_GRASS,
                 Material.TALL_GRASS,
                 Material.TORCHFLOWER_SEEDS,
                 Material.TWISTING_VINES,
@@ -617,11 +623,13 @@ public enum StorableCategory implements StorableSet {
                 Material.AMETHYST_SHARD,
                 Material.ARMADILLO_SCUTE,
                 Material.BLAZE_ROD,
+                Material.BLUE_EGG,
                 Material.BONE,
                 Material.BONE_MEAL,
                 Material.BOOK,
                 Material.BREEZE_ROD,
                 Material.BRICK,
+                Material.BROWN_EGG,
                 Material.CLAY_BALL,
                 Material.CLOCK,
                 Material.COMPASS,
@@ -800,6 +808,9 @@ public enum StorableCategory implements StorableSet {
                 Material.WOLF_ARMOR,
             };
         }
+        @Override protected List<Tag<Material>> getTags() {
+            return List.of(Tag.ITEMS_HARNESSES);
+        }
         @Override protected MytemsCategory[] getMytemsCategories() {
             return new MytemsCategory[] {
                 MytemsCategory.SNEAKERS,
@@ -885,41 +896,23 @@ public enum StorableCategory implements StorableSet {
             };
         }
     },
-    MUSIC(Mytems.ANGELIC_HARP::createIcon) {
-        @Override protected Material[] getMaterials() {
-            return new Material[] {
-                Material.NOTE_BLOCK,
-                Material.MUSIC_DISC_13,
-                Material.MUSIC_DISC_CAT,
-                Material.MUSIC_DISC_BLOCKS,
-                Material.MUSIC_DISC_CHIRP,
-                Material.MUSIC_DISC_CREATOR,
-                Material.MUSIC_DISC_CREATOR_MUSIC_BOX,
-                Material.MUSIC_DISC_FAR,
-                Material.MUSIC_DISC_MALL,
-                Material.MUSIC_DISC_MELLOHI,
-                Material.MUSIC_DISC_STAL,
-                Material.MUSIC_DISC_STRAD,
-                Material.MUSIC_DISC_WARD,
-                Material.MUSIC_DISC_11,
-                Material.MUSIC_DISC_WAIT,
-                Material.MUSIC_DISC_OTHERSIDE,
-                Material.MUSIC_DISC_RELIC,
-                Material.MUSIC_DISC_5,
-                Material.MUSIC_DISC_PIGSTEP,
-                Material.MUSIC_DISC_PRECIPICE,
-            };
-        }
+    INSTRUMENTS(Mytems.ANGELIC_HARP::createIcon) {
         @Override protected MytemsTag[] getMytemsTags() {
             return new MytemsTag[] {
                 MytemsTag.MUSIC_ALL,
             };
         }
     },
+    DISCS(() -> new ItemStack(Material.MUSIC_DISC_LAVA_CHICKEN)) {
+        @Override protected List<Tag<Material>> getTags() {
+            return List.of(MaterialTags.MUSIC_DISCS);
+        }
+    },
     GARDENING(Mytems.GOLDEN_SCYTHE::createIcon) {
         @Override protected MytemsCategory[] getMytemsCategories() {
             return new MytemsCategory[] {
                 MytemsCategory.GARDENING,
+                MytemsCategory.SEEDS,
             };
         }
     },

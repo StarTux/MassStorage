@@ -53,6 +53,8 @@ public final class StorableItemIndex {
             Material.TRIAL_SPAWNER,
             Material.VAULT,
             Material.WRITTEN_BOOK,
+            Material.TEST_BLOCK,
+            Material.TEST_INSTANCE_BLOCK,
         });
 
     /**

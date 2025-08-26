@@ -418,22 +418,22 @@ public final class MassStorageSession {
 
         // Autocomplete material tags
         for (Tag<Material> tag : Bukkit.getTags(Tag.REGISTRY_BLOCKS, Material.class)) {
-            String name = tag.getKey().getKey().toLowerCase().replace('_', ' ');
-            if (name.contains(lower)) {
-                result.add(name);
+            String tagName = tag.getKey().getKey().toLowerCase().replace('_', ' ');
+            if (tagName.contains(lower)) {
+                result.add(tagName);
             }
         }
         for (Tag<Material> tag : Bukkit.getTags(Tag.REGISTRY_ITEMS, Material.class)) {
-            String name = tag.getKey().getKey().toLowerCase().replace('_', ' ');
-            if (name.contains(lower)) {
-                result.add(name);
+            String tagName = tag.getKey().getKey().toLowerCase().replace('_', ' ');
+            if (tagName.contains(lower)) {
+                result.add(tagName);
             }
         }
 
         // Autocomplete categories
         for (StorableCategory cat : StorableCategory.values()) {
-            String name = cat.getName().toLowerCase();
-            if (name.contains(lower)) result.add(name);
+            String catName = cat.getName().toLowerCase();
+            if (catName.contains(lower)) result.add(catName);
         }
     }
 

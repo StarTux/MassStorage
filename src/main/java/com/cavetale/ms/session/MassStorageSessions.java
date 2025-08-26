@@ -221,7 +221,12 @@ public final class MassStorageSessions implements Listener {
         session.onPlayerHud(event);
     }
 
-    @EventHandler(ignoreCancelled = false, priority = EventPriority.MONITOR)
+    /**
+     * We use a low priority here because some custom items modify
+     * their stack amount while handling this event, and we need the
+     * amount before in order to restack reliably.
+     */
+    @EventHandler(ignoreCancelled = false, priority = EventPriority.LOWEST)
     private void onPlayerInteract(PlayerInteractEvent event) {
         switch (event.getAction()) {
         case RIGHT_CLICK_BLOCK:

@@ -2,6 +2,7 @@ package com.cavetale.ms.session;
 
 import com.cavetale.core.event.hud.PlayerHudEvent;
 import com.cavetale.core.event.hud.PlayerHudPriority;
+import com.cavetale.core.playercache.PlayerCache;
 import com.cavetale.ms.MassStoragePlugin;
 import com.cavetale.ms.dialogue.ItemSortOrder;
 import com.cavetale.ms.dialogue.MassStorageDialogue;
@@ -10,6 +11,7 @@ import com.cavetale.ms.sql.SQLStorable;
 import com.cavetale.ms.storable.*;
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.logging.Level;
 import lombok.Getter;
 import lombok.Setter;
 import net.kyori.adventure.text.Component;
@@ -44,6 +46,7 @@ public final class MassStorageSession {
     private final MassStoragePlugin plugin;
     private SQLPlayer playerRow;
     private final UUID uuid;
+    private final String name;
     private final int[] ids;
     private final int[] amounts;
     private final boolean[] autos;
@@ -63,6 +66,7 @@ public final class MassStorageSession {
         this.amounts = new int[size];
         this.autos = new boolean[size];
         this.favs = new int[size];
+        this.name = PlayerCache.nameForUuid(uuid);
     }
 
     public void setup() {
@@ -356,7 +360,12 @@ public final class MassStorageSession {
 
     public void retrieveAsync(StorableItem storable, int amount, Consumer<Boolean> callback) {
         plugin.getDatabase().scheduleAsyncTask(() -> {
-                boolean result = retrieve(storable, amount);
+                final boolean result = retrieve(storable, amount);
+                if (!result) {
+                    plugin.getLogger().log(Level.SEVERE,
+                                           "Retrieve async failed: " + name + " " + storable.getName() + " " + amount,
+                                           new IllegalStateException("retrieveAsync"));
+                }
                 Bukkit.getScheduler().runTask(plugin, () -> callback.accept(result));
             });
     }
@@ -600,6 +609,32 @@ public final class MassStorageSession {
                             callback.run();
                         }
                     });
+            });
+    }
+
+    protected void pickBlock(Player player, Block block, int sourceSlot, int targetSlot) {
+        if (stackingHand) return;
+        final GameMode gameMode = player.getGameMode();
+        if (gameMode != GameMode.SURVIVAL && gameMode != GameMode.ADVENTURE) return;
+        if (sourceSlot >= 0) return;
+        if (!block.getType().isItem()) return;
+        final ItemStack handItemBefore = player.getInventory().getItem(targetSlot);
+        if (handItemBefore != null && !handItemBefore.isEmpty()) return;
+        final ItemStack item = new ItemStack(block.getType());
+        if (item == null || item.getType().isAir()) return;
+        final StorableItem storable = plugin.getIndex().get(item);
+        if (storable == null) return;
+        if (getAmount(storable) <= 0) return;
+        final int amount = 1;
+        retrieveAsync(storable, amount, success -> {
+                if (!success) return;
+                final ItemStack handItemNow = player.getInventory().getItem(targetSlot);
+                if (!player.isOnline() || player.isDead() || player.getGameMode() != gameMode || (handItemNow != null && !handItemNow.isEmpty())) {
+                    insertAsync(storable, amount, null);
+                } else {
+                    player.getInventory().setItem(targetSlot, storable.createItemStack(amount));
+                    player.getInventory().setHeldItemSlot(targetSlot);
+                }
             });
     }
 

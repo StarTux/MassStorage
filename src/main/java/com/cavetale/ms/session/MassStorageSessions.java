@@ -7,6 +7,7 @@ import com.cavetale.core.event.item.PlayerAbsorbItemEvent;
 import com.cavetale.core.event.item.PlayerReceiveItemsEvent;
 import com.cavetale.ms.MassStoragePlugin;
 import com.cavetale.ms.storable.StorableItem;
+import io.papermc.paper.event.player.PlayerPickBlockEvent;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -263,6 +264,15 @@ public final class MassStorageSessions implements Listener {
                 session.insertAndSubtract(event.getItems(),
                                           ItemInsertionCause.RECEIVE,
                                           result -> result.feedback(player));
+            });
+    }
+
+    @EventHandler(priority = EventPriority.NORMAL)
+    private void onPlayerPickBlock(PlayerPickBlockEvent event) {
+        Player player = event.getPlayer();
+        if (!checkGameMode(player)) return;
+        ifAssistEnabled(player, session -> {
+                session.pickBlock(player, event.getBlock(), event.getSourceSlot(), event.getTargetSlot());
             });
     }
 }

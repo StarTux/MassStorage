@@ -569,39 +569,39 @@ public final class MassStorageSession {
         Bukkit.getScheduler().runTask(plugin, () -> {
                 stackingHand = false;
                 if (!player.isOnline() || player.isDead() || player.getGameMode() != gameMode) return;
-                final ItemStack item2 = player.getInventory().getItem(index);
+                final ItemStack itemInHandNextTick = player.getInventory().getItem(index);
                 final int amount;
-                if (item2 == null || item2.getType().isAir()) {
+                if (itemInHandNextTick == null || itemInHandNextTick.getType().isAir()) {
                     amount = Math.min(getAmount(storable), itemMaterial.getMaxStackSize());
-                } else if (insertMaterial != null && item2.getType() == insertMaterial) {
+                } else if (insertMaterial != null && itemInHandNextTick.getType() == insertMaterial) {
                     // Remove empty bowl, bucket, or bottle
-                    final StorableItem storable2 = plugin.getIndex().get(item2);
-                    if (storable2 == null || !storable2.canStack(item2)) return;
-                    insert(storable2, item2.getAmount());
+                    final StorableItem storable2 = plugin.getIndex().get(itemInHandNextTick);
+                    if (storable2 == null || !storable2.canStack(itemInHandNextTick)) return;
+                    insert(storable2, itemInHandNextTick.getAmount());
                     player.getInventory().setItem(index, null);
                     amount = Math.min(getAmount(storable), itemMaterial.getMaxStackSize());
                 } else {
-                    if (!storable.canStack(item2)) return;
-                    if (item2.getAmount() == oldAmount) return;
-                    amount = Math.min(getAmount(storable), item.getMaxStackSize() - item2.getAmount());
+                    if (!storable.canStack(itemInHandNextTick)) return;
+                    if (itemInHandNextTick.getAmount() == oldAmount) return;
+                    amount = Math.min(getAmount(storable), item.getMaxStackSize() - itemInHandNextTick.getAmount());
                 }
                 if (amount <= 0) return;
                 stackingHand = true;
                 retrieveAsync(storable, amount, success -> {
                         stackingHand = false;
                         if (!success) return;
-                        final ItemStack item3 = player.getInventory().getItem(index);
+                        final ItemStack itemInHandRetrieval = player.getInventory().getItem(index);
                         if (!player.isOnline() || player.isDead() || player.getGameMode() != gameMode) {
                             insertAsync(storable, amount, null);
-                        } else if (item3 == null || item3.getType().isAir()) {
+                        } else if (itemInHandRetrieval == null || itemInHandRetrieval.getType().isAir()) {
                             player.getInventory().setItem(index, storable.createItemStack(amount));
                         } else {
                             final int given;
-                            if (!storable.canStack(item3)) {
+                            if (!storable.canStack(itemInHandRetrieval)) {
                                 given = 0;
                             } else {
-                                given = Math.min(amount, itemMaterial.getMaxStackSize() - item3.getAmount());
-                                item3.add(given);
+                                given = Math.min(amount, itemMaterial.getMaxStackSize() - itemInHandRetrieval.getAmount());
+                                itemInHandRetrieval.add(given);
                             }
                             if (given < amount) {
                                 insertAsync(storable, amount - given, null);

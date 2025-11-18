@@ -310,7 +310,7 @@ public enum StorableCategory implements StorableSet {
                 Material.BELL,
                 Material.BREWING_STAND,
                 Material.CAULDRON,
-                Material.CHAIN,
+                Material.IRON_CHAIN,
                 Material.COBWEB,
                 Material.COMPOSTER,
                 Material.DECORATED_POT,

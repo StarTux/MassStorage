@@ -40,6 +40,7 @@ public enum StorableCategory implements StorableSet {
                 Material.BAMBOO_MOSAIC,
                 Material.BAMBOO_PLANKS,
                 Material.BASALT,
+                Material.BEDROCK,
                 Material.BEEHIVE,
                 Material.BEE_NEST,
                 Material.BLACKSTONE,

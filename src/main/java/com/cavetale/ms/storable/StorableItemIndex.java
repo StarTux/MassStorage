@@ -31,7 +31,6 @@ public final class StorableItemIndex {
     private static final Set<Material> MATERIAL_BLACKLIST = Set.of(new Material[] {
             Material.AIR,
             Material.BARRIER,
-            Material.BEDROCK,
             Material.CHAIN_COMMAND_BLOCK,
             Material.COMMAND_BLOCK,
             Material.COMMAND_BLOCK_MINECART,

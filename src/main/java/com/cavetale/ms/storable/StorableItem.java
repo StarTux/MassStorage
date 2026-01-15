@@ -113,8 +113,6 @@ public sealed interface StorableItem permits UnstorableItem, StorableBukkitItem,
      * a player inventory.  We use this to allow picking up items even
      * while Inventory Assist is on.  Storing items which would
      * usually stack is irritating.
-     *
-     * TODO Replace the magic numbers.
      */
     default int canStack(PlayerInventory inventory, int max, boolean allowEmptySlot) {
         final int maxStackSize = getMaxStackSize();

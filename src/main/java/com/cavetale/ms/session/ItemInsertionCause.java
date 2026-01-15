@@ -28,7 +28,16 @@ public enum ItemInsertionCause {
     },
     /** Triggered by PlayerReceiveItemsEvent. */
     RECEIVE {
-        public boolean failSilently() {
+        @Override public boolean drainShulkerBoxes() {
+            return false;
+        }
+        @Override public boolean sendChatMessage() {
+            return false;
+        }
+        @Override public boolean sendActionBarMessage() {
+            return false;
+        }
+        @Override public boolean failSilently() {
             return true;
         }
     },

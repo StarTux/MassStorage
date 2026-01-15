@@ -8,6 +8,7 @@ import com.cavetale.core.event.item.PlayerReceiveItemsEvent;
 import com.cavetale.ms.MassStoragePlugin;
 import com.cavetale.ms.storable.StorableItem;
 import io.papermc.paper.event.player.PlayerPickBlockEvent;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -264,12 +265,26 @@ public final class MassStorageSessions implements Listener {
 
     @EventHandler(priority = EventPriority.NORMAL)
     private void onPlayerReceiveItems(PlayerReceiveItemsEvent event) {
-        Player player = event.getPlayer();
-        apply(player, session -> {
-                session.insertAndSubtract(event.getItems(),
-                                          ItemInsertionCause.RECEIVE,
-                                          result -> result.feedback(player));
-            });
+        final Player player = event.getPlayer();
+        final MassStorageSession session = get(player);
+        if (session == null || !session.isEnabled()) return;
+        final boolean assist = session.isAssistEnabled();
+        final List<ItemStack> items = new ArrayList<>();
+        for (ItemStack item : event.getItems()) {
+            final StorableItem storable = plugin.getIndex().get(item);
+            if (storable == null || !storable.canStore(item)) continue;
+            final boolean auto = session.getAutoPickup(storable);
+            if (assist || auto) {
+                items.add(item);
+            }
+        }
+        if (!items.isEmpty()) {
+            session.insertAndSubtract(
+                items,
+                ItemInsertionCause.RECEIVE,
+                result -> result.feedback(player)
+            );
+        }
     }
 
     @EventHandler(priority = EventPriority.NORMAL)
